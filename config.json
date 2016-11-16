@@ -1,0 +1,61 @@
+{
+  "port": 4001,
+  "DB": {
+    "MongoDB": {
+      "host": "192.168.8.102",
+      "port":828,
+      "bport":827,
+      "arbport":826,
+      "dbName":"pictureAir",
+      "user": "engineapi",
+      "pass": "pw#Mongo!2345"
+    },
+    "mysql": {
+      "host": "localhost",
+      "user": "root",
+      "password": "",
+      "database": "photos"
+    },
+    "redis": {
+      "host": "192.168.8.102",
+      "port": "829",
+      "requirepass": "pIctur3"
+    },
+    "retryRedis": {
+      "host": "127.0.0.1",
+      "port": "829",
+      "requirepass": "pIctur3"
+    }
+  },
+  "sysAssets": {
+    "assets": {
+      "agent": "",
+      "ip": "192.168.8.100",
+      "port": "4000"
+    }
+  },
+  "nginx": {
+    "photos": {
+      "agent": "",
+      "ip": "172.16.164.27",
+      "port": "4000"
+    }
+  },
+  "websitePath": "\\\\192.168.8.100\\shdr\\website",
+  "websitePathHost": "http://192.168.8.100",
+  "assets": {
+    "maxSize": 7868909,
+    "minSize": 10240,
+    "thumbnailType": [
+      400,
+      160
+    ],
+    "thumbnailType_V": [
+      120,
+      300
+    ]
+  },
+  "uploadFileList": {
+    "assets": ""
+  }
+}
