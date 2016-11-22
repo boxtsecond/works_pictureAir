@@ -1,0 +1,180 @@
+var mongoose = require('mongoose');
+
+var options={versionKey: false};
+var config= {
+    userName:{type:String,index:true},//用户名，用户注册时的email或mobile
+    email: {type: String, index: true}, //Email
+    userPP: {type: String, index: true},    //注册后根据用户生成的PP号
+    roleIds: [], //角色类型
+    userType: {type: String, default: 'user'}, //用户类型，user,guide
+    guideYear: {type: Number, default: 0},//带团年数
+    IDCard: String,//身份证
+    travelAgency: String,//旅行社
+    guideCard: String,//导游证
+    alipayAccount: String,//支付宝账户
+    accountBalance: {type: Number, default: 0},//账户余额
+    totalProfit: {type: Number, default: 0},//累计盈利
+
+    name: {type: String}, //姓名
+    gender: {type: String}, //性别
+    password: {type: String}, //密码
+    country: {type: String}, //国家
+    qq: String, //qq
+    birthday: {type: Date}, //出生日期
+    mobile: {type: String}, //电话号码
+    registerTerminal:{type:String,index:true},//注册终端
+    registerOn: {type: Date, required: true, default: Date.now}, //注册日期
+    lastLoginOn: Date, //上次登陆时间
+    lastLogoutOn: Date, //上次退出时间
+    lastLogoutUrl: {type: String}, //上次登出界面
+    disabled: {type: Boolean, required: true, default: false}, //是否无效
+    allowedPermissions: [], //RoleId包含的权限以外的权限
+    denyPermissions: [], //禁止的权限
+    customerIds: {type: [
+        mongoose.Schema(
+            {
+                code: {type: String, index: true}, //pp或ep的code
+                cType: String, // 标示类型为pp还是ep
+                bindOn:{type:Date,default: Date.now}
+            }, {_id: false})
+    ]},
+    albums: [
+        {
+            name: {type: String}, //相册名称
+            description: {type: String}, //描述
+            isFree: Boolean, //是否免费
+            coverImageUrl: {type: String}, //相册背景图
+            shareInfo: [
+                {
+                    channel: String, //分享渠道
+                    count: Number   //分享次数
+                }
+            ],
+            visitedCount: {type: Number, default: 0}, // 访问次数
+            likeCount: {type: Number, default: 0}, //点赞次数
+            comments: [
+                { //评论信息
+                    comment: String, //评论内容
+                    userId: String, //评论者Id可以为空
+                    userIP: String, //用户IP
+                    lastEditTime: Date //评论时间
+                }
+            ],
+            followedUsers: {type: [String], index: true}, //关注本相册的用户
+            tagBy: [String], //相册中照片包含的人员名称
+            locationId: {type: String, index: true}, //拍摄点Id
+            urlId: {type: String}, //对外访问的链接Id
+            createdOn: Date, //创建时间
+            modifiedOn: Date //修改时间
+        }
+    ],
+    likePhotos: [String],//点赞的photoIds
+
+    favoriteAlbums: {type: [ //收藏的相册Ids
+        {type: String}
+    ]},
+    favoriteProducts: {type: [ //收藏的产品Ids
+        {type: String}
+    ]},
+
+    favoritePhotos: {type: [ //收藏的照片Ids
+        {type: String}
+    ]},
+
+    followingUsers: {type: [ //关注的用户Ids
+        {type: String}
+    ]},
+    followingPhotos: {type: [ //关注的照片Ids
+        {type: String}
+    ]},
+    followingAlbums: {type: [ //关注的相册Ids
+        {type: String}
+    ]},
+    followingParks: {type: [ //关注的公园Ids
+        {type: String}
+    ]},
+    followingExploreCards: {type: [ //关注的发布卡Ids
+        {type: String}
+    ]},
+    followedUsers: {type: [ //关注自己的用户Ids
+        {type: String}
+    ]},
+    sharedUsers: {type: [ //分享自己的用户Ids
+        {type: String}
+    ]},
+    likedUsers: {type: [ //喜欢自己的用户Ids
+        {type: String}
+    ]},
+    visitedUsers: {type: [ //访问过自己的用户Ids
+        {type: String}
+    ]},
+    avatarUrl: {type: String}, //用户头像
+    coverHeaderImage: {type: String}, //用户主页头部图片
+
+    allowFollowed: {type: Boolean, default: true}, //是否允许他人关注
+    cart: { //购物车
+        items: [
+            {
+                goodsKey: {type: String},
+                qty: {type: Number},
+                price:{type:Number},
+                embedPhotos: [
+                    {
+                        photoId: {type: String},
+                        ppCodes: [
+                            {type: String}
+                        ],
+                        photoIp:{type:String}
+                    }
+                ]
+            }
+        ],
+        preferentialPrice: {type: Number, default: 0},//节省了多少钱
+        totalPrice: {type: Number, default: 0},
+        totalCount: {type: Number, default: 0}//购物车内商品总数量
+    },
+    openIds: {  //第三方登陆的openId
+        QQ: {type: String}, //
+        facebook: {type: String}, //
+        instagram: {type: String} //
+
+    },
+    favoriteLocationIds: {type: [ //收藏的地点信息
+        {type: String}
+    ], index: true},
+    addresses: [
+        {
+            area: {type: String},		    //国家（区域）
+            provinces: {type: String},		//省份
+            city: {type: String},		    //城市
+            county: {type: String},		    //区县
+            detailedAddress: {type: String},//详细地址
+            zip: {type: String},		    //邮编
+            consignee: {type: String},		//收货人姓名
+            mobileNum: {type: String},		//手机号码
+            telephone: {type: String},		//电话号码
+            defaultChose: {type: Boolean}	//默认是否选中（单选）
+        }
+    ],
+    hiddenPPList: {type: [
+        mongoose.Schema(
+            {
+                code: {type: String, index: true}
+//                , //pp或ep的code
+//                shootDate: String // 拍摄日期
+            }, {_id: false})
+    ]},//需要隐藏的PP列表
+
+    permission:{type:[],default:[]}, //用户权限 (ctrip:携程)
+
+    ticketId: String, //门票号
+    userGroup: String, //用户类型:walkIn,group,event,online
+    systemMessagePush:{type: Boolean, required: true, default: true}, //是否接收系统消息,默认是接收  steve
+    createdOn: Date,//创建时间
+    modifiedOn: Date      //修改时间
+//});
+};
+module.exports={
+    options:options,
+    config:config
+};

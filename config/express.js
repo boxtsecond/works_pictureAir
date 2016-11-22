@@ -13,10 +13,12 @@ var fs = require('fs'),
     cookieParser = require('cookie-parser'),
     consolidate = require('consolidate'),
      compress = require('compression');
-var logger=require('./logger');
+var reqExt=require("../middleware/reqExt");
+//var logger=require('./logger');
 module.exports = function() {
     // Initialize express app
     var app = express();
+
     // Setting application local variables
 //    app.locals.title = config.app.title;
     // Passing the request url to environment locals
@@ -50,6 +52,8 @@ module.exports = function() {
     app.use(methodOverride());
     // CookieParser should be above session
     app.use(cookieParser());
+    app.use(reqExt())
+    //passport(app);
 //    app.use(multer()); // for parsing multipart/form-data
 //    app.use(multer({ dest: './uploads/'}));
 

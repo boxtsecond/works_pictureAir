@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.1.2",
+    "bluebird": "^3.4.6",
     "body-parser": "^1.15.2",
     "compression": "^1.6.2",
     "consolidate": "^0.14.4",
@@ -27,8 +28,6 @@
     "morgan": "^1.7.0",
     "multer": "^1.2.0",
     "nodemailer": "^2.6.4",
-    "passport": "^0.3.2",
-    "passport-local-mongoose": "^4.0.0",
     "request": "^2.78.0"
   }
 }

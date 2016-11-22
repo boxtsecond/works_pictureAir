@@ -6,6 +6,9 @@
 //}
 var express = require('express');
 var router = express.Router();
+//app.all('/api*',connectEnsureLogin.ensureLoggedIn(),function (req, res, next) {
+//    next();
+//});
 //var index=require("../controller/index");
 //router.get('/',index.index);
 router.get('/',function(req,res){

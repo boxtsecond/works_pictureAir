@@ -2,13 +2,13 @@
   "port": 4001,
   "DB": {
     "MongoDB": {
-      "host": "192.168.8.102",
-      "port":828,
-      "bport":827,
-      "arbport":826,
-      "dbName":"pictureAir",
-      "user": "engineapi",
-      "pass": "pw#Mongo!2345"
+      "host": "192.168.8.107",
+      "port":1008,
+      "bport":1009,
+      "arbport":1010,
+      "dbName":"pictureAir1",
+      "user": "",
+      "pass": ""
     },
     "mysql": {
       "host": "localhost",

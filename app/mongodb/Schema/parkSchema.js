@@ -4,6 +4,7 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 var options={};
 var config=
 {
+    siteInfo:[],
     country: {type: String, index: true},   //国家
     province: String,   //省
     city: String,   //城市
@@ -16,6 +17,8 @@ var config=
     servers: [  //服务器信息
         {
             serverId:String,//服务器Id
+            type:{type: String},//db engine app nas
+            description: {type: String},   //描述
             IP: String, //服务器Ip
             name: String, //服务器名称
             isDel:{type:Boolean,default:false},//server是否不可用
@@ -23,7 +26,6 @@ var config=
             locations:[String] //locationId
         }
     ],
-
     locations: [
         {
             locationId:String,//地点Id
@@ -41,6 +43,7 @@ var config=
             }],//如果拍摄点是character类型，才有characters
             isDel:{type:Boolean,default:false},//地点是否不可用
             location: String, //拍摄点名称
+            //[{key:ch,value:"",lg:"@root_location"}]
             location_EN:String,//拍摄点英文名
             description:{type:String,default:''},//描述
             description_EN:{type:String,default:''},//英文描述
@@ -58,7 +61,6 @@ var config=
                 GPSDateStamp: String
             },
             cameralPrefixes: String, //相机前缀
-
             defaultPhoto: String, //地点图片
             defaultPhotoPath:String,//地点图片物理路径
             cameralConfig:{
@@ -77,8 +79,6 @@ var config=
             outlets:[String],//outletId
             isAd:{type:Boolean,default:false},//是否是广告点
             adWords:String      //广告词
-
-
         }
     ],
     outlets: [ //门店信息
@@ -108,11 +108,10 @@ var config=
     ],
     admins: {type: [String], index: true}, //管理员Ids
     pageUrl: {type: String}, //主页url
-
-    surveyId: String, //调查问卷
-    sharedUsers: [String], //分享乐园的用户Ids
-    likedUsers: [String], //喜欢乐园的用户Ids
-    visitedUsers: [String], //访问过乐园的用户Ids
+    //surveyId: String, //调查问卷
+    //sharedUsers: [String], //分享乐园的用户Ids
+    //likedUsers: [String], //喜欢乐园的用户Ids
+    //visitedUsers: [String], //访问过乐园的用户Ids
     coverHeaderImage: {type: String}, //乐园头部背景图url
     avatarUrl: {type: String}, //乐园头像url
     contact: { //

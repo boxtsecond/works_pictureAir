@@ -47,7 +47,6 @@ require("./config/global");
 
 var deubg=debug('pictureEngineAPI');
 var app = require('./config/express')();
-require('./config/passport')(app);
 require('./config/routes')(app);
 app.set('port', process.env.PORT || config.config.port);
 var server = app.listen(app.get('port'), function() {

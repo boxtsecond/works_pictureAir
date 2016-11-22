@@ -8,7 +8,8 @@
 //console.log(setInterval, Buffer);
 
 //******system for node ********/
-global.sys = require('sys');
+global.sys = require('util');
+global.util = require('util');
 global.dgram =require('dgram')
 global.path=require('path');
 global.url=require('url');
