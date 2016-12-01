@@ -2,8 +2,26 @@ var mongoose = require('mongoose');
 
 var options={versionKey: false};
 var config= {
-    userName:{type:String,index:true},//用户名，用户注册时的email或mobile
-    email: {type: String, index: true}, //Email
+    // 图片总数pictureCount  pp卡总数pictureCount 优惠券总数coupons
+    userName:{type:String,index:true},// 用户名
+    mobile: {type: String,index: true}, //电话号码
+    email: {type: String, index: true,default:''}, //Email
+    emailVerified:{type: Boolean, default: false},//Email 是否已经验证通过
+    password: {type: String}, //密码
+    registerTerminal:{type:String,index:true},//注册终端// ios，android,web
+    registerOn: {type: Date, required: true, default: Date.now()}, //注册日期
+    lgsyscode:{type: String, index: true},//操作系统语言码
+    lgusercode:{type: String, index: true},//用户使用的语言码
+    //uuid:{type: String, index: true},//用户手机的UUID
+    //用户信息
+    name: {type: String}, //姓名
+    gender: {type: String}, //性别
+    country: {type: String,default:''}, //国家
+    qq: {type: String}, //国家
+    birthday: {type: Date}, //出生日期
+    avatarUrl: {type: String,default:''}, //用户头像
+    coverHeaderImage: {type: String}, //用户主页头部图片
+    allowFollowed: {type: Boolean, default: true}, //是否允许他人关注
     userPP: {type: String, index: true},    //注册后根据用户生成的PP号
     roleIds: [], //角色类型
     userType: {type: String, default: 'user'}, //用户类型，user,guide
@@ -14,23 +32,36 @@ var config= {
     alipayAccount: String,//支付宝账户
     accountBalance: {type: Number, default: 0},//账户余额
     totalProfit: {type: Number, default: 0},//累计盈利
-
-    name: {type: String}, //姓名
-    gender: {type: String}, //性别
-    password: {type: String}, //密码
-    country: {type: String}, //国家
-    qq: String, //qq
-    birthday: {type: Date}, //出生日期
-    mobile: {type: String}, //电话号码
-    registerTerminal:{type:String,index:true},//注册终端
-    registerOn: {type: Date, required: true, default: Date.now}, //注册日期
-    lastLoginOn: Date, //上次登陆时间
-    lastLogoutOn: Date, //上次退出时间
+    lastLoginOn: {type:Date,default: Date.now}, //上次登陆时间
+    lastLogoutOn: {type:Date,default: Date.now}, //上次退出时间
     lastLogoutUrl: {type: String}, //上次登出界面
     disabled: {type: Boolean, required: true, default: false}, //是否无效
+    disablereason: {type: String, default: ""}, //禁用原因
     allowedPermissions: [], //RoleId包含的权限以外的权限
     denyPermissions: [], //禁止的权限
+    addresses: [
+        {
+            area: {type: String},		    //国家（区域）
+            provinces: {type: String},		//省份
+            city: {type: String},		    //城市
+            county: {type: String},		    //区县
+            detailedAddress: {type: String},//详细地址
+            zip: {type: String},		    //邮编
+            consignee: {type: String},		//收货人姓名
+            mobileNum: {type: String},		//手机号码
+            telephone: {type: String},		//电话号码
+            defaultChose: {type: Boolean}	//默认是否选中（单选）
+        }
+    ],
     customerIds: {type: [
+        mongoose.Schema(
+            {
+                code: {type: String, index: true}, //pp或ep的code
+                cType: String, // 标示类型为pp还是ep
+                bindOn:{type:Date,default: Date.now}
+            }, {_id: false})
+    ]},
+    couponIds: {type: [
         mongoose.Schema(
             {
                 code: {type: String, index: true}, //pp或ep的code
@@ -108,10 +139,6 @@ var config= {
     visitedUsers: {type: [ //访问过自己的用户Ids
         {type: String}
     ]},
-    avatarUrl: {type: String}, //用户头像
-    coverHeaderImage: {type: String}, //用户主页头部图片
-
-    allowFollowed: {type: Boolean, default: true}, //是否允许他人关注
     cart: { //购物车
         items: [
             {
@@ -142,20 +169,6 @@ var config= {
     favoriteLocationIds: {type: [ //收藏的地点信息
         {type: String}
     ], index: true},
-    addresses: [
-        {
-            area: {type: String},		    //国家（区域）
-            provinces: {type: String},		//省份
-            city: {type: String},		    //城市
-            county: {type: String},		    //区县
-            detailedAddress: {type: String},//详细地址
-            zip: {type: String},		    //邮编
-            consignee: {type: String},		//收货人姓名
-            mobileNum: {type: String},		//手机号码
-            telephone: {type: String},		//电话号码
-            defaultChose: {type: Boolean}	//默认是否选中（单选）
-        }
-    ],
     hiddenPPList: {type: [
         mongoose.Schema(
             {
@@ -166,12 +179,11 @@ var config= {
     ]},//需要隐藏的PP列表
 
     permission:{type:[],default:[]}, //用户权限 (ctrip:携程)
-
     ticketId: String, //门票号
     userGroup: String, //用户类型:walkIn,group,event,online
     systemMessagePush:{type: Boolean, required: true, default: true}, //是否接收系统消息,默认是接收  steve
-    createdOn: Date,//创建时间
-    modifiedOn: Date      //修改时间
+    createdOn: {type:Date,default: Date.now},//创建时间
+    modifiedOn: {type:Date,default: Date.now}      //修改时间
 //});
 };
 module.exports={

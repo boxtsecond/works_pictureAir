@@ -51,6 +51,7 @@ global.domain=require('domain');
 global.debug=require('debug');
 global._=require('lodash');
 global.Promise=require('bluebird');
+global.bluebird=global.Promise;
 global.imagesize=require('image-size');
 //global.engine=require('engine');
 

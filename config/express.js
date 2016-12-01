@@ -9,6 +9,7 @@ var fs = require('fs'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
     methodOverride = require('method-override'),
+   errorhandler = require('errorhandler'),
     multer=require('multer'),
     cookieParser = require('cookie-parser'),
     consolidate = require('consolidate'),
@@ -96,7 +97,10 @@ module.exports = function() {
 
 
 
-
+    if (process.env.NODE_ENV === 'development') {
+        // only use in development
+        app.use(errorhandler())
+    }
 
     // Assume 'not found' in the error msgs is a 404. this is somewhat silly, but valid, you can do whatever you like, set properties, use instanceof etc.
 

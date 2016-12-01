@@ -1,279 +1,189 @@
-var  toString =Object.prototype.toString;
-var isType=function(type)
-{
-    return function(obj){
-        return toString.call(obj)=='[object '+type+']';
-    }
-}
-var isString=isType('String');
-var isFunction=isType('Function')
-var isnumber=function(data)
-{
-    if(isundefined(data)) return false;
-    if(data==="") return false;
-    if(typeof(data) ==="number"&& Number === data.constructor) return true;else return false;
-}
-var isboolean=function(data)
-{
-    if(isundefined(data)) return false;
-    if(typeof(data) ==="boolean"&& Boolean === data.constructor) return true;else return false;
-}
-var isstring=function(data)
-{
-    if(isundefined(data)) return false;
-    if(typeof(data) ==="string"&& String === data.constructor) return true;else return false;
-}
-var isobject=function(data)
-{
-    if(isundefined(data)) return false;
-    if(typeof(data) ==="object"&& Object === data.constructor) return true;else return false;
-}
-var isundefined=function(data)
-{
-    if(typeof(data) ==="undefined") return true;else return false;
-}
-var isArray=function(data)
-{
-    if(isundefined(data)) return false;
-    if((data instanceof Array)&& Array === data.constructor) return true;else return false;
-}
-//function isArray(object){
-//    return  object && typeof object==='object' &&
-//        typeof object.length==='number' &&
-//        typeof object.splice==='function' &&
-//        //判断length属性是否是可枚举的 对于数组 将得到false
-//        !(object.propertyIsEnumerable('length'));
-//}
-var isJonsObject=function(data)
-{
-    if(isundefined(data)) return false;
-    if(typeof data!=='object'||isArray(data)) return false;else return true;
-}
-var isFunction=function(data)
-{
-    if(isundefined(data)) return false;
-    if(typeof data!=='function'||isArray(data)) return false;else return true;
-}
-function isMap(ob) {
-    var i = 0;
-    for(var x in ob)
-        i++;
-    return i > 0;
-}
-var arrayIsexist=function arrayIsexist(list,itemvalue){
-    if(typeof(list) ==="undefined"||typeof(itemvalue) ==="undefined"||!(list instanceof Array)|| Array != list.constructor) return false;
-    else{
-        if (itemvalue && ~list.indexOf(itemvalue)) {
-            return  true;
-        }else{
-            return  false;
+var util=require("../config/util");
+function apiSend(result){
+    if (result==null) return this.res.status(200).json({status: 200, msg: "success", result:{}});
+    else if(util.isstring(result)) return this.res.status(200).json({status: 200, msg: result, result:{}});
+    else if(util.isArray(result)){
+        if(result.length<=0){
+            return this.res.status(200).json({status: 200, msg: "success", result:{}});
+        }else if (result.length==1){
+            if(util.isstring(result[0])) return this.res.status(200).json({status: 200, msg: result[0].toString(), result:{}});
+            else  if(util.isnumber(result[0])) return this.res.status(200).json({status: result[0], msg: "success", result:{}});
+            else  if(util.isJonsObject(result[0])) return this.res.status(200).json({status: 200, msg: "success", result:result[0]});
+            else return this.res.status(200).json({status: 503, msg: "no supper this dev input ", result:{result:result}});
+        }else if (result.length==2){
+            if(!util.isnumber(result[0])) return this.res.status(200).json({status: 503, msg: "no supper this dev input ", result:{result:result}});
+            else if(util.isstring(result[1])) return this.res.status(200).json({status: result[0], msg: result[1], result:{}});
+            else if(util.isJonsObject(result[1]))return this.res.status(200).json({status: result[0], msg: "success", result:result[1]});
+            else return this.res.status(200).json({status: 503, msg: "no supper this dev input ", result:{result:result}});
+        }else if (result.length==3){
+            if(!util.isnumber(result[0])||!util.isstring(result[1]) || !util.isJonsObject(result[2])) return this.res.status(200).json({status: 503, msg: "no supper this dev input ", result:{result:result}});
+            else return this.res.status(200).json({status: result[0], msg: result[1], result:result[2]});
+        }else {
+            return this.res.status(200).json({status: 503, msg: "no supper this dev input ", result:{result:result}});
         }
     }
-}
-var isDate=function isDate(data)
-{
-    if(isundefined(data)) return false;
-    if((data instanceof Date)&& Date === data.constructor) return true;else return false;
-}
-////属性不能为null  or  '' 并且存在   才返回true
-var haveOwnproperty=function haveOwnproperty(data,propertyname){
-    var result=false;
-    if(isArray(propertyname)){
-        //console.log("....")
-        for(var itemdata in propertyname) {
-            if(data[propertyname[itemdata]]) return true;
+    else if(util.isJonsObject(result)){
+        if(!util.haveOwnproperty(result,"status")||!util.haveOwnproperty(result,"msg")){
+            return this.res.status(200).json({status: 503, msg: "no supper this dev input status | msg  is required .", result:{}});
         }
-         return result;
-    }else{
-        if(data[propertyname]&&!isFunction(data[propertyname])) return true;
-        return result;
+        else if(!util.isnumber(result.status)||!util.isstring(result.msg)||(util.haveOwnproperty(result,"result")&&!util.isJonsObject(result.result))){
+            return this.res.status(200).json({status: 503, msg: "no supper this dev input status | msg  is  type error.", result:{}});
+        }
+        else if(!util.haveOwnproperty(result,"result")){
+            return  this.res.status(200).json({status: result.status, msg:result.msg, result:{}});
+        }else {
+            return this.res.status(200).json(result);
+        }
+    }else {
+        this.res.status(200).json({status: 503, msg: "no supper this dev input ", result:{result:result}});
     }
 
-
-    //var result=false;
-    //for(var itemdata in data) {
-    //    if(itemdata===propertyname) if(data[itemdata]!==null) result=true;
-    //}
-    //return result;
-    //if(Object.prototype.hasOwnProperty.call(data, propertyname)) return true;
-    //else return false;
 };
-//console.log(haveOwnproperty({aa:"1",haveOwnproperty:haveOwnproperty},["aa"]));
 
-function formatDate(date,fmt) {
-    if(!isDate(date)) return "";
-    var o = {
-        "M+" : date.getMonth()+1,                 //月份
-        "d+" : date.getDate(),                    //日
-        "h+" : date.getHours(),                   //小时
-        "m+" : date.getMinutes(),                 //分
-        "s+" : date.getSeconds(),                 //秒
-        "q+" : Math.floor((date.getMonth()+3)/3), //季度
-        "S"  : date.getMilliseconds()             //毫秒
-    };
-    if(/(y+)/.test(fmt))
-        fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
-    for(var k in o)
-        if(new RegExp("("+ k +")").test(fmt))
-            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
-    return fmt;
-}
-//function apiSend(err,result){
-//    //success
-//    if(err){
-//        if(err.toString().toLowerCase()=='err'||err.toString().toLowerCase()=='error'){
-//             //if(haveOwnproperty())
-//            //是否存在result
-//            this.res.status(200).json({status: 503, msg: "", result:{}});
-//            //this.res.status(200).json(result);
-//        }else {
-//            this.res.status(200).json(result);
-//        }
+
+/*
+function apiSend(result){
+    //success
+    //if(err){
+    //    return this.res.status(200).json({status: 503, msg: "no supper this dev input .", result:{}});
+    //    //if(err.toString().toLowerCase()=='err'||err.toString().toLowerCase()=='error'){
+    //    //     //if(haveOwnproperty())
+    //    //    //是否存在result
+    //    //    this.res.status(200).json({status: 503, msg: "", result:{}});
+    //    //    //this.res.status(200).json(result);
+    //    //}else {
+    //    //    this.res.status(200).json(result);
+    //    //}
+    //}
+    //else
+    //console.log(result);
+    if(isstring(result)) return this.res.status(200).json({status: 200, msg: result, result:{}});
+    else if (result==null) return this.res.status(200).json({status: 200, msg: "success", result:{}});
+    else if(isArray(result)){
+        if(result.length<=0){
+            return this.res.status(200).json({status: 200, msg: "success", result:{}});
+        }else if (result.length=1){
+
+        }
+    }
+    else if(isJonsObject(result)){
+        if(!haveOwnproperty(result,"status")||!haveOwnproperty(result,"msg")){
+            return this.res.status(200).json({status: 503, msg: "no supper this dev input status | msg  is required .", result:{}});
+        }
+        else if(!isnumber(result.status)||!isstring(result.msg)||(haveOwnproperty(result,"result")&&!isJonsObject(result.result))){
+            return this.res.status(200).json({status: 503, msg: "no supper this dev input status | msg  is  type error.", result:{}});
+        }
+        else if(!haveOwnproperty(result,"result")){
+            return  this.res.status(200).json({status: result.status, msg:result.msg, result:{}});
+        }else {
+            return this.res.status(200).json(result);
+        }
+    }else {
+        this.res.status(200).json({status: 503, msg: "no supper this dev input ", result:{result:result}});
+    }
+
+};
+*/
+
+//function apiSend(status,msg,result){
+//    //var resValue={status: 200, msg:"", result:{}};
+//    if(status!=null&&!isnumber(status)||isundefined(status)){
+//       return this.res.status(200).json({status:503, msg:"dev bug status must is null || number", result:{}});
+//    }else if(!isstring(msg)&&isobject(result)){
+//        return this.res.status(200).json({status:503, msg:"dev bug msg must is string || object", result:{}});
+//    }else if(!isobject(result)&&!isundefined(result))
+//    {
+//        return this.res.status(200).json({status:503, msg:"dev bug result object", result:{}});
+//    }else
+//    if(status==null&&isundefined(msg)&&isundefined(result)){
+//        return this.res.status(200).json({status:200, msg:"success", result:{}});
+//    }else if(status==null&&isundefined(result)){
+//        if(isobject(msg)) return this.res.status(200).json({status:200, msg:"success", result:msg});
+//        else if(isstring(msg))return this.res.status(200).json({status:200, msg:msg, result:{}});
+//    }else  if(status==null&&isstring(msg)&&isobject(result)){
+//        return this.res.status(200).json({status:200, msg:msg, result:result});
 //    }
-//    else
-//    if(!haveOwnproperty(result,"status")||!haveOwnproperty(result,"msg")){
-//        return this.res.status(200).json({status: 503, msg: "dev  not input status | msg  error.", result:{}});
+//    else if(isnumber(status)&&isstring(msg)){
+//        if(isundefined(result))  return this.res.status(200).json({status:status, msg:msg, result:{}});
+//        else return this.res.status(200).json({status:status, msg:msg, result:result});
 //    }
-//    else if(!isnumber(result.status)||!isstring(result.msg)||(haveOwnproperty(result,"result")&&!isJonsObject(result.result))){
-//        return this.res.status(200).json({status: 503, msg: "dev input status | msg | result type error.", result:{}});
-//    }
-//    else if(!haveOwnproperty(result,"result")&&(err==null)){
-//        return  this.res.status(200).json({status: result.status, msg:result.msg, result:{}});
+//    else if(isnumber(status)&&isobject(msg)&&isundefined(result)){
+//        return this.res.status(200).json({status:status, msg:'', result:msg});
 //    }else {
-//       return this.res.status(200).json(result);
+//        return this.res.status(200).json({status:503, msg:"no supper this dev input", result:{status:status,msg:msg,result:result}});
+//        //console.error("no supper this dev input ",status,msg,result)
 //    }
 //};
-function apiSend(status,msg,result){
-    //var resValue={status: 200, msg:"", result:{}};
-    if(status!=null&&!isnumber(status)||isundefined(status)){
-       return this.res.status(200).json({status:503, msg:"dev bug status must is null || number", result:{}});
-    }else if(!isstring(msg)&&isobject(result)){
-        return this.res.status(200).json({status:503, msg:"dev bug msg must is string || object", result:{}});
-    }else if(!isobject(result)&&!isundefined(result))
-    {
-        return this.res.status(200).json({status:503, msg:"dev bug result object", result:{}});
-    }else
-    if(status==null&&isundefined(msg)&&isundefined(result)){
-        return this.res.status(200).json({status:200, msg:"success", result:{}});
-    }else if(status==null&&isundefined(result)){
-        if(isobject(msg)) return this.res.status(200).json({status:200, msg:"success", result:msg});
-        else if(isstring(msg))return this.res.status(200).json({status:200, msg:msg, result:{}});
-    }else  if(status==null&&isstring(msg)&&isobject(result)){
-        return this.res.status(200).json({status:200, msg:msg, result:result});
-    }
-    else if(isnumber(status)&&isstring(msg)){
-        if(isundefined(result))  return this.res.status(200).json({status:status, msg:msg, result:{}});
-        else return this.res.status(200).json({status:status, msg:msg, result:result});
-    }
-    else if(isnumber(status)&&isobject(msg)&&isundefined(result)){
-        return this.res.status(200).json({status:status, msg:'', result:msg});
-    }else {
-        return this.res.status(200).json({status:503, msg:"no supper this dev input", result:{status:status,msg:msg,result:result}});
-        console.error("no supper this dev input ",status,msg,result)
-    }
-};
-function getReqParam(req, res) {
+
+function getReqParam(req) {
     if(req.originalMethod=='GET')return req.query;
     else  if(req.originalMethod=='POST')return req.body;
     else return {};
 }
+function getReqIP(req) {
+    if(req.ip){
+        //var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        var ip = req.ip;
+        if (ip.substr(0, 7) == "::ffff:") {
+            ip = ip.substr(7);
+            return ip;
+        }else  return ip;
+
+    }
+    else return '0.0.0.0';
+}
 module.exports.req=function(req,res){
-    this.params=getReqParam(req,res);
-    this.isnumber=isnumber;
-    this.isboolean=isboolean;
-    this.isstring=isstring;
-    this.isobject=isobject;
-    this.isundefined=isundefined;
-    this.isArray=isArray;
-    this.isJonsObject=isJonsObject;
-    this.isFunction=isFunction;
-    this.isMap=isMap;
-    this.arrayIsexist=arrayIsexist;
-    this.isDate=isDate;
-    this.haveOwnproperty=haveOwnproperty;
-    this.formatDate=formatDate;
-    //this.res=res;
-    //this.json=apiSend;
+    this.params=getReqParam(req);
+    this.ip=getReqIP(req);
+    this.isnumber=util.isnumber;
+    this.isboolean=util.isboolean;
+    this.isstring=util.isstring;
+    this.isobject=util.isobject;
+    this.isundefined=util.isundefined;
+    this.isArray=util.isArray;
+    this.isJonsObject=util.isJonsObject;
+    this.isFunction=util.isFunction;
+    this.isMap=util.isMap;
+    this.arrayIsexist=util.arrayIsexist;
+    this.isDate=util.isDate;
+    this.haveOwnproperty=util.haveOwnproperty;
+    this.formatDate=util.formatDate;
+    this.md5=util.md5;
+    this.replaceAll=util.replaceAll;
+    this.res=res;
+    this.json=apiSend;
     return this;
 }
 module.exports.res=function(req,res){
     this.res=res;
     this.json=apiSend;
-}
-//
-//function apiSend(err,result){
-//    //success
-//    if(err){
-//        if(err.toString().toLowerCase()=='err'||err.toString().toLowerCase()=='error'){
-//            //if(haveOwnproperty())
-//            //是否存在result
-//            this.res.status(200).json({status: 503, msg: "", result:{}});
-//            //this.res.status(200).json(result);
-//        }else {
-//            this.res.status(200).json(result);
-//        }
-//    }
-//    else
-//    if(!haveOwnproperty(result,"status")||!haveOwnproperty(result,"msg")){
-//        return this.res.status(200).json({status: 503, msg: "dev  not input status | msg  error.", result:{}});
-//    }
-//    else if(!isnumber(result.status)||!isstring(result.msg)||(haveOwnproperty(result,"result")&&!isJonsObject(result.result))){
-//        return this.res.status(200).json({status: 503, msg: "dev input status | msg | result type error.", result:{}});
-//    }
-//    else if(!haveOwnproperty(result,"result")&&(err==null)){
-//        return  this.res.status(200).json({status: result.status, msg:result.msg, result:{}});
-//    }else {
-//        return this.res.status(200).json(result);
-//    }
-//};
-////function apiSend(err,msg,result){
-////
-////};
-//function apiSend(status,msg,result){
-//     //var resValue={status: 200, msg:"", result:{}};
-//    if(status!=null&&!isnumber(status)||isundefined(status)){
-//        console.log({status:503, msg:"dev bug status must is null || number", result:{}})
-//    }else if(!isstring(msg)&&isobject(result)){
-//        console.log({status:503, msg:"dev bug msg must is string || object", result:{}})
-//    }else if(!isobject(result)&&!isundefined(result))
-//    {
-//        console.log({status:503, msg:"dev bug result object", result:{}})
-//    }else
-//    if(status==null&&isundefined(msg)&&isundefined(result)){
-//        console.log({status:200, msg:"success", result:{}})
-//    }else if(status==null&&isundefined(result)){
-//        if(isobject(msg))  console.log({status:200, msg:"success", result:msg});
-//        else if(isstring(msg)) console.log({status:200, msg:msg, result:{}});
-//    }else  if(status==null&&isstring(msg)&&isobject(result)){
-//        console.log({status:200, msg:msg, result:result});
-//    }
-//    else if(isnumber(status)&&isstring(msg)){
-//        if(isundefined(result))  console.log({status:status, msg:msg, result:{}});
-//        else console.log({status:status, msg:msg, result:result});
-//    }
-//    else if(isnumber(status)&&isobject(msg)&&isundefined(result)){
-//
-//        console.log({status:status, msg:'', result:msg});
-//    }else {
-//        console.log({status:503, msg:"no supper this dev input", result:{status:status,msg:msg,result:result}})
-//        console.error("no supper this dev input ",status,msg,result)
-//    }
-//};
-//200
-//apiSend(200,"login success");
-//apiSend(null);
-//apiSend(null,"login success");
-//apiSend(null,"login success",{info:1});
-//apiSend(null,{info:1});
-////其他状态码
-//apiSend(300,"msg");
-//apiSend(401,"msg",{info:2});
-//apiSend(300,{});
+};
 
-//apiSend(300);
-//apiSend('sss',401);
-//500
 
+//res.ext.json(null)
+//res.ext.json("msg")
+//res.ext.json({status:200,msg:"msg"});
+//res.ext.json({ status: 201, msg: 'msg', result: {a:1} });
+//res.ext.json([]);
+//res.ext.json([201]);
+//res.ext.json(["a"]);
+//res.ext.json([{a:1}]);
+//res.ext.json([202,"222"]);
+//res.ext.json([203,{a:1}]);
+//res.ext.json([204,"msg",{aa:3}]);
+
+
+//不支持的写法
+
+//res.ext.json([204,[],{aa:3}]);
+//res.ext.json([1,2]);
+//res.ext.json([1,[]]);
+/*
+res.ext.json([{},{}]);
+res.ext.json([{},""]);
+res.ext.json([{},1]);
+res.ext.json([{},[]]);
+*/
 
 
 

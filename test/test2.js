@@ -5,15 +5,7 @@
 //var request = require('supertest');
 //var should=require('should');
 //request = request('http://localhost:4001');
-//describe('Array', function() {
-//    describe('#indexOf()', function() {
-//        it('should return -1 when the value is not present', function() {
-//            assert.equal(-1, [1,2,3].indexOf(5));
-//            assert.equal(-1, [1,2,3].indexOf(0));
-//        });
-//    });
-//});
-//describe('login', function() {
+//describe('login1111111111', function() {
 //    it('should not login an user when loginname is empty', function(done) {
 //        request.post('/user/login')
 //            .send({

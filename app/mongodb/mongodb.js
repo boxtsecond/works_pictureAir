@@ -2,60 +2,12 @@
  * Created by meteor on 14-9-19.
  */
 var mongoose = require('mongoose');
+var Promise = require("bluebird");
+mongoose.Promise=Promise;
 //var autoIncrement= require('mongoose-auto-increment');
-var Promise = mongoose.Promise;
+//var Promise = mongoose.Promise;
+Promise.promisifyAll(mongoose);
 var configData=require('../../config.json').DB.MongoDB;
-//var db=mongoose.createConnection(configData.host,configData.options,function(err){
-//    if (err) {
-//        console.warn('can not connect' + configData.host);
-//        console.warn(err);
-//    } else {
-//        console.log('connect .. ' + configData.host);
-//    }
-//});
-/*
- var opts = { server: { auto_reconnect: false,native_parser:true },  db:{native_parser:true}, user: configData.user, pass: configData.pass};
- var db = mongoose.createConnection(configData.host, configData.dbName,configData.port, opts,function(err){
- if (err) {
- console.warn('can not connect',err);
- console.warn(err);
- } else {
- console.log('connect .. host:'+configData.host+" port: "+configData.port);
- }
- });
- //mongoose.connect(configData.host,configData.options,function(err){
- //    if (err) {
- //        console.warn('can not connect' + configData.host);
- //        console.warn(err);
- //    } else {
- //        console.log('connect .. ' + configData.host);
- ////        console.log('Schema.Type  :  ' +JSON.stringify(mongoose.Schema.Type));
- //    }
- //});
- // 链接错误
- db.on('error', function(error) {
- db.close();
- console.log(error);
- });
- db.once('open',function(){
- //一次打开记录
- console.log('once open:'+configData.host)
- });
- db.on('close', function () {
- console.log('closecloseclosecloseclosecloseclosecloseclose');
- //    db=mongoose.createConnection(configData.host,configData.options,function(err){
- //        if (err) {
- //            console.warn('can not connect' + configData.host);
- //            console.warn(err);
- //        } else {
- //            console.log('connect .. ' + configData.host);
- //        }
- //    });
- });
-
- */
-
-
 var opts = {
     "server":
     {"native_parser":true,"poolSize":5,"auto_reconnect": true,"socketOptions":{"keepAlive":1},"reconnectTries":30,"haInterval":1000 },
@@ -66,6 +18,7 @@ var opts = {
     user: configData.user, pass: configData.pass
 };
 var connectStr="mongodb://"+configData.host+":"+configData.arbport+","+configData.host+":"+configData.port+","+configData.host+":"+configData.bport+"/"+configData.dbName;
+
 var db = mongoose.createConnection(connectStr,opts,function(err){
     if (err) {
         console.warn('can not connect',err);
@@ -81,4 +34,36 @@ db.on('error', function(error) {
 db.on('reconnected',function(){
     console.log('reconnected:'+connectStr)
 });
+
+
+//console.log(mongoose)
+
+
+//db.on('error', function(error) {
+//    db.close();
+//    console.error(error);
+//});
+//db.on('reconnected',function(){
+//    console.log('reconnected:'+connectStr)
+//});
+
+
+//mongoose.createConnection(connectStr,opts).then(function(err){
+//    console.log('...');
+//});
+//var db = mongoose.createConnection(connectStr,opts,function(err){
+//    if (err) {
+//        console.warn('can not connect',err);
+//        console.warn(err);
+//    } else {
+//        console.log('connect .. host:'+connectStr);
+//    }
+//});
+//db.on('error', function(error) {
+//    db.close();
+//    console.error(error);
+//});
+//db.on('reconnected',function(){
+//    console.log('reconnected:'+connectStr)
+//});
 module.exports= db;

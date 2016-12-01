@@ -6,7 +6,7 @@
       "port":1008,
       "bport":1009,
       "arbport":1010,
-      "dbName":"pictureAir1",
+      "dbName":"pictureAirTest",
       "user": "",
       "pass": ""
     },
@@ -17,8 +17,8 @@
       "database": "photos"
     },
     "redis": {
-      "host": "192.168.8.102",
-      "port": "829",
+      "host": "192.168.8.107",
+      "port": "3008",
       "requirepass": "pIctur3"
     },
     "retryRedis": {
@@ -57,5 +57,24 @@
   },
   "uploadFileList": {
     "assets": ""
+  },
+  "spportLanguage":["en-US","zh-CN"],
+  "expireTime":{
+     "guestExpireTime":604800,
+     "expireTime":604800,
+     "userExpireTime":604800,
+     "validateCodeExpireTime":60000
+  },
+  "token":{
+    "iss":"pictureAir",
+    "lgcode":"en-US",
+    "appid":[
+        {
+          "appKey" : "PictureAir",
+          "appSecret" : "pictureworks",
+          "id":"6c8c8dc48280ed2163136ad416e1dbfe",
+          "name":"pictureAir APP"
+        }
+    ]
   }
 }

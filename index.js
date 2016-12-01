@@ -45,7 +45,7 @@ require("./config/global");
 //}
 
 
-var deubg=debug('pictureEngineAPI');
+var deubg=debug('pictureAirAPI');
 var app = require('./config/express')();
 require('./config/routes')(app);
 app.set('port', process.env.PORT || config.config.port);

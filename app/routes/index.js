@@ -14,7 +14,4 @@ var router = express.Router();
 router.get('/',function(req,res){
     res.json({status:200,msg:"",result:{}});
 });
-router.get('/api/a',function(req,res){
-    res.json({status:200,msg:"",result:{}});
-});
 module.exports = router;
