@@ -10,12 +10,10 @@ var pubClient;
 //var subClient = require('../databases/redisdb.js').subClient;
 var redis = require('../redis/redis.js');
 var redisClient = redis.redis;
-var statusCode = require('../filters/errorFilter.js').statusCode;
-var errMsg = require('../filters/errorFilter.js').errMsg;
+var errInfo = require('../resfilter/resInfo.js').errInfo;
 var async = require('async');
 var common = require('../tools/common.js');
 var config = require('../../config/config.js');
-var log = config.logger('socketController');
 var apnsPrefix = 'APNS_Token_';
 var androidPrefix = 'Android_Token_';
 var userPrefix = 'Socket_UserId_';
@@ -28,7 +26,7 @@ var util = require("util");
 var socketController=require('./socketController');
 
 exports.connect = function (socket, io) {
-   // console.log(socket.id);
+    // console.log(socket.id);
     socket.on('getNewPhotosCountOfUser', function (t) {
 
         var room = io.sockets.manager.roomClients[socket.id];
@@ -43,20 +41,20 @@ exports.connect = function (socket, io) {
 
     })
 //    dashboardHandle(socket);
- //   buildDashBoardSocket(socket);
+    //   buildDashBoardSocket(socket);
 }
 
 function saveSocketToRedis(socket, tokenId,io, next) {
     redisClient.get(tokenId, function (err, reply) {
         if (err) {
-            log.error('saveSocketToRedis', err);
+            console.log('saveSocketToRedis', err);
         }
         //验证token是否存在
         if (reply) {
             var tokenInfo = JSON.parse(reply);
             //验证用户是否登录了
             if (tokenInfo.user == null) {
-                log.error('saveSocketToRedis', {status: statusCode.user.notLogin, msg: errMsg.notLogin});
+                console.log('saveSocketToRedis: user not login');
             } else {
                 if(tokenInfo.baseInfo.socketId){
                     io.sockets.socket(tokenInfo.baseInfo.socketId).leave(tokenInfo.user._id);
@@ -65,7 +63,7 @@ function saveSocketToRedis(socket, tokenId,io, next) {
                 setSocketIdOfUser(socket, tokenInfo.user._id);
                 redisClient.set(tokenId, JSON.stringify(tokenInfo), function (err, reply) {
                     if (err) {
-                        log.error('saveSocketToRedis', err);
+                        console.log('saveSocketToRedis', err);
                     }
                 })
             }
@@ -196,9 +194,9 @@ exports.subscribeEvents = function (io, pub, sub) {
 //iphone使用
 
 exports.APNSConnect = function (req, res) {
-    var params = req.ext.params(req, res);
+    var params = req.ext.params;
     if(!req.haveOwnproperty(params, ['userId'])) {
-        res.ext.json([statusCode.user.incomplete, errMsg.incomplete]);
+        return res.ext.json(errInfo.socketController.APNSConnectError);
     }
     var userId = params.userId;
 //    var iphoneToken = req.query.iphoneToken;
@@ -218,8 +216,8 @@ exports.APNSConnect = function (req, res) {
         getTokenUserId: function (callback) {
             redisClient.get(keyPrefix + tokenKey, function (err, reply) {
                 if (err) {
-                    log.error('APNSConnect', err);
-                    return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(keyPrefix + tokenKey)+''});
+                    console.log('APNSConnect', err);
+                    return callback(errInfo.socketController.redisGetError);
                 }
                 var tokenInfo = JSON.parse(reply);
                 //如果当前用户Id与token对应的userId不一致，则要做操作
@@ -237,26 +235,26 @@ exports.APNSConnect = function (req, res) {
             if (results.getTokenUserId[0] == false) {
                 redisClient.set(keyPrefix + tokenKey, JSON.stringify({userId: userId}), function (err, reply) {
                     if (err) {
-                        log.error('APNSConnect', err);
-                        return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(keyPrefix + tokenKey)+''});
+                        console.log('APNSConnect', err);
+                        return callback(errInfo.socketController.redisSetError);
                     }
                     if (reply) {
                         redisClient.expire(keyPrefix + tokenKey, config.redis.expireTime);
-                        return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                        return callback(null, errInfo.success);
                     } else {
-                        return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                        return callback(null, errInfo.success);
                     }
                 })
             } else {
-                return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                return callback(null, errInfo.success);
             }
         }],
         removeToken: ['getTokenUserId', function (callback, results) {
             if (results.getTokenUserId[1] != userId) {
                 redisClient.get(userPrefix + results.getTokenUserId[1], function (err, reply) {
                     if (err) {
-                        log.error('APNSConnect', err);
-                        return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(userPrefix + results.getTokenUserId[1])+''});
+                        console.log('APNSConnect', err);
+                        return callback(errInfo.socketController.redisGetError);
                     }
                     var tokenInfo = JSON.parse(reply);
                     if (tokenInfo && tokenInfo.tokenList) {
@@ -271,86 +269,86 @@ exports.APNSConnect = function (req, res) {
                     }
                     redisClient.set(userPrefix + results.getTokenUserId[1], JSON.stringify({tokenList: tokenInfo.tokenList}), function (err, reply) {
                         if (err) {
-                            log.error('APNSConnect', err);
-                            return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(userPrefix + results.getTokenUserId[1])+''});
+                            console.log('APNSConnect', err);
+                            return callback(errInfo.socketController.redisSetError);
                         }
                         if (reply) {
                             redisClient.expire(userPrefix + results.getTokenUserId[1], config.redis.expireTime);
 
                         }
-                        return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                        return callback(null, errInfo.success);
                     })
 
                 });
             } else {
-                return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                return callback(null, errInfo.success);
             }
         }],
         addToken: ['getTokenUserId', function (callback, results) {
             // if (results.getTokenUserId[0] == false) {
-                redisClient.get(userPrefix + userId, function (err, reply) {
-                    if (err) {
-                        log.error('APNSConnect', err);
-                        return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(userPrefix + userId)+''});
+            redisClient.get(userPrefix + userId, function (err, reply) {
+                if (err) {
+                    console.log('APNSConnect', err);
+                    return callback(errInfo.socketController.redisGetError);
+                }
+                var tokenInfo = JSON.parse(reply);
+                if (tokenInfo && tokenInfo.tokenList) {
+                    var isContain = false;
+                    for (var i = 0; i < tokenInfo.tokenList.length; i++) {
+                        if ((tokenInfo.tokenList[i].iphoneToken == tokenKey && tokenInfo.tokenList[i].appName == appName) || tokenInfo.tokenList[i].androidToken == tokenKey) {
+
+                            isContain = true;
+                        }
                     }
-                    var tokenInfo = JSON.parse(reply);
-                    if (tokenInfo && tokenInfo.tokenList) {
-                        var isContain = false;
-                        for (var i = 0; i < tokenInfo.tokenList.length; i++) {
-                            if ((tokenInfo.tokenList[i].iphoneToken == tokenKey && tokenInfo.tokenList[i].appName == appName) || tokenInfo.tokenList[i].androidToken == tokenKey) {
 
-                                isContain = true;
-                            }
-                        }
-
-                        if (isContain == false) {
-                            if (keyPrefix == androidPrefix) {
-                                tokenInfo.tokenList.push({androidToken: tokenKey, photoCount: 0});
-                            } else if (keyPrefix == apnsPrefix) {
-                                tokenInfo.tokenList.push({iphoneToken: tokenKey, photoCount: 0, appName: appName});
-                            }
-
-                        }
-                    } else {
-                        tokenInfo = {tokenList: []};
+                    if (isContain == false) {
                         if (keyPrefix == androidPrefix) {
                             tokenInfo.tokenList.push({androidToken: tokenKey, photoCount: 0});
                         } else if (keyPrefix == apnsPrefix) {
                             tokenInfo.tokenList.push({iphoneToken: tokenKey, photoCount: 0, appName: appName});
                         }
+
+                    }
+                } else {
+                    tokenInfo = {tokenList: []};
+                    if (keyPrefix == androidPrefix) {
+                        tokenInfo.tokenList.push({androidToken: tokenKey, photoCount: 0});
+                    } else if (keyPrefix == apnsPrefix) {
+                        tokenInfo.tokenList.push({iphoneToken: tokenKey, photoCount: 0, appName: appName});
+                    }
 //                        console.log(keyPrefix + tokenKey);
 //                        console.log(tokenInfo);
+                }
+                redisClient.set(userPrefix + userId, JSON.stringify(tokenInfo), function (err, reply) {
+                    if (err) {
+                        console.log('APNSConnect', err);
+                        return callback(errInfo.socketController.redisSetError);
                     }
-                    redisClient.set(userPrefix + userId, JSON.stringify(tokenInfo), function (err, reply) {
-                        if (err) {
-                            log.error('APNSConnect', err);
-                            return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(userPrefix + userId)+''});
-                        }
-                        if (reply) {
-                            redisClient.expire(userPrefix + userId, config.redis.expireTime);
+                    if (reply) {
+                        redisClient.expire(userPrefix + userId, config.redis.expireTime);
 
-                        }
-                        return callback(null, {status: statusCode.ignore.success, msg: 'success'});
-                    })
+                    }
+                    return callback(null, errInfo.success);
+                })
 
-                });
+            });
         }]
 
     }, function (err, results) {
         if (err) {
-            res.ext.json([err.status, err.msg]);
+            return res.ext.json(err);
         }
         else {
-            res.ext.json([statusCode.ignore.success, 'success']);
+            return res.ext.json(errInfo.success);
         }
     });
 }
 
 //iphone使用
 exports.APNSDisconnect = function (req, res) {
-    var params = req.ext.params(req, res);
+    var params = req.ext.params;
     if(!req.haveOwnproperty(params, ['userId'])) {
-        res.ext.json([statusCode.user.incomplete, errMsg.incomplete]);
+        return res.ext.json(errInfo.socketController.APNSDisconnectError);
     }
     var userId = params.userId;
 //    var iphoneToken = req.query.iphoneToken;
@@ -367,22 +365,22 @@ exports.APNSDisconnect = function (req, res) {
         getTokenUserId: function (callback) {
             redisClient.get(keyPrefix + tokenKey, function (err, reply) {
                 if (err) {
-                    log.error('APNSConnect', err);
-                    return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(keyPrefix + tokenKey)+''});
+                    console.log('APNSConnect', err);
+                    return callback(errInfo.socketController.redisGetError);
                 }
                 if (reply) {
                     redisClient.expire(keyPrefix + tokenKey, 0);
-                    return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                    return callback(null, errInfo.success);
                 }
-                return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                return callback(null, errInfo.success);
             })
         },
         removeToken: function (callback, results) {
 
             redisClient.get(userPrefix + userId, function (err, reply) {
                 if (err) {
-                    log.error('APNSConnect', err);
-                    return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(userPrefix + userId)+''});
+                    console.log('APNSConnect', err);
+                    return callback(errInfo.socketController.redisGetError);
                 }
                 var tokenInfo = JSON.parse(reply);
                 if (tokenInfo && tokenInfo.tokenList) {
@@ -394,8 +392,8 @@ exports.APNSDisconnect = function (req, res) {
                     }
                     redisClient.set(userPrefix + userId, JSON.stringify({tokenList: tokenInfo.tokenList}), function (err, reply) {
                         if (err) {
-                            log.error('APNSConnect', err);
-                            return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(userPrefix + userId)+''});
+                            console.log('APNSConnect', err);
+                            return callback(errInfo.socketController.redisSetError);
                         }
                         if (reply) {
                             redisClient.expire(userPrefix + userId, config.redis.expireTime);
@@ -403,20 +401,20 @@ exports.APNSDisconnect = function (req, res) {
                         }
                         redisClient.set(userPrefix + userId, JSON.stringify({tokenList: tokenInfo.tokenList}), function (err, reply) {
                             if (err) {
-                                log.error('APNSConnect', err);
-                                return callback({status: statusCode.system.redisError, msg: errMsg.redisError+(userPrefix + userId)+''});
+                                console.log('APNSConnect', err);
+                                return callback(errInfo.socketController.redisSetError);
                             }
                             if (reply) {
                                 redisClient.expire(userPrefix + userId, config.redis.expireTime);
 
                             }
-                            return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                            return callback(null, errInfo.success);
                         })
 
                     })
 
                 } else {
-                    return callback(null, {status: statusCode.ignore.success, msg: 'success'});
+                    return callback(null, errInfo.success);
                 }
 
             });
@@ -425,19 +423,19 @@ exports.APNSDisconnect = function (req, res) {
 
     }, function (err, results) {
         if (err) {
-            res.ext.json([err.status, err.msg]);
+            return res.ext.json(err);
         }
         else {
-            res.ext.json([statusCode.ignore.success, 'success']);
+            return res.ext.json(errInfo.success);
         }
     });
 }
 
 
 exports.clearSocketData = function (req, res) {
-    var params = req.ext.params(req, res);
+    var params = req.ext.params;
     if(!req.haveOwnproperty(params, ['userId'])) {
-        res.ext.json([statusCode.user.incomplete, errMsg.incomplete]);
+        return res.ext.json(errInfo.socketController.clearSocketData);
     }
 
     var userId = params.userId;
@@ -458,8 +456,8 @@ exports.clearSocketData = function (req, res) {
 
     redisClient.get(userPrefix + userId, function (err, reply) {
         if (err) {
-            log.error('clearSocketData', err);
-            res.ext.json([statusCode.system.redisError, errMsg.redisError+(userPrefix + userId)+'']);
+            console.log('clearSocketData', err);
+            return res.ext.json(errInfo.socketController.redisGetError);
         }
         var tokenInfo = JSON.parse(reply);
         if (tokenInfo && tokenInfo.tokenList) {
@@ -488,13 +486,13 @@ exports.clearSocketData = function (req, res) {
             }
             redisClient.set(userPrefix + userId, JSON.stringify(tokenInfo), function (err, reply) {
                 if (err) {
-                    log.error('clearSocketData', err);
-                    res.ext.json([statusCode.system.redisError, errMsg.redisError+(userPrefix + userId)+''])
+                    console.log('clearSocketData', err);
+                    return res.ext.json(errInfo.socketController.redisSetError);
                 }
-                res.ext.json();
+                return res.ext.json();
             });
         } else {
-            res.ext.json();
+            return res.ext.json();
         }
 
     });
@@ -504,7 +502,7 @@ exports.clearSocketData = function (req, res) {
 exports.getSocketData=function(req,res){
     var params = req.ext.params(req, res);
     if(!req.haveOwnproperty(params, ['userId'])) {
-        res.ext.json([statusCode.user.incomplete, errMsg.incomplete]);
+        return res.ext.json(errInfo.socketController.getSocketData);
     }
     var userId = params.userId;
     var appName = 'photoPass';
@@ -521,15 +519,15 @@ exports.getSocketData=function(req,res){
 
     redisClient.get(userPrefix + userId, function (err, reply) {
         if (err) {
-            log.error('clearSocketData', err);
-            res.ext.json([statusCode.system.redisError, errMsg.redisError+(userPrefix + userId)+'']);
+            console.log('clearSocketData', err);
+            return res.ext.json(errInfo.socketController.redisGetError);
         }
         var tokenInfo = JSON.parse(reply);
         var pushMsgs=null;
         if (tokenInfo && tokenInfo.tokenList) {
             for (var i = 0; i < tokenInfo.tokenList.length; i++) {
                 if ((tokenInfo.tokenList[i].iphoneToken == tokenKey && tokenInfo.tokenList[i].appName == appName) || tokenInfo.tokenList[i].androidToken == tokenKey) {
-                   pushMsgs=tokenInfo.tokenList[i];
+                    pushMsgs=tokenInfo.tokenList[i];
                     tokenInfo.tokenList.splice(i, 1);
                     if (keyPrefix == androidPrefix) {
                         tokenInfo.tokenList.push({androidToken: tokenKey, photoCount: 0});
@@ -541,13 +539,15 @@ exports.getSocketData=function(req,res){
             }
             redisClient.set(userPrefix + userId, JSON.stringify(tokenInfo), function (err, reply) {
                 if (err) {
-                    log.error('clearSocketData', err);
-                    res.ext.json([statusCode.system.redisError, errMsg.redisError+(userPrefix + userId)+''])
+                    console.log('clearSocketData', err);
+                    return res.ext.json(errInfo.socketController.redisSetError);
                 }
-                res.ext.json([pushMsgs]);
+                var resultObj = errInfo.success;
+                resultObj.result.result = pushMsgs
+                return res.ext.json(resultObj);
             });
         } else {
-            res.ext.json();
+            return res.ext.json();
         }
 
     });
@@ -557,7 +557,7 @@ exports.sendNotification = function(userId, c, fn, pushType) {
     redisClient.get(userPrefix + userId, function (err, reply) {
         var type = pushType || pushMsgType.photoSend;
         if (err) {
-            log.error('sendNotification', err);
+            console.log('sendNotification', err);
             fn();
         }
         var tokenInfo = JSON.parse(reply);
@@ -666,7 +666,7 @@ exports.sendNotification = function(userId, c, fn, pushType) {
                 }, function (result) {
                     redisClient.set(userPrefix + userId, JSON.stringify(tokenInfo), function (err, reply) {
                         if (err) {
-                            log.error('sendNotification', err);
+                            console.log('sendNotification', err);
                         }
 //
                         fn();
@@ -809,7 +809,7 @@ exports.sendNotification = function(userId, c, fn, pushType) {
 
 exports.pushToUsersHttp=function(req,res){
     var pushType, userIds, pubScribe,content;
-    var params = req.ext.params(req, res);
+    var params = req.ext.params;
     userIds=params.userIds;
     pubScribe=params.pubScribe;
     pushType=params.pushType;
@@ -847,9 +847,9 @@ exports.pushToUsersHttp=function(req,res){
         }]
     }, function (err, results) {
         if (err) {
-            log.error('pushToUsersHttp', err);
+            console.log('pushToUsersHttp', err);
         }
-        res.ext.json();
+        return res.ext.json();
     })
 }
 
@@ -859,7 +859,7 @@ exports.pushToUsers = function (pushType, userIds, pubScribe,content,fn) {
         pushIOS: function (callback) {
             var count = 0;
             async.each(userIds, function (userId, cb) {
-             socketController.sendNotification(userId, content, function () {
+                socketController.sendNotification(userId, content, function () {
 
                     count++;
                     if (count == userIds.length) {
@@ -888,9 +888,9 @@ exports.pushToUsers = function (pushType, userIds, pubScribe,content,fn) {
         }]
     }, function (err, results) {
         if (err) {
-            log.error('pushNewPhotoCount', err);
+            console.log('pushNewPhotoCount', err);
         }
-    fn();
+        fn();
     })
 }
 

@@ -1,7 +1,7 @@
 /**
  * Created by xueting-bo on 16/11/20.
  */
-var errInfo = require('../filters/errorFilter.js').errInfo;
+var errInfo = require('../resfilter/resInfo.js').errInfo;
 var parkModel = require('../mongodb/Model/parkModel');
 var common = require('../tools/common.js');
 var newError = require('../lib/util/util.js').newError;

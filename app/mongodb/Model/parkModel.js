@@ -2,6 +2,7 @@
 var collectionname='park';//数据表
 var mongoose=require('mongoose');
 var db=require('../mongodb.js');
+var Promise = require('bluebird');
 var SchemaInfo=require('../Schema/'+collectionname+'Schema.js');
 var Schema = new mongoose.Schema(SchemaInfo.config,SchemaInfo.options);
 Schema.statics.getAllPark = function(dispaly, callback) {
@@ -15,6 +16,6 @@ Schema.methods.insert= function(callback) {
     return this.save(callback);
 };
 //##################实例方法##################
-var model=db.model(collectionname, Schema);
+var model=Promise.promisifyAll(db.model(collectionname, Schema));
 module.exports=model;
 

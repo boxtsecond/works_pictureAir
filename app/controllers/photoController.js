@@ -1,7 +1,7 @@
 /**
  * Created by xueting-bo on 16/11/17.
  */
-var errInfo = require('../filters/errorFilter.js').errInfo;
+var errInfo = require('../resfilter/resInfo.js').errInfo;
 var photoModel = require('../mongodb/Model/photoModel');
 var userModel = require('../mongodb/Model/userModel');
 var common = require('../tools/common.js');

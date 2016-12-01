@@ -24,6 +24,19 @@ module.exports.config={
         },
         "assets":configJSONData.assets
     },
+    "redis":{
+        expireTime: 60 * 60 * 24 * 30
+    },
+    "dashboard": {
+        dashBoardParkId: "DisneyShangHai",
+        dashBoardRoom: "dashboard"
+    },
+    "apiPort":3006,
+    "serverIP":"http://www.disneyphotopass.com",
+    "MasterAPIList":{
+        pullPhotosFromLocal:'http://172.16.164.17:3000/help/getPhotosByPPs',
+        removePhotosFromPP:'http://172.16.164.17:3000/sync/removePhotosFromPP'
+    },
     "configJSONData":configJSONData
 }
 module.exports.photosize=require('./photosize');

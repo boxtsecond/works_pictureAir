@@ -3,6 +3,7 @@ var mongoose=require('mongoose');
 var db=require('../mongodb.js');
 var SchemaInfo=require('../Schema/'+collectionname+'Schema.js');
 var Schema = new mongoose.Schema(SchemaInfo.config,SchemaInfo.options);
+var Promise = require('bluebird');
 Schema.statics.getAllPark = function(dispaly, callback) {
     return this.model(collectionname).find({active : true},dispaly, callback);
 }
@@ -14,8 +15,9 @@ Schema.methods.insert= function(callback) {
     return this.save(callback);
 };
 //##################实例方法##################
-var model=db.model(collectionname, Schema);
-module.exports=model;
+
+var model = Promise.promisifyAll(db.model(collectionname, Schema));
+module.exports = model;
 
 var request=require('request');
 model.findOne({},function(err,data){

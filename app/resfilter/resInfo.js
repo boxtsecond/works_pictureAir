@@ -7,11 +7,14 @@
 //   以 4 8开头的都是提示给用户看的
 //   以 5 9开头的都是 服务器内部错误（比如连接不上mongodb）服务器CPU 内存
 //eg:
-    //20000  60000 normal
-    //30000  70000 prompt 业务中的逻辑错误比如 redis mongodb 错误
-    //40000  80000 prompt 用户输入错误(需要提示给用户) 对外的
-    //50000  90000 system 服务器内部错误 （内部日志记录）
+//20000  60000 normal
+//30000  70000 prompt 业务中的逻辑错误比如 redis mongodb 错误
+//40000  80000 prompt 用户输入错误(需要提示给用户) 对外的
+//50000  90000 system 服务器内部错误 （内部日志记录）
 var errInfo={
+    //"dbErrorMax": 316,
+    //"userErrorMax": 414,
+    "errorType": 'newError',
     //-------------------normal 2x 6x -----------------
     "success": {status: 200, msg: "success", result:{}},
     //-------------------prompt 3x 4x 7x 8x -------------------
@@ -23,6 +26,7 @@ var errInfo={
     "userSMSRedisGetValidateCodeError":{status: 305, msg:"get ValidateCode error",desc:"get ValidateCode from redis err"},
     "userSMSRedisSetValidateCodeError":{status: 306, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
     "userSMSdbSaveValidateCodeError":{status: 307, msg:"get ValidateCode error",desc:"save usemsg to db  err"},
+
 
     "authParamAppidError":{status: 400, msg:"param not valid",desc:"appid is required"},//参数错误
     "authVerifyAppidError":{status: 401, msg:"param not valid",desc:"verify appid error"},
@@ -48,6 +52,77 @@ var errInfo={
     "userLoginParamUserNameError":{status: 429, msg:"userName is not exist",desc:"userName is not exist"},
     "userLoginParamUserNameisabledError":{status: 430, msg:"userName is disabled",desc:"userName is disabled"},
     //402
+
+    "getCouponsByUserId":{
+        paramsError: {status: 4001, msg: "params is incomplete", desc: "missing userId"},
+        pppError:{status: 3001, msg: "system error", desc: "get pppModel from db error"},
+        pppTypeError: {status: 3002, msg: "system error", desc: "get pppTypeModel from db error"},
+        promiseError: {status: 3003, msg: "system error", desc: "promise error"},
+        countError: {status: 3004, msg: "system error", desc: "ppp count not correct"}
+    },
+    "getPPsByUserId":{
+        paramsError: {status: 4002, msg: "params is incomplete", desc: "missing userId"},
+        photoError: {status: 3005, msg: "system error", desc: "get photoModel from db error"},
+        pppError: {status: 3006, msg: "system error", desc: "get pppModel from db error"},
+        userError: {status: 3007, msg: "system error", desc: "get userModel from db error"}
+    },
+    "removePPFromUser": {
+        paramsError: {status: 4003, msg: "params is incomplete", desc: "missing customerId"},
+        paramsInvalid: {status: 4004, msg: "params is invalid", desc: "customerId is invalid"},
+        userActionError: {status: 3008, msg: "system error", desc: "user's action to db error"},
+        pppError: {status: 3009, msg: "system error", desc: "get pppModel from db error"},
+        photoError: {status: 3010, msg: "system error", desc: "update photoModel from db error"},
+        userError: {status: 3011, msg: "system error", desc: "get userModel from db error"}
+    },
+    "getAllLocations": {
+        paramsError: {status: 4005, msg: "params is incomplete", desc: "missing parkId"},
+        APIError: {status: 3012, msg: "system error", desc: "getAllLocations API error"},
+        parkError: {status: 3013, msg: "system error", desc: "get parkModel from db error"}
+    },
+    "getPhotosByConditions": {
+        paramsError: {status: 4006, msg: "params is incomplete", desc: "missing userId or shareContent.mode or shareContent.ids"},
+        userError: {status: 3014, msg: "system error", desc: "get userModel from db error"},
+        photoError: {status: 3015, msg: "system error", desc: "get photoModel from db error"}
+    },
+    "removePhotosFromPP": {
+        paramsError: {status: 4007, msg: "params is incomplete", desc: "missing ids or pp"},
+    },
+    "carousel": {
+        paramsError: {status: 4008, msg: "params is incomplete", desc: "can not find request"}
+    },
+    "addCodeToUser": {
+        paramsError: {status: 4009, msg: "params is incomplete", desc: "missing customerId"},
+        invalidPP: {status:4010 ,msg: 'PhotoPass is error',desc:'the PhotoPass is invalid'},
+        userError: {status: 3016, msg: "system error", desc: "get userModel from db error"},
+        notFind: {status: 4011, msg: 'not find user', desc: "not find user from db"},
+        PPRepeatBound: {status:4012 , msg:'repeat binding',desc:'you have bounded this PhotoPass!'},
+        userUpdateError: {status: 3017, msg: 'update error', desc: 'update user to userModel error'},
+        photoError: {status: 3018, msg: "system error", desc: "get photoModel from db error"},
+        photoSaveError: {status: 3019, msg: "system error", desc: "save photo to photoModel error"},
+    },
+    "updateUser": {
+        paramsError: {status: 4013, msg: "params is incomplete", desc: "missing userId"},
+        birthdayError: {status: 4014, msg: "params is not valid", desc: "birthday input error"},
+        genderError: {status: 4015, msg: "params is not valid", desc: "gender input error"},
+        emailError: {status: 4016, msg: "params is not valid", desc: "email input error"},
+        passwordError: {status: 4017, msg: "params is not valid", desc: "password input error"},
+        denyUpdateRegister:{status:4018,msg: 'deny Update Register' , desc: 'can\'t modify register email or mobile'},
+        existedEmail: {status:4019,msg: 'existed Email', desc: 'the email already exists'},
+        existedMobile: {status:4020,msg: 'existed Mobile', desc: 'the mobile already exists'},
+        userError: {status: 4021,msg: "system error", desc: "get userModel from db error"},
+        notFind: {status: 4022,msg: 'not find user', desc: "not find user from db"},
+        promiseError: {status: 3020, msg: "system error", desc: "promise error"}
+    },
+
+    "socketController": {
+        redisSetError: {status: 3021, msg: "system error", desc: "set token to redis error"},
+        redisGetError: {status: 3021, msg: "system error", desc: "set token to redis error"},
+        APNSConnectError: {status: 4023, msg: "params is incomplete", desc: "missing userId"},
+        APNSDisconnectError: {status: 4024, msg: "params is incomplete", desc: "missing userId"},
+        clearSocketData: {status: 4025, msg: "params is incomplete", desc: "missing userId"},
+        getSocketData: {status: 4026, msg: "params is incomplete", desc: "missing userId"},
+
+    }
 
     //-------------------system 5x 9x-------------------
 };

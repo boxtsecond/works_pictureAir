@@ -2,10 +2,9 @@
  * Created by tianlisa on 15-2-3.
  */
 var redis= require('../redis/redis.js').redis;
-var errInfo = require('../filters/errorFilter.js').ENInfo;
 var statistics = require('../tools/enums.js').statistics;
-var config = require('../../config/config.js');
-var log = config.logger('statisticsController');
+//var config = require('../../config/config.js');
+//var log = config.logger('statisticsController');
 var async = require('async');
 //var io=require('socket.io-emitter')(redis);
 
@@ -25,7 +24,7 @@ exports.addPhotoCount = function (num, locationId, callback) {
 
         redis.get(opKey, function (err, photoCount) {
             if (err) {
-                log.error('addPhotoCount', err);
+                //log.error('addPhotoCount', err);
 //                return res.send(errInfo.errRedisGet);
                 return callback({photoCount: 0});
             }
@@ -33,7 +32,7 @@ exports.addPhotoCount = function (num, locationId, callback) {
             if (photoCount) {
                 redis.set(opKey, parseInt(photoCount) + num, function (err) {
                     if (err) {
-                        log.error('addPhotoCount', err);
+                        //log.error('addPhotoCount', err);
 //                       return res.send(errInfo.send)
                         return callback({photoCount: 0});
                     }
@@ -42,7 +41,7 @@ exports.addPhotoCount = function (num, locationId, callback) {
             } else {
                 redis.set(opKey, num, function (err) {
                     if (err) {
-                        log.error('addPhotoCount', err);
+                        //log.error('addPhotoCount', err);
 //                       return res.send(errInfo.send)
                         return callback({photoCount: 0});
                     }
@@ -69,7 +68,7 @@ exports.addPaidPhotoCount = function (num, locationId, callback) {
 
         redis.get(opKey, function (err, photoCount) {
             if (err) {
-                log.error('addPaidPhotoCount', err);
+                //log.error('addPaidPhotoCount', err);
 //                return res.send(errInfo.errRedisGet);
                 return callback({paidPhotoCount: 0});
             }
@@ -77,7 +76,7 @@ exports.addPaidPhotoCount = function (num, locationId, callback) {
             if (photoCount) {
                 redis.set(opKey, parseInt(photoCount) + num, function (err) {
                     if (err) {
-                        log.error('addPaidPhotoCount', err);
+                        //log.error('addPaidPhotoCount', err);
 //                       return res.send(errInfo.send)
                         return callback({paidPhotoCount: 0});
                     }
@@ -86,7 +85,7 @@ exports.addPaidPhotoCount = function (num, locationId, callback) {
             } else {
                 redis.set(opKey, num, function (err) {
                     if (err) {
-                        log.error('addPaidPhotoCount', err);
+                        //log.error('addPaidPhotoCount', err);
 //                       return res.send(errInfo.send)
                         return callback({paidPhotoCount: 0});
                     }
@@ -107,7 +106,7 @@ exports.addSales = function (sales, callback) {
 
         redis.get(opKey, function (err, totalSales) {
             if (err) {
-                log.error('addSales', err);
+                //log.error('addSales', err);
 //                return res.send(errInfo.errRedisGet);
                 return callback({totalSales: 0});
             }
@@ -115,7 +114,7 @@ exports.addSales = function (sales, callback) {
             if (totalSales) {
                 redis.set(opKey, parseFloat(totalSales) + sales, function (err) {
                     if (err) {
-                        log.error('addSales', err);
+                        //log.error('addSales', err);
 //                       return res.send(errInfo.send)
                         return callback({totalSales: 0});
                     }
@@ -124,7 +123,7 @@ exports.addSales = function (sales, callback) {
             } else {
                 redis.set(opKey, sales, function (err) {
                     if (err) {
-                        log.error('addSales', err);
+                        //log.error('addSales', err);
 //                       return res.send(errInfo.send)
                         return callback({totalSales: 0});
                     }
@@ -151,13 +150,13 @@ exports.addPPCount = function (pp, locationId, callback) {
     redis.select(1, function () {
         redis.SMEMBERS(opKey, function (err, ppList) {
             if (err) {
-                log.error('addPPCount', err);
+                //log.error('addPPCount', err);
 //                return res.send(errInfo.errRedisGet);
                 return callback({ppCount: 0});
             }
             redis.SADD(opKey, pp, function (err, i) {
                 if (err) {
-                    log.error('addPPCount', err);
+                    //log.error('addPPCount', err);
 //                       return res.send(errInfo.send)
                     return callback({ppCount: 0});
                 }
@@ -184,13 +183,13 @@ exports.addPPPCount = function (ppp, callback) {
     redis.select(1, function () {
         redis.SMEMBERS(opKey, function (err, pppList) {
             if (err) {
-                log.error('addPPPCount', err);
+                //log.error('addPPPCount', err);
 //                return res.send(errInfo.errRedisGet);
                 return callback({pppCount: 0});
             }
             redis.SADD(opKey, ppp, function (err, i) {
                 if (err) {
-                    log.error('addPPPCount', err);
+                    //log.error('addPPPCount', err);
                     return callback({pppCount: 0});
 //                       return res.send(errInfo.send)
                 }
@@ -214,7 +213,7 @@ exports.getPhotoCount = function (locationId, callback) {
     redis.select(1, function () {
         redis.get(opKey, function (err, photoCount) {
             if (err) {
-                log.error('getPhotoCount', err);
+                //log.error('getPhotoCount', err);
                 return callback({photoCount: photoCount})
             }
             if (photoCount) {
@@ -237,7 +236,7 @@ exports.getPaidPhotoCount = function (locationId, callback) {
     redis.select(1, function () {
         redis.get(opKey, function (err, photoCount) {
             if (err) {
-                log.error('getPaidPhotoCount', err);
+                //log.error('getPaidPhotoCount', err);
                 return callback({paidPhotoCount: photoCount})
             }
             if (photoCount) {
@@ -255,7 +254,7 @@ exports.getSales = function (callback) {
     redis.select(1, function () {
         redis.get(opKey, function (err, revenue) {
             if (err) {
-                log.error('getSales', err);
+                //log.error('getSales', err);
                 return callback({totalSales: revenue})
             }
             if (revenue) {
@@ -277,7 +276,7 @@ exports.getPPCount = function (locationId, callback) {
     redis.select(1, function () {
         redis.SMEMBERS(opKey, function (err, ppList) {
             if (err) {
-                log.error('getPPCount', err);
+                //log.error('getPPCount', err);
 //                return res.send(errInfo.errRedisGet);
                 return callback({ppCount: 0});
             }
@@ -301,7 +300,7 @@ exports.getPPPCount = function (callback) {
     redis.select(1, function () {
         redis.SMEMBERS(opKey, function (err, pppList) {
             if (err) {
-                log.error('getPPPCount', err);
+                //log.error('getPPPCount', err);
 //                return res.send(errInfo.errRedisGet);
                 return callback({pppCount: 0});
             }

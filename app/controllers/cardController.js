@@ -2,7 +2,7 @@
  * Created by xueting-bo on 16/11/21.
  */
 var async = require('async');
-var errInfo = require('../filters/errorFilter.js').errInfo;
+var errInfo = require('../resfilter/resInfo.js').errInfo;
 var common = require('../tools/common.js');
 var userModel = require('../mongodb/Model/userModel');
 var photoModel = require('../mongodb/Model/photoModel');
