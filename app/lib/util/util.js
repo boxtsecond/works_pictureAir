@@ -1,7 +1,6 @@
 /**
  * Created by meteor on 16/3/25.
  */
-var jstypeof=require('./jstypeof.js');
 var crypto=require('crypto'),path=require("path");
 function memoryPercentageLimit(engineConfig,cb){
     var memoryFree=parseInt((os.freemem()/os.totalmem()*100));
@@ -11,13 +10,7 @@ function memoryPercentageLimit(engineConfig,cb){
         return false;
     }
 }
-function haveOwnproperty(data,propertyname){
-    var result=false;
-    for(var itemdata in data) {
-        if(itemdata===propertyname) if(data[itemdata]!==null&&data[itemdata]!=='') result=true;
-    }
-    return result;
-}
+
 function arrayIsexist(list,itemvalue){
     if(typeof(list) ==="undefined"||typeof(itemvalue) ==="undefined"||!(list instanceof Array)|| Array != list.constructor) return false;
     else{
@@ -180,11 +173,78 @@ function cloneObj(obj) {
     if(jsonStr.indexOf("_id")>0) jsonStr="{"+jsonStr.substr(34);
        return JSON.parse(jsonStr);
 }
+
+/**
+ * 短链接算法
+ * @returns {*}
+ */
+var shortUrlGenerate = function (url) {
+    var chars = ["a", "b", "c", "d", "e", "f", "g", "h",
+        "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
+        "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5",
+        "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H",
+        "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+        "U", "V", "W", "X", "Y", "Z"];
+    var encryptedTextBytes = require('crypto').createHash('md5').update(url).digest('hex');
+    var result = "";
+    for (var i = 0; i < 6; i++) {
+        var hex1 = (0xff & encryptedTextBytes[i * 2]) + "";
+        var hex2 = (0xff & encryptedTextBytes[i * 2 + 1]) + "";
+        hex1 = hex1.length == 1 ? "0" + hex1 : hex1;
+        hex2 = hex2.length == 1 ? "0" + hex2 : hex2;
+        var index = parseInt(parseFloat(hex1 + hex2, 16) % chars.length);
+        result += chars[index];
+    }
+    return result;
+}
+
+function customFormat(time, formatStr) {
+    var str = formatStr;
+    var date = new Date(time);
+    var Week = ['日','一','二','三','四','五','六'];
+    str=str.replace(/yyyy|YYYY/,date.getFullYear());
+    str=str.replace(/yy|YY/,(date.getYear()%100)>9?(date.getYear()%100).toString():'0'+(date.getYear() % 100));
+    str=str.replace(/MM/,(date.getMonth()+1)>9?(date.getMonth()+1).toString():'0' + (date.getMonth()+1));
+    str=str.replace(/M/g,(date.getMonth()+1));
+    str=str.replace(/w|W/g,Week[date.getDay()]);
+    str=str.replace(/dd|DD/,date.getDate()>9?date.getDate().toString():'0' + date.getDate());
+    str=str.replace(/d|D/g,date.getDate());
+    str=str.replace(/hh|HH/,date.getHours()>9?date.getHours().toString():'0' + date.getHours());
+    str=str.replace(/h|H/g,date.getHours());
+    str=str.replace(/mm/,date.getMinutes()>9?date.getMinutes().toString():'0'+date.getMinutes());
+    str=str.replace(/m/g,date.getMinutes());
+    str=str.replace(/ss|SS/,date.getSeconds()>9?date.getSeconds().toString():'0'+date.getSeconds());
+    str=str.replace(/s|S/g,date.getSeconds());
+    return str;
+}
+
+function customDateDiff(strInterval, dtStart, dtEnd) {
+    if (typeof dtEnd == 'string' )//如果是字符串转换为日期型
+    {
+        dtEnd = new Date(dtEnd);
+    }
+    switch (strInterval) {
+        case 's' :return Math.round((dtEnd - dtStart) / 1000);
+        case 'n' :return Math.round((dtEnd - dtStart) / 60000);
+        case 'h' :return Math.round((dtEnd - dtStart) / 3600000);
+        case 'd' :return Math.round((dtEnd - dtStart) / 86400000);
+        case 'w' :return Math.round((dtEnd - dtStart) / (86400000 * 7));
+        case 'm' :return (dtEnd.getMonth()+1)+((dtEnd.getFullYear()-dtStart.getFullYear())*12) - (dtStart.getMonth()+1);
+        case 'y' :return dtEnd.getFullYear() - dtStart.getFullYear();
+    }
+}
+
+function newError(msg) {
+    this.message = msg || 'Error';
+    this.name = 'newError';
+}
+newError.prototype = new Error();
+newError.prototype.constructor = newError;
+
 module.exports={
     enUrl:enUrl,
     deUrl:deUrl,
     memoryPercentageLimit:memoryPercentageLimit,
-    haveOwnproperty:haveOwnproperty,
     arrayIsexist:arrayIsexist,
     arrayIsexistEnginelist:arrayIsexistEnginelist,
     formatDate:formatDate,
@@ -195,5 +255,9 @@ module.exports={
     Padstr:Padstr,
     getphotocode:getphotocode,
     generatorCode:generatorCode,
-    cloneObj:cloneObj
+    cloneObj:cloneObj,
+    shortUrlGenerate: shortUrlGenerate,
+    customFormat: customFormat,
+    customDateDiff: customDateDiff,
+    newError: newError
 }
