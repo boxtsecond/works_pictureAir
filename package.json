@@ -30,7 +30,7 @@
     "merge_logs"         : true,
     "log_date_format":"YYYY-MM-DD HH:mm Z",
     "source_map_support": true,
-    "max_memory_restart" : "200M"
+    "max_memory_restart" : "2G"
   }],
   "dependencies": {
     "apns": "^0.1.0",
