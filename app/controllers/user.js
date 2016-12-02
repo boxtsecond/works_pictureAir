@@ -118,6 +118,7 @@ function generateaccAccess_token(userobj){
 //    });
 //}
 //username password lgcode
+//禁用用户首先修改redis 然后修改数据库
 function login(req,res){
     filterParams(req).then(function(data){
             return data;
@@ -129,7 +130,7 @@ function login(req,res){
             return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
                 if(access_token){
                     var user=JSON.parse(access_token);
-                    if(user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                    if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
                     else  return  Promise.resolve({
                         user:user,
                         userobj:userobj,
@@ -137,7 +138,8 @@ function login(req,res){
                     });
                 }else  return  Promise.reject(null);
             }).catch(function(err){
-                if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+                if(req.ext.isArray(err)) return  Promise.reject(err);
+                else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
                 else return Promise.resolve({ user:null,  userobj:userobj,md5Useranme:md5Useranme});
             });
         }).then(function(obj){
@@ -154,7 +156,8 @@ function login(req,res){
                               });
                         } else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
-                        return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
+                          if(req.ext.isArray(err)) return  Promise.reject(err);
+                          else return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
                     });
                 }else if(obj.userobj.isMobile) {
                     return userMode.findOne({mobile: obj.userobj.params.username}).then(function (user) {
@@ -168,7 +171,8 @@ function login(req,res){
                              });
                          }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
-                        return Promise.reject(errInfo.userRegisterFinddbForMobileError);
+                         if(req.ext.isArray(err)) return  Promise.reject(err);
+                         else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
                     });
                }else  return  Promise.reject(errInfo.userParamUserNameParameterError);
             }
@@ -545,6 +549,7 @@ function forgotPassword(req,res){
             }else  return  Promise.reject(null);
         }).catch(function(err){
             if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+            else if(req.ext.isArray(err)) return  Promise.reject(err);
             else return  Promise.reject(errInfo.userLoginParamUserNameError);
         });
     }).then(function(userobj){
