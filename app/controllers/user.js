@@ -40,6 +40,7 @@ function filterParams(req){
             isEmail:false,
             isMobile:false
         };
+        console.log(req.ext.params);
         if(req.ext.haveOwnproperty(result.params,'token')){
         }
         if(!req.ext.haveOwnproperty(result.params,'username')){
@@ -162,6 +163,7 @@ function login(req,res){
                 }else if(obj.userobj.isMobile) {
                     return userMode.findOne({mobile: obj.userobj.params.username}).then(function (user) {
                          if(user) {
+                             //console.log(obj.userobj.params);
                              if (user.disabled)
                                  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
                              else  return Promise.resolve({
@@ -171,6 +173,7 @@ function login(req,res){
                              });
                          }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
+                        console.error(err)
                          if(req.ext.isArray(err)) return  Promise.reject(err);
                          else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
                     });

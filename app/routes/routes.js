@@ -8,7 +8,7 @@ module.exports=function(app){
     app.use('/',require('./index'));
     //app.use('/user',auth.authGuest ,require('./user'));
     app.use('/cache',require('./cacheRoute.js'));
-    app.use('/user',require('./user'));
+    app.use('/user',auth.authGuest,require('./user'));
     app.use('/user',require('./userRoute'));
     app.use('/auth',require('./auth'));
     app.use('/photo',require('./photoRoute.js'));
