@@ -1,5 +1,5 @@
 {
-  "name": "pictureairapi",
+  "name": "pictureAirAPI",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,6 +8,28 @@
   },
   "author": "",
   "license": "ISC",
+  "config": {              // Default configuration values
+    // These values can be overriden with `pm2 set <module-name>:<attr> <val>`
+    "days_interval" : 7,  // These value is returned once you call pmx.initModule()
+    "max_size" : 5242880
+  },
+  "apps" : [{              // Module behavior options
+    "script"             : "./index.js",
+    "watch"       : true,
+    "ignore_watch":["node_modules","logs"],
+    "env": {
+      "NODE_ENV": "development"
+    },
+    "env_production" : {
+      "NODE_ENV": "production"
+    },
+    "instances"  : 4,
+    "exec_mode"  : "cluster",
+    "merge_logs"         : true,
+    "log_date_format":"YYYY-MM-DD HH:mm Z",
+    "source_map_support": true,
+    "max_memory_restart" : "200M"
+  }],
   "dependencies": {
     "apns": "^0.1.0",
     "async": "^2.1.2",
