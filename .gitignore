@@ -1,10 +1,6 @@
-.idea/
-<<<<<<< HEAD
-dist/
-=======
 .idea
-dist/ 
->>>>>>> dev
+dist
+node_modules
 ######## OSX #########
 .DS_Store
 .AppleDouble
