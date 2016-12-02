@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cd ./test && mocha"
+    "test": "cd ./test && mocha",
+    "start": "pm2 start package.json",
+    "stop":"pm2 stop package.json"
   },
   "author": "",
   "license": "ISC",
