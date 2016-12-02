@@ -1,5 +1,5 @@
 .idea/
-dist/ 
+dist/
 ######## OSX #########
 .DS_Store
 .AppleDouble
@@ -9,6 +9,7 @@ Icon
 ######## Node#########
 # Logs
 logs
+.idea
 *.log
 npm-debug.log*
 # Runtime data
