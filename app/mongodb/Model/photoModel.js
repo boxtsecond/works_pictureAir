@@ -20,25 +20,25 @@ var model = Promise.promisifyAll(db.model(collectionname, Schema));
 module.exports = model;
 
 var request=require('request');
-model.findOne({},function(err,data){
-    //var Strd=JSON.stringify(data);
-    //var data=JSON.parse(Strd);
-    //console.log('"'+Strd.replace(new RegExp(/(\")/g),'\\"')+'"')
-    request.post({url: "http://127.0.0.1:4001/api/video/GenerateVideo", form: {
-            "presetName": "BaymaxInflate",
-            "data":JSON.stringify(data)
-        }},
-        function (err, httpResponse, body) {
-            if ( httpResponse&& typeof(httpResponse)!= "undefined" && typeof(httpResponse.statusCode)!= "undefined" &&httpResponse.statusCode == 200) {
-                body = JSON.parse(body);
-                  console.log(body);
-            }else
-            {
-             }
-        }).on('error', function (err) {
-
-        })
-})
+//model.findOne({},function(err,data){
+//    //var Strd=JSON.stringify(data);
+//    //var data=JSON.parse(Strd);
+//    //console.log('"'+Strd.replace(new RegExp(/(\")/g),'\\"')+'"')
+//    request.post({url: "http://127.0.0.1:4001/api/video/GenerateVideo", form: {
+//            "presetName": "BaymaxInflate",
+//            "data":JSON.stringify(data)
+//        }},
+//        function (err, httpResponse, body) {
+//            if ( httpResponse&& typeof(httpResponse)!= "undefined" && typeof(httpResponse.statusCode)!= "undefined" &&httpResponse.statusCode == 200) {
+//                body = JSON.parse(body);
+//                  console.log(body);
+//            }else
+//            {
+//             }
+//        }).on('error', function (err) {
+//
+//        })
+//})
 
 
 
