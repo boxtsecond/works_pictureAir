@@ -1,4 +1,5 @@
 .idea/
+.idea
 dist/ 
 ######## OSX #########
 .DS_Store
