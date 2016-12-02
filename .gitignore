@@ -1,5 +1,10 @@
 .idea/
+<<<<<<< HEAD
 dist/
+=======
+.idea
+dist/ 
+>>>>>>> dev
 ######## OSX #########
 .DS_Store
 .AppleDouble
