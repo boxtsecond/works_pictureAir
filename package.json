@@ -8,12 +8,11 @@
   },
   "author": "",
   "license": "ISC",
-  "config": {              // Default configuration values
-    // These values can be overriden with `pm2 set <module-name>:<attr> <val>`
-    "days_interval" : 7,  // These value is returned once you call pmx.initModule()
+  "config": {
+    "days_interval" : 7,
     "max_size" : 5242880
   },
-  "apps" : [{              // Module behavior options
+  "apps" : [{
     "script"             : "./index.js",
     "watch"       : true,
     "ignore_watch":["node_modules","logs"],
