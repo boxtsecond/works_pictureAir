@@ -1,7 +1,7 @@
 /**
  * Created by xueting-bo on 16/11/23.
  */
-var errInfo = require('../filters/errorFilter.js').errInfo;
+var errInfo = require('../resfilter/resInfo.js').errInfo;
 var shareModeEnum = require('../tools/enums.js').shareModeEnum;
 var config = require('../../config/config.js').config;
 var util = require('../lib/util/util.js');
@@ -14,15 +14,15 @@ var common = require('../tools/common.js');
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
-    var params = req.ext.params(req, res);
+    var params = req.ext.params;
     if(!req.haveOwnproperty(params, ['userId', 'shareContent.mode', 'shareContent.ids'])){
-        res.ext.json([statusCode.user.incomplete, errMsg.incomplete]);
+        return res.ext.json(errInfo.getShareUrl.paramsError);
     }
     if (typeof params.shareContent == 'string') {
         try {
             params.shareContent = JSON.parse(params.shareContent);
         } catch (e) {
-            res.ext.json([statusCode.user.incomplete, errMsg.incomplete]);
+            return res.ext.json(errInfo.getShareUrl.paramsError);
         }
     }
     var key, targetDataModel,urlParams;
@@ -59,9 +59,6 @@ exports.getShareUrl = function (req, res, next) {
         fullUrl = require('url').parse(path.join(config.serverIP, config.apiPort, 'share', urlParams)).path.replace("/" + config.apiPort, ":" + config.apiPort);
         secretKey = util.shortUrlGenerate(fullUrl);
     });
-    if (!targetDataModel) {
-        res.ext.json([statusCode.user.incomplete, errMsg.incomplete]);
-    }
     var maxRetryCheck = 10;
     var checkCount = 0;
     var checkSecretKey = function(){
@@ -80,20 +77,56 @@ exports.getShareUrl = function (req, res, next) {
         })
     }
     Promise.resolve()
-        .then(checkSecretKey())
+        .then(function () {
+            switch (shareContent.mode){
+                case shareModeEnum.product:
+                    key = shareModeEnum.product;
+                    targetDataModel = require('../mongodb/Model/productModel.js');
+                    break;
+                case shareModeEnum.userInfo:
+                    key = shareModeEnum.userInfo;
+                    targetDataModel = require('../mongodb/Model/userModel.js');
+                    break;
+                case shareModeEnum.photo:
+                    key = shareModeEnum.photo;
+                    targetDataModel = require('../mongodb/Model/photoModel.js');
+                    break;
+                case shareModeEnum.video:
+                    key = shareModeEnum.video;
+                    targetDataModel = require('../mongodb/Model/videoModel.js');
+                    break;
+                default :
+                    key = shareModeEnum.other;
+                    break;
+            }
+            urlParams = querystring.stringify({
+                "userId": userId,
+                "key": key,
+                "ids": shareContent.ids
+            })
+            fullUrl = require('url').parse(path.join(config.serverIP, config.apiPort, 'share', urlParams)).path.replace("/" + config.apiPort, ":" + config.apiPort);
+            secretKey = util.shortUrlGenerate(fullUrl);
+        })
+        .then(function(){
+            if (!targetDataModel) {
+                return Promise.reject(errInfo.getShareUrl.modelError);
+            }else {
+                return checkSecretKey();
+            }
+        })
         .then(function () {
             var condition = {"_id": {"$in": shareContent.ids.split(',')}};
             if (shareContent.mode == shareModeEnum.photo) {
                 condition.disabled = false;
             }
-            targetDataModel.findAsync(condition);
+            return targetDataModel.findAsync(condition);
         })
         .then(function (targetData) {
             targetData = targetData || [];
             if (targetData.length != 0 && targetData.length != shareContent.ids.split(',').length) {
                 throw new Error({status: statusCode.user.incomplete, msg: errMsg.incomplete});
             }
-            shareModel.findOne({"sharerId": params.userId, "shareContent.ids": shareContent.ids.split(",")});
+            return shareModel.findOneAsync({"sharerId": params.userId, "shareContent.ids": shareContent.ids.split(",")});
         })
         .then(function (shareData) {
             var info = {};
@@ -113,24 +146,25 @@ exports.getShareUrl = function (req, res, next) {
                     },
                     shareCount: 0
                 })
-                shareData.save(function (err) {
-                    if (err) {
-                        throw new Error({status: statusCode.system.mongoError, msg: errMsg.mongoError+'share'})
-                    }
-                    info = {
-                        shareId: shareData._id,
-                        shareUrl: (params.isUseShortUrl) ? shareData.shareShortUrl : shareData.shareUrl
-                    };
-                })
+                shareData.save();
+                info = {
+                    shareId: shareData._id,
+                    shareUrl: (params.isUseShortUrl) ? shareData.shareShortUrl : shareData.shareUrl
+                };
             }
             return info;
         })
         .then(function (result) {
-            res.ext.json([statusCode.ignore.success, 'success', result]);
+            var resultObj = errInfo.success;
+            resultObj.result = result;
+            return res.ext.json(resultObj);
         })
         .catch(function (err) {
             console.log(err);
-            res.ext.json([err.status, err.msg]);
+            if(err.status){
+                return res.ext.json(err);
+            }
+            return res.ext.json(errInfo.getShareUrl.promiseError);
         });
 }
 
@@ -329,7 +363,7 @@ exports.updateUser = function (req, res, next) {
             var isEmail = result[1];
             var isMobile = result[2];
             if (isEmail || isMobile) {
-                userModel.findOneAsync({_id: params.userId.trim()})
+                return userModel.findOneAsync({_id: params.userId.trim()})
                     .then(function(user){
                         if (user) {
                             if (user.userName == user.email && isEmail) {
@@ -353,7 +387,11 @@ exports.updateUser = function (req, res, next) {
                                         } else {
                                             userModel.findByIdAndUpdateAsync(params.userId.trim(), updateInfo)
                                                 .then(function (ur) {
-                                                    return res.ext.json();
+                                                    if(ur){
+                                                        return res.ext.json();
+                                                    }else {
+                                                        return res.ext.json(errInfo.updateUser.notFind);
+                                                    }
                                                 })
                                                 .catch(function(err){
                                                     console.log('findByIdAndUpdate', err);

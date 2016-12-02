@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "apns": "^0.1.0",
     "async": "^2.1.2",
     "bluebird": "^3.4.6",
     "body-parser": "^1.15.2",
@@ -22,6 +23,7 @@
     "fs-extra": "^1.0.0",
     "image-size": "^0.5.0",
     "ioredis": "^2.4.0",
+    "jsonwebtoken": "^7.1.9",
     "lodash": "^4.17.2",
     "log4js": "^1.0.1",
     "method-override": "^2.3.6",
