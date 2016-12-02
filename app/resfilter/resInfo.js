@@ -69,60 +69,66 @@ var errInfo={
     "removePPFromUser": {
         paramsError: {status: 4003, msg: "params is incomplete", desc: "missing customerId"},
         paramsInvalid: {status: 4004, msg: "params is invalid", desc: "customerId is invalid"},
-        userActionError: {status: 3008, msg: "system error", desc: "user's action to db error"},
-        pppError: {status: 3009, msg: "system error", desc: "get pppModel from db error"},
-        photoError: {status: 3010, msg: "system error", desc: "update photoModel from db error"},
-        userError: {status: 3011, msg: "system error", desc: "get userModel from db error"}
+        notFind: {status: 4005, msg: "not find user", desc: "not find user from db"},
+        photoError: {status: 3008, msg: "system error", desc: "update photoModel from db error"},
+        promiseError: {status: 3009, msg: "system error", desc: "promise error"}
     },
     "getAllLocations": {
-        paramsError: {status: 4005, msg: "params is incomplete", desc: "missing parkId"},
+        paramsError: {status: 4006, msg: "params is incomplete", desc: "missing parkId"},
         APIError: {status: 3012, msg: "system error", desc: "getAllLocations API error"},
         parkError: {status: 3013, msg: "system error", desc: "get parkModel from db error"}
     },
     "getPhotosByConditions": {
-        paramsError: {status: 4006, msg: "params is incomplete", desc: "missing userId or shareContent.mode or shareContent.ids"},
+        paramsError: {status: 4007, msg: "params is incomplete", desc: "missing condition"},
         userError: {status: 3014, msg: "system error", desc: "get userModel from db error"},
         photoError: {status: 3015, msg: "system error", desc: "get photoModel from db error"}
     },
-    "removePhotosFromPP": {
-        paramsError: {status: 4007, msg: "params is incomplete", desc: "missing ids or pp"},
-    },
     "carousel": {
-        paramsError: {status: 4008, msg: "params is incomplete", desc: "can not find request"}
+        paramsError: {status: 4009, msg: "request error", desc: "can not find request"}
     },
     "addCodeToUser": {
-        paramsError: {status: 4009, msg: "params is incomplete", desc: "missing customerId"},
-        invalidPP: {status:4010 ,msg: 'PhotoPass is error',desc:'the PhotoPass is invalid'},
+        paramsError: {status: 4010, msg: "params is incomplete", desc: "missing customerId"},
+        invalidPP: {status:4011 ,msg: 'PhotoPass is error',desc:'the PhotoPass is invalid'},
+        notFind: {status: 4012, msg: 'not find user', desc: "not find user from db"},
+        PPRepeatBound: {status:4013 , msg:'repeat binding',desc:'you have bounded this PhotoPass!'},
         userError: {status: 3016, msg: "system error", desc: "get userModel from db error"},
-        notFind: {status: 4011, msg: 'not find user', desc: "not find user from db"},
-        PPRepeatBound: {status:4012 , msg:'repeat binding',desc:'you have bounded this PhotoPass!'},
-        userUpdateError: {status: 3017, msg: 'update error', desc: 'update user to userModel error'},
+        userUpdateError: {status: 3017, msg: 'system error', desc: 'update user to userModel error'},
         photoError: {status: 3018, msg: "system error", desc: "get photoModel from db error"},
         photoSaveError: {status: 3019, msg: "system error", desc: "save photo to photoModel error"},
     },
     "updateUser": {
-        paramsError: {status: 4013, msg: "params is incomplete", desc: "missing userId"},
-        birthdayError: {status: 4014, msg: "params is not valid", desc: "birthday input error"},
-        genderError: {status: 4015, msg: "params is not valid", desc: "gender input error"},
-        emailError: {status: 4016, msg: "params is not valid", desc: "email input error"},
-        passwordError: {status: 4017, msg: "params is not valid", desc: "password input error"},
-        denyUpdateRegister:{status:4018,msg: 'deny Update Register' , desc: 'can\'t modify register email or mobile'},
-        existedEmail: {status:4019,msg: 'existed Email', desc: 'the email already exists'},
-        existedMobile: {status:4020,msg: 'existed Mobile', desc: 'the mobile already exists'},
-        userError: {status: 4021,msg: "system error", desc: "get userModel from db error"},
+        paramsError: {status: 4014, msg: "params is incomplete", desc: "missing userId"},
+        birthdayError: {status: 4015, msg: "params is not valid", desc: "birthday input error"},
+        genderError: {status: 4016, msg: "params is not valid", desc: "gender input error"},
+        emailError: {status: 4017, msg: "params is not valid", desc: "email input error"},
+        passwordError: {status: 4018, msg: "params is not valid", desc: "password input error"},
+        denyUpdateRegister:{status:4019,msg: 'deny Update Register' , desc: 'can\'t modify register email or mobile'},
+        existedEmail: {status:4020,msg: 'existed Email', desc: 'the email already exists'},
+        existedMobile: {status:4021,msg: 'existed Mobile', desc: 'the mobile already exists'},
         notFind: {status: 4022,msg: 'not find user', desc: "not find user from db"},
-        promiseError: {status: 3020, msg: "system error", desc: "promise error"}
+        userError: {status: 3020,msg: "system error", desc: "get userModel from db error"},
+        promiseError: {status: 3021, msg: "system error", desc: "promise error"}
     },
 
     "socketController": {
-        redisSetError: {status: 3021, msg: "system error", desc: "set token to redis error"},
-        redisGetError: {status: 3021, msg: "system error", desc: "set token to redis error"},
+        redisSetError: {status: 3022, msg: "system error", desc: "set token to redis error"},
+        redisGetError: {status: 3023, msg: "system error", desc: "set token to redis error"},
         APNSConnectError: {status: 4023, msg: "params is incomplete", desc: "missing userId"},
         APNSDisconnectError: {status: 4024, msg: "params is incomplete", desc: "missing userId"},
         clearSocketData: {status: 4025, msg: "params is incomplete", desc: "missing userId"},
-        getSocketData: {status: 4026, msg: "params is incomplete", desc: "missing userId"},
+        getSocketData: {status: 4026, msg: "params is incomplete", desc: "missing userId"}
+    },
+    "getShareUrl": {
+        paramsError: {status: 4027, msg: "params is incomplete", desc: "missing userId or shareContent.mode or shareContent.ids"},
+        modelError: {status: 3010, msg: "system error", desc: "can't get db model"},
+        promiseError: {status: 3011, msg: "system error", desc: "promise error"}
+    },
+    "removePhotosFromPP": {
+        paramsError: {status: 4008, msg: "params is incomplete", desc: "missing ids or pp"},
+        photoError: {status: 3024, msg: "system error", desc: "get photoModel from db error"},
+        saveError: {status: 3025, msg: "system error", desc: "save photo to db error"},
 
-    }
+    },
 
     //-------------------system 5x 9x-------------------
 };

@@ -554,7 +554,7 @@ function forgotPassword(req,res){
         });
     }).then(function(userobj){
         if(userobj.isEmail){
-            return  userMode.findOne({ email: userobj.params.username ,disabled:false}).then(function (user) {
+            return  userMode.findOne({ email: userobj.params.username}).then(function (user) {
                 if(user) {
                     //if(disabled) return Promise.reject(errInfo.userLoginParamUserNameDisabledError);//  账户已经禁用
                     return  Promise.resolve(userobj);

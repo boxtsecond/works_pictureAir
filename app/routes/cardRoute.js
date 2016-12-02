@@ -3,7 +3,6 @@
  */
 var router = require('express').Router();
 var cardController = require('../controllers/cardController.js');
-var permissionFilter = require('../filters/permissionFilter.js');
 
 //router.all('/getPhotosByConditions', permissionFilter.validLogin, photoController.getPhotosByConditions);
 router.all('/getPPsByUserId', cardController.getPPsByUserId);

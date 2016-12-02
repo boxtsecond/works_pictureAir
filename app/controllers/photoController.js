@@ -162,7 +162,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                                         }, function (err) {
                                             if (err) {
                                                 console.log(err);
-                                                log.error('getPhotosByConditions download photos count', err);
+                                                //log.error('getPhotosByConditions download photos count', err);
                                             }
                                         });
                                     }
@@ -389,8 +389,9 @@ exports.removePhotosFromPP = function (req, res, next) {
     var photoIds = [];
     photoModel.find({'customerIds.code': customerId, _id: {$in: ids}}, function (err, list) {
         if (err) {
-            log.error('unBindCodeFromUser', err);
-            res.ext.json([statusCode.system.mongoError,errMsg.mongoError+'photo']);
+            //log.error('unBindCodeFromUser', err);
+            console.log(err)
+            res.ext.json(errInfo.removePhotosFromPP.photoError);
         }
         var count = 0;
 
@@ -430,8 +431,8 @@ exports.removePhotosFromPP = function (req, res, next) {
             }
             item.save(function (err) {
                 if (err) {
-                    log.error('unBindCodeFromUser', err);
-                    return cb({status:statusCode.system.mongoActionError,msg:errMsg.moduleError+'Async'});
+                    console.log('unBindCodeFromUser', err);
+                    return cb(errInfo.removePhotosFromPP.saveError);
                 }
 
                 socketController.pushToUsers(pushMsgType.delPhotos, pUserIds, pubScribeList.pushDelPhotos,
@@ -468,41 +469,11 @@ exports.removePhotosFromPP = function (req, res, next) {
                         console.log(err);
                     }
                 })
-                res.ext.json([statusCode.ignore.success, 'success']);
+                res.ext.json();
             } else {
-                res.ext.json([err.status, err.msg]);
+                res.ext.json(err);
             }
         })
     })
 }
 
-exports.carousel = function (req, res, next) {
-    if (!req) {
-        return res.ext.json(errInfo.carousel.paramsError);
-    }
-    var str={
-        "page":{
-            "index":{
-                "slide":[  {"url":"http://192.168.8.107/h5/assets/slide/01.png","titile":"pictureAir01","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/02.png","titile":"pictureAir02","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/03.png","titile":"pictureAir03","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/04.png","titile":"pictureAir04","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/05.png","titile":"pictureAir05","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/06.png","titile":"pictureAir06","link":"http://192.168.8.107/h5/test.html","type":"png"}
-                ]
-            },
-            "login":{
-                "slide": [  {"url":"http://192.168.8.107/h5/assets/slide/01.png","titile":"pictureAir01","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/02.png","titile":"pictureAir02","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/03.png","titile":"pictureAir03","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/04.png","titile":"pictureAir04","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/05.png","titile":"pictureAir05","link":"http://192.168.8.107/h5/test.html","type":"png"},
-                    {"url":"http://192.168.8.107/h5/assets/slide/06.png","titile":"pictureAir06","link":"http://192.168.8.107/h5/test.html","type":"png"}
-                ]
-            }
-        }
-    };
-    var resultObj = errInfo.success;
-    resultObj.result.result = str;
-    return res.ext.json(resultObj);
-}
