@@ -29,8 +29,34 @@ function verifyGuestAccess_token(token){
 //verifyGuestAccess_token('eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzMjM5MzAsImV4cCI6MTQ4MDkyODczMCwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiY2ZmYjQ1ZDBiNTQ5MTFlNmE5NTZlMWM2NzlkZWRlZmEiLCJhcHBpZCI6ImFhYWEiLCJ0IjoxfQ.00ugTX1WhX0Gcx-IQyqbT8L0NzPwsiozsNm4fywu0ay4YCjYrdXNXRB-jPfohy3mBo1xJTayQhXW_fErYy7oJZ8UH8BkAwxwRU0mAavbBmzcnuUrOJBqiJ-7ZGG7GEPpITNBNbM7G--1c6O38lO0TrXAmeRCM_Zzi6CpOHqYY3AJ070W-jzsg2Zhc3ZBReQUxuMG65K_0TsFtFURiftRe2yXJTGDpMx2abmLiScEKPzVjLaZil_FGhvC359_AA5y2I6oZ1KzNmr6sjx-0VqzyKJjsxOcgFzo7B3Mvklcu7DavPcWUUv3xvY46aLBUwVSgS8LVkcYVCAvW_ZxMhrNyA').then(function(err){
 //        console.log(err);
 //    })
+var certPrivateCaChe={
+    private:null,
+    public:null
+};
+function getcert(fileName){
+    return new Promise(function (resolve, reject) {
+        if(certPrivateCaChe.private==null&&certPrivateCaChe.public==null){
+            return fs.readFileAsync(path.join(__dirname,fileName)).then(function(certPrivate){
+                if(fileName=='private.key') certPrivateCaChe.private=certPrivate;
+                if(fileName=='public.pem') certPrivateCaChe.public=certPrivate;
+                return  resolve(certPrivate);
+            });
+        }else {
+            if(fileName=='private.key'&&certPrivateCaChe.private)  return  resolve(certPrivateCaChe.private);
+            else  if(fileName=='public.pem'&&certPrivateCaChe.public) return  resolve(certPrivateCaChe.public);
+            else {
+                return fs.readFileAsync(path.join(__dirname,fileName)).then(function(certPrivate){
+                    if(fileName=='private.key') certPrivateCaChe.private=certPrivate;
+                    if(fileName=='public.pem') certPrivateCaChe.public=certPrivate;
+                    return  resolve(certPrivate);
+                });
+            }
+        }
+    });
+};
 function getAccess_token(tokenData){
-    return fs.readFileAsync(path.join(__dirname,'private.key'))
+    return getcert('private.key')
+    //fs.readFileAsync(path.join(__dirname,'private.key'))
         .then(function(certPrivate){ 
             var token={
                 iat: Math.floor(Date.now() / 1000),
@@ -44,7 +70,8 @@ function getAccess_token(tokenData){
         });
 }
 function verifyAccess_token(token){
-    return   fs.readFileAsync(path.join(__dirname,'public.pem'))
+    return getcert('public.pem')
+    //return   fs.readFileAsync(path.join(__dirname,'public.pem'))
         .then(function(certPublic){
             return jwt.verify(token, certPublic, { algorithm: 'RS512'});
         });

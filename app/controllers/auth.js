@@ -70,7 +70,7 @@ function getAccessToken(req,res){
                 expnumber:configData.expireTime.guestExpireTime
             };
             if(tokenData.appid=="6c8c8dc48280ed2163136ad416e1dbfe"){
-                return tokenData
+                return tokenData;
             }else {
                 return Promise.reject(errInfo.authVerifyAppidError);
             }
@@ -86,7 +86,7 @@ function getAccessToken(req,res){
             //console.log(access_token);
             res.ext.json([{
                 access_token:access_token,
-                expire_in:configData.expireTime.guestExpireTime-30
+                expire_in:configData.expireTime.guestExpireTime-60
             }]);
         }).catch(function(err){
            res.ext.json(err);

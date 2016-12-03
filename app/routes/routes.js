@@ -11,6 +11,7 @@ module.exports=function(app){
     //app.use('/user',auth.authGuest ,require('./user'));
     app.use('/cache',auth.authGuest,require('./cacheRoute.js'));
     app.use('/user',auth.authGuest,require('./user'));
+
     app.use('/user',auth.authUser,require('./userRoute'));
     app.use('/photo',auth.authUser,require('./photoRoute.js'));
     app.use('/park',auth.authUser,require('./parkRoute.js'));
