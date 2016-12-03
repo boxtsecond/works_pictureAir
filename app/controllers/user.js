@@ -230,6 +230,7 @@ function login(req,res){
 //redis 里面存在正在使用的用户需要从数据库和redis 中删除才能重新注册
 function register(req,res){
     filterParams(req).then(function(userobj){
+            console.log(userobj);
             if(userobj.isMobile){
                 if(!req.ext.haveOwnproperty(userobj.params,'vcode'))
                     return Promise.reject(errInfo.userParamVcodeParameterError);
@@ -299,6 +300,7 @@ function register(req,res){
                     //console.log(access_token);
                     return Promise.resolve([userobj[0],userobj[1],configData.expireTime.expireTime,access_token,md5Useranme]);
                 }).catch(function(er){
+                    console.error("....",er)
                     return Promise.reject(errInfo.userRegisterGenerateError);
                 });
             }
@@ -315,6 +317,7 @@ function register(req,res){
                    user.lgsyscode=userobj[1].params.token.lg;
                    user.lgusercode=userobj[1].params.token.lg;
                    user.name=userobj[1].params.username;
+                   user.userName=userobj[1].params.username;
                    user.disabled=false;
                    user.disablereason='';
                    user.allowedPermissions=[];
@@ -468,7 +471,7 @@ function sendSMS(req,res){
             var userMsg=new userMsgModel();
             userMsg.channelType="sms";
             userMsg.msgid=obj.msg.msgid;
-            userMsg.sendFrom=obj.msg.msgid;
+            userMsg.sendFrom=obj.msg.sendFrom;
             userMsg.sendTo=[obj.msg.phone];
             userMsg.subject=obj.msg.sign,
             userMsg.content=obj.msg.content,
@@ -586,6 +589,111 @@ function forgotPassword(req,res){
 // 验证用户名必须是email
 // 验证用户名必须存在
 // 发送验证email信息
+
+var events = require("events");
+
+var util = require("util");
+var events = require("events");
+function SendEmail(){
+    events.EventEmitter.call(this);
+}
+util.inherits(SendEmail, events.EventEmitter);
+var elemforgotPassword = new SendEmail();
+elemforgotPassword.addListener("send",function(nobj){
+    Promise.resolve(nobj)
+    //    .then(function(){
+    //    return nobj;
+    //})
+        .then(function(obj){
+            return sendMsg.sendEmailforgotPwdMsg(obj.params.token.lg,obj.params.username,new Date())
+                .then(function(msg){
+                    return Promise.resolve({
+                        msg:msg,obj:obj
+                    });
+                });
+        }).then(function(obj){
+            //console.log(obj)
+            return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
+                obj.msg.msgid).then(function(err){
+                    return  Promise.resolve(obj);
+                }).catch(function(err){
+                    return Promise.reject(errInfo.userSMSRedisSetValidateCodeError);
+                });
+        }).then(function(obj){
+            //存 mongodb
+            var userMsg=new userMsgModel();
+            userMsg.channelType="email";
+            userMsg.msgid=obj.msg.msgid;
+            userMsg.sendFrom=obj.msg.sendFrom;
+            userMsg.sendTo=[obj.msg.email];
+            userMsg.subject=obj.msg.data.sign,
+                userMsg.content=obj.msg.data.content,
+                userMsg.code=obj.msg.msgid,
+                userMsg.validateCode=obj.msg.msgid,
+                userMsg.msgType="forgotPassword",
+                //userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type],
+                userMsg.expiredTime=rq.util.getNextNumberSecondDate(obj.msg.sendTime,
+                    configData.expireTime.ForgotPwdMsgExpireTime);
+            userMsg.sendTime=obj.msg.sendTime;
+            userMsg.active=false;
+            return userMsg.save().then(function(){
+                return  Promise.resolve(obj);
+            }).catch(function (err) {
+                return  Promise.reject(errInfo.userSMSdbSaveValidateCodeError);
+            });
+        });
+    //    .then(function(obj){
+    //    return sendMsg.sendEmailforgotPwdMsg(obj.params.token.lg,obj.params.username,new Date())
+    //        .then(function(msg){
+    //            return Promise.resolve({
+    //                msg:msg,obj:obj
+    //            });
+    //        });
+    //}).then(function(obj){
+    //    return redisclient.setex("sendEmail:"+req.ext.md5(obj.msg.email.toString().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
+    //        obj.msg.msgid).then(function(err){
+    //            return  Promise.resolve(obj);
+    //        }).catch(function(err){
+    //            return Promise.reject(errInfo.userSMSRedisSetValidateCodeError);
+    //        });
+    //}).then(function(obj){
+    //    //存 mongodb
+    //    var userMsg=new userMsgModel();
+    //    userMsg.channelType="email";
+    //    userMsg.msgid=obj.msg.msgid;
+    //    userMsg.sendFrom=obj.msg.sendFrom;
+    //    userMsg.sendTo=[obj.msg.email];
+    //    userMsg.subject=obj.msg.data.sign,
+    //        userMsg.content=obj.msg.data.content,
+    //        userMsg.code=obj.msg.msgid,
+    //        userMsg.validateCode=obj.msg.msgid,
+    //        userMsg.msgType="forgotPassword",
+    //        //userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type],
+    //        userMsg.expiredTime=rq.util.getNextNumberSecondDate(obj.msg.sendTime,
+    //            configData.expireTime.ForgotPwdMsgExpireTime);
+    //    userMsg.sendTime=obj.msg.sendTime;
+    //    userMsg.active=false;
+    //    return userMsg.save().then(function(){
+    //        return  Promise.resolve(obj);
+    //    }).catch(function (err) {
+    //        return  Promise.reject(errInfo.userSMSdbSaveValidateCodeError);
+    //    });
+    //})
+});
+//elemforgotPassword.emit("send",{ params:
+//{ access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
+//    username: 'meteor.liu@pictureworks.biz',
+//    token:
+//    { iat: 1480393885,
+//        exp: 1480998685,
+//        iss: 'pictureAir',
+//        audience: 'b065a6e0b5ec11e698389de5b9e0bdc4',
+//        appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+//        t: 1,
+//        lg: 'zh-CN',
+//        expire_in: 241566 } },
+//    isEmail: true });
+
 function filterParamsSendEmail(req){
     return new Promise(function (resolve, reject) {
         var result={
@@ -599,20 +707,64 @@ function filterParamsSendEmail(req){
         }else return  resolve(result);
     });
 };
-function sendEmail(req,res){
+function sendEmailForgotPwdMsg(req,res){
+    filterParamsSendEmail(req).then(function(obj){
+        if(obj.isEmail){
+            return obj;
+        }else {
+            return  Promise.reject(errInfo.userSendEmailParamError);
+        }
+    }).then(function(obj){
+        return redisclient.exists("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(access_token){
+            if(!access_token){
+                return Promise.resolve(obj);
+            }else   return  Promise.reject(null);
+        }).catch(function(err){
+            if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+            else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+        });
+    }).then(function(obj){
+        elemforgotPassword.emit("send",obj);
+        res.ext.json([200,'success',{}]);
 
+    }).catch(function(err){
+        res.ext.json(err);
+    });
 }
 //登陆之后才能切换
 //lg
 function switchLanguage(req,res){
  // 重新生成token
+ // 验证用户是否存在
+
 }
 
 //验证用户是否点击email
+function filterParamsverifyEmail(req){
+    return new Promise(function (resolve, reject) {
+        if(!req.ext.haveOwnproperty(req.ext.params,'v')){
+            return reject(errInfo.userParamUsernameError);
+        }else if(result.params.v.length!=32){
+
+        }else return  resolve(req.ext.params);
+    });
+};
 function verifyEmail(req,res){
     // 获取msgid
     //查看redis 中是否存在
     // 存在则验证成功并reids mongodb 修改emailVerified=true
+    filterParamsverifyEmail(req).then(function(obj){
+        return redisclient.exists("sendEmail:"+req.ext.md5(obj.params.v.toString().toLocaleLowerCase())).then(function(access_token){
+            if(!access_token){
+                return Promise.resolve(obj);
+            }else   return  Promise.reject(null);
+        }).catch(function(err){
+            if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+            else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+        });
+    }).catch(function(err){
+        res.ext.json(err);
+    });
 }
 
 
@@ -620,6 +772,9 @@ module.exports={
     login:login,
     register:register,
     sendSMS:sendSMS,
-    sendEmail:sendEmail,
+    sendEmailForgotPwdMsg:sendEmailForgotPwdMsg,
     switchLanguage:switchLanguage
 };
+//signin //登陆
+//signup 注册
+//signout //登出

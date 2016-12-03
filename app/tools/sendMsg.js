@@ -33,12 +33,15 @@ function getTxtFromCode(code,type,txtlist){
         else return resolve(txtlist[0]);
     });
 }
-var cfgEmail={ host: 'partner.outlook.cn',
+var cfgEmail={
+    "sendFrom":"PictureAir.com",
+    host: 'partner.outlook.cn',
     port: 25,
     fromEmailUser: 'technology.monitor@pictureworks.biz',
     auth: { user: 'meteor.liu@pictureworks.biz', pass: 'Ai131415926' }
 };
 var cfgSMS={
+    "sendFrom":"3tong",
     account:"dh74641",
     pwd:"1zeV34cm"
 };
@@ -87,6 +90,7 @@ function sendMSMvalidateCode(lg,phone,sendTime){
                     phone:phone,
                     msgid:msgid,
                     sendTime:sendTime,
+                    sendFrom:cfgSMS.sendFrom,
                     validateCode:validateCode,
                     content: send.obj.data.content,
                     sign:send.obj.data.sign,
@@ -175,15 +179,16 @@ function sendSMS(lg,type,phone,dReplaceArray,msgid,sendTime){
     });
 }
 
-function forgotPwdMsg(lg,type,email,sendTime){
+function sendEmailforgotPwdMsg(lg,email){
     var msgid=uuid.v1().replace(/-/g,'');
-    return sendEmail(lg,type,email,
+    return sendEmail(lg,"forgotPwdMsg_test",email,
         [{name:"%validateCode%",value:msgid}],msgid,new Date()
-    ).then(function(msg){
-            console.log(msg);
-        }).catch(function(err){
-            console.error(err)
-        });;
+    );
+        //.then(function(msg){
+        //    console.log(msg);
+        //}).catch(function(err){
+        //    console.error(err)
+        //});
 }
 //forgotPwdMsg("zh-CN","forgotPwdMsg_test",["meteor.liu@pictureworks.biz"],new Date()
 //).then(function(msg){
@@ -198,6 +203,7 @@ function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
                 .then(function(str){
                     txtobj.content=str;
                     return  Promise.resolve({
+                        sendFrom:cfgEmail.sendFrom,
                         data:txtobj,
                         msgid:msgid,
                         email:email,
@@ -206,7 +212,7 @@ function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
                 });
         }).then(function(obj){
             //console.log(obj)
-            return rq.nodemailer.createTransport({ host : cfgEmail.host,port : cfgEmail.port,auth: cfgEmail.auth})
+          return  rq.nodemailer.createTransport({ host : cfgEmail.host,port : cfgEmail.port,auth: cfgEmail.auth})
                 .sendMail({
              from: cfgEmail.fromEmailUser,to: obj.email,subject:obj.data.sign,text: obj.data.content, html: obj.data.content
              }).then(function(res){
@@ -219,6 +225,7 @@ module.exports={
     sendEmail:sendEmail,
     sendSMS:sendSMS,
     sendMSMvalidateCode:sendMSMvalidateCode,
-    forgotPwdMsg:forgotPwdMsg
+    sendEmailforgotPwdMsg:sendEmailforgotPwdMsg,
+    getValidateCode:getValidateCode
 }
 
