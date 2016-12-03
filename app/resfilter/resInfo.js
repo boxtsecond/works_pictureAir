@@ -52,7 +52,7 @@ var errInfo={
     "userLoginParamUserNameisabledError":{status: 430, msg:"userName is disabled",desc:"userName is disabled"},
     "userSendEmailParamError":{status: 431, msg:"param not valid",desc:"userName is must email"},
     "userLoginPasswordError":{status: 433, msg:"password is error",desc:"password is error"},
-    //433
+    "userResetPasswordParamVcodeParameterError":{status: 434, msg:"param not valid",desc:"resetPassword vcode  is required"},
     //402
 
     "getCouponsByUserId":{

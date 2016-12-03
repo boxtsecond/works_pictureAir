@@ -40,8 +40,8 @@ function filterParams(req){
             isEmail:false,
             isMobile:false
         };
-        if(req.ext.haveOwnproperty(result.params,'token')){
-        }
+        //if(req.ext.haveOwnproperty(result.params,'token')){
+        //}
         if(!req.ext.haveOwnproperty(result.params,'username')){
            return reject(errInfo.userParamUsernameError);
         }else if(!req.ext.haveOwnproperty(result.params,'password')){
@@ -239,7 +239,6 @@ function login(req,res){
 //redis 里面存在正在使用的用户需要从数据库和redis 中删除才能重新注册
 function register(req,res){
     filterParams(req).then(function(userobj){
-            console.log(userobj);
             if(userobj.isMobile){
                 if(!req.ext.haveOwnproperty(userobj.params,'vcode'))
                     return Promise.reject(errInfo.userParamVcodeParameterError);
@@ -526,6 +525,39 @@ function sendSMS(req,res){
 //}).catch(function(err){
 //  console.error(err);
 //});
+function resetPassword(req,res){
+    filterParams(req).then(function(obj){
+        if(!req.ext.haveOwnproperty(obj.params,'vcode'))
+            return Promise.reject(errInfo.userResetPasswordParamVcodeParameterError);
+        else  return obj;
+    }).then(function(obj){
+        if(!obj.isEmail&&!obj.isMobile) return  Promise.reject(errInfo.userParamUserNameParameterError);
+        else return obj;
+    }) .then(function(obj){
+        if(obj.isEmail){
+            //  从redis 里面获取vcode 并比对
+            //redisclient.get("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase()))
+            //return redisclient.exists("sendEmail:"+req.ext.md5(obj.params.v.toString().toLocaleLowerCase())).then(function(access_token){
+            //    if(!access_token){
+            //        return Promise.resolve(obj);
+            //    }else   return  Promise.reject(null);
+            //}).catch(function(err){
+            //    if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+            //    else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+            //});
+        }else   if(obj.isMobile){
+
+            //return redisclient.exists("validateCode:"+smsobj.params.phone).then(function(access_token){
+        }
+        else  return Promise.reject(errInfo.userResetPasswordParamVcodeParameterError);
+        }).then(function(obj){
+          //修改mongodb  修改redis
+        // 从redis 删除 vcode
+
+    }).catch(function(err){
+            res.ext.json(err);
+        });
+}
 // 忘记密码两种找回方式，手机号,邮件
 //username, vcode手机号验证验证码
 function filterParamsforgotPassword(req){
@@ -774,6 +806,7 @@ function verifyEmail(req,res){
         res.ext.json(err);
     });
 }
+
 
 
 module.exports={
