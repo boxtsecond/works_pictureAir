@@ -4,7 +4,6 @@
 var errInfo = require('../resfilter/resInfo.js').errInfo;
 var parkModel = require('../mongodb/Model/parkModel');
 var common = require('../tools/common.js');
-var newError = require('../lib/util/util.js').newError;
 
 exports.getAllLocations = function (req, res, next) {
     var condition = {isDel: false, active: true};
@@ -17,7 +16,7 @@ exports.getAllLocations = function (req, res, next) {
     var resultObj = errInfo.success;
     Promise.resolve()
         .then(function () {
-            return getLocationsByCondition(condition, res);
+            return getLocationsByCondition(condition);
         })
         .then(function (locations) {
             if(locations){
@@ -36,10 +35,11 @@ exports.getAllLocations = function (req, res, next) {
         })
         .catch(function (error) {
             console.log(error);
-            if(error.name == errInfo.errorType){
+            if(error.status){
                 return res.ext.json(JSON.parse(error.message));
+            }else {
+                return res.ext.json(errInfo.getAllLocations.APIError);
             }
-            return res.ext.json(errInfo.getAllLocations.APIError);
         })
 }
 
@@ -80,7 +80,7 @@ function getLocationsByCondition(condition) {
             if(err.name == 'newError'){
                 throw err;
             }
-            throw new newError(JSON.stringify(errInfo.getAllLocations.parkError));
+            return Promise.reject(errInfo.getAllLocations.parkError);
         });
 }
 

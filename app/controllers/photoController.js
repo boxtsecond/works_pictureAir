@@ -13,7 +13,6 @@ var config = require('../../config/config.js').config;
 var request = require('request');
 var utilFun = require('../lib/util/util.js');
 var enums = require('../tools/enums.js');
-var newError = require('../lib/util/util.js').newError;
 
 /* Bo 查询图片
  * @param {condition type: Array} 查询条件
@@ -82,7 +81,7 @@ exports.getPhotosByConditions = function (req, res, next) {
     var locationStockMedia = config.locationStockMedia;
     var userId = params.userId || '';
 
-    photoModel.find(conditions, fields, options)
+    photoModel.findAsync(conditions, fields, options)
         .then(function (list) {
             var result = [];
             var pps = [];
@@ -272,7 +271,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                     .catch(function (err) {
                         console.log(err);
                         //log.error('getPhotoByConditions', err);
-                        throw new newError(JSON.stringify(errInfo.getPhotosByConditions.userError));
+                        return Promise.reject(errInfo.getPhotosByConditions.userError);
                 });
             } else {
                 resultObj.result = {photos: result, time: t};
@@ -282,7 +281,7 @@ exports.getPhotosByConditions = function (req, res, next) {
         .catch(function(error){
             console.log(error);
             //log.error('getPhotoByConditions', error);
-            if(error.name == errInfo.errorType){
+            if(error.status){
                 return res.ext.json(JSON.parse(error.message));
             }else {
                 return res.ext.json(errInfo.getPhotosByConditions.photoError);
@@ -387,93 +386,85 @@ exports.removePhotosFromPP = function (req, res, next) {
         userId = params.userId;
     }
     var photoIds = [];
-    photoModel.find({'customerIds.code': customerId, _id: {$in: ids}}, function (err, list) {
-        if (err) {
-            //log.error('unBindCodeFromUser', err);
-            console.log(err)
-            res.ext.json(errInfo.removePhotosFromPP.photoError);
-        }
-        var count = 0;
+    photoModel.findAsync({'customerIds.code': customerId, _id: {$in: ids}})
+        .then(function (list) {
+            var count = 0;
+            return Promise.each(list, function (item) {
+                var index = -1;
+                var pushUserIds = [];
+                photoIds.push(item.photoId);
 
-        async.each(list, function (item, cb) {
-            var index = -1;
-            var pushUserIds = [];
-            photoIds.push(item.photoId);
+                var addUserIds = [];//其他卡号的用户Id
 
-            var addUserIds = [];//其他卡号的用户Id
-
-            for (var i = 0; i < item.customerIds.length; i++) {
-                if (item.customerIds[i].code != customerId) {
-                    for (var t = 0; t < item.customerIds[i].userIds.length; t++) {
-                        if (addUserIds.indexOf(item.customerIds[i].userIds[t]) == -1) {
-                            addUserIds.push(item.customerIds[i].userIds[t]);
+                for (var i = 0; i < item.customerIds.length; i++) {
+                    if (item.customerIds[i].code != customerId) {
+                        for (var t = 0; t < item.customerIds[i].userIds.length; t++) {
+                            if (addUserIds.indexOf(item.customerIds[i].userIds[t]) == -1) {
+                                addUserIds.push(item.customerIds[i].userIds[t]);
+                            }
                         }
+
+                    }
+                    if (item.customerIds[i].code == customerId) {
+                        index = i;
+                        pushUserIds = item.customerIds[i].userIds;
                     }
 
                 }
-                if (item.customerIds[i].code == customerId) {
-                    index = i;
-                    pushUserIds = item.customerIds[i].userIds;
+                item.userIds = addUserIds;
+                item.customerIds.splice(index, 1);
+                item.modifiedOn = Date.now();
+                var pUserIds = [];
+                var pNewUserIds = [];//如果有另一张卡也存在信息则推送修改后的数据到手机端
+                for (var p = 0; p < pushUserIds.length; p++) {
+                    if (item.userIds.indexOf(pushUserIds[p]) == -1) {
+                        pUserIds.push(pushUserIds[p]);
+                    } else {
+                        pNewUserIds.push(pushUserIds[p]);
+                    }
                 }
+                item.save(function (err) {
+                    if (err) {
+                        console.log('unBindCodeFromUser', err);
+                        return  Promise.reject(errInfo.removePhotosFromPP.saveError);
+                    }
 
-            }
-            item.userIds = addUserIds;
-            item.customerIds.splice(index, 1);
-            item.modifiedOn = Date.now();
-            var pUserIds = [];
-            var pNewUserIds = [];//如果有另一张卡也存在信息则推送修改后的数据到手机端
-            for (var p = 0; p < pushUserIds.length; p++) {
-                if (item.userIds.indexOf(pushUserIds[p]) == -1) {
-                    pUserIds.push(pushUserIds[p]);
-                } else {
-                    pNewUserIds.push(pushUserIds[p]);
-                }
-            }
-            item.save(function (err) {
-                if (err) {
-                    console.log('unBindCodeFromUser', err);
-                    return cb(errInfo.removePhotosFromPP.saveError);
-                }
+                    socketController.pushToUsers(pushMsgType.delPhotos, pUserIds, pubScribeList.pushDelPhotos,
+                        {
+                            id: item._id
+                        }, function () {
 
-                socketController.pushToUsers(pushMsgType.delPhotos, pUserIds, pubScribeList.pushDelPhotos,
-                    {
-                        id: item._id
-                    }, function () {
+                        });
 
-                    });
+                    socketController.pushToUsers(pushMsgType.photoSend, pNewUserIds, pubScribeList.pushNewPhotoCount,
+                        {
+                            c: 1
+                        }, function () {
 
-                socketController.pushToUsers(pushMsgType.photoSend, pNewUserIds, pubScribeList.pushNewPhotoCount,
-                    {
-                        c: 1
-                    }, function () {
+                        });
 
-                    });
+                    count++;
+                    if (count == list.length) {
 
-                count++;
-                if (count == list.length) {
-
-                    return cb(true);
-
-                }
-            })
-
-        }, function (err) {
-
-            if (err == true) {
+                        return true;
+                    }
+                })
+            });
+        })
+        .then(function (result) {
+            if(result){
                 request.post({
                     url: config.MasterAPIList.removePhotosFromPP,
                     body: {photoIds: photoIds, pp: customerId},
                     json: true
-                }, function (err, r, reply) {
-                    if (err) {
-                        console.log(err);
-                    }
-                })
-                res.ext.json();
-            } else {
-                res.ext.json(err);
+                });
+                return res.ext.json();
+            }else {
+                return res.ext.json(result);;
             }
         })
-    })
+        .catch(function (err) {
+            return res.ext.json(errInfo.removePhotosFromPP.promiseError);
+        });
 }
 

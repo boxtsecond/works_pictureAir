@@ -13,7 +13,6 @@ var pushMsgType = require('../tools/enums.js').pushMsgType;
 var pppController = require('./photoPassPlusController.js');
 var socketController = require('./socketController.js');
 var pubScribeList = require('../tools/socketApi.js').pubScribeList;
-var newError = require('../lib/util/util.js').newError;
 
 exports.getCouponsByUserId = function (req, res, next) {
     var params = req.ext.params;
@@ -348,12 +347,11 @@ function getListByUserIdAndOType(oType, userId) {
                             }
                             count++;
                             if (count == collection.length) {
-                                flag = 1;
+                                return [1, collection];
                             }
-                            return [flag, collection];
                         })
                         .catch(function (err) {
-                            throw new newError(JSON.stringify(errInfo.getCouponsByUserId.pppTypeError));
+                            return Promise.reject(errInfo.getCouponsByUserId.pppTypeError);
                         });
                 })
             }else {
@@ -387,11 +385,8 @@ function getListByUserIdAndOType(oType, userId) {
                     console.log('******************');
                     console.log(list);
 
-                    return [false, {result: {couponList: list}}];
-                    // return cb(null, {couponList: collection});
-//                    return response(res, errInfo.ok.code, '', {couponList: collection});
+                    return [0, {result: {couponList: list}}];
                 } else {
-//                    return response(res, errInfo.ok.code, '', {PPPList: collection});
                     return [0, {result: {PPPList: collection}}];
                 }
             }
@@ -446,8 +441,8 @@ function getListByUserIdAndOType(oType, userId) {
             }
         })
         .catch(function (error) {
-            if(error.name == errInfo.errorType){
-                return JSON.parse(error.message);
+            if(error.status){
+                return error;
             }else {
                 console.log(error);
                 return errInfo.getCouponsByUserId.pppError;
