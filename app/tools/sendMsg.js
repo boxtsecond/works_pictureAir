@@ -148,14 +148,26 @@ function sendSMS(lg,type,phone,dReplaceArray,msgid,sendTime){
          });
     }).then(function(obj){
         //console.log(obj)
-        //return sendSMSFrom3tong(obj.phones,obj.data.sign,obj.data.content,obj.msgid,obj.sendTime);
-        return {
-            obj:obj,
-            body:{ msgid: 'bb6b0fa0b63011e6a30c4fe434712634',
-                result: '0',
-                desc: '提交成功',
-                failPhones: '' }
-        };
+        return sendSMSFrom3tong(obj.phones,obj.data.sign,obj.data.content,obj.msgid,obj.sendTime).then(function(res){
+            return {
+                obj:obj,
+                body:res.body
+            };
+        }).catch(function(err){
+                //console.error(err)
+            return {
+                obj:obj,
+                body:{}
+            };
+       });
+
+        //return {
+        //    obj:obj,
+        //    body:{ msgid: 'bb6b0fa0b63011e6a30c4fe434712634',
+        //        result: '0',
+        //        desc: '提交成功',
+        //        failPhones: '' }
+        //};
 
     }).then(function(res){
         if(res.body.result==0)return Promise.resolve(res);

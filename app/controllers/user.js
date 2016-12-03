@@ -585,11 +585,12 @@ function forgotPassword(req,res){
 }
 
 function sendEmail(req,res){
-    var params = req.ext.params;
+
 }
+//登陆之后才能切换
+//lg
 function switchLanguage(req,res){
-
-
+ // 重新生成token
 }
 
 //验证用户是否点击email
