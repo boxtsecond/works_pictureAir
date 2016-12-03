@@ -582,6 +582,23 @@ function forgotPassword(req,res){
 
 }
 
+
+// 验证用户名必须是email
+// 验证用户名必须存在
+// 发送验证email信息
+function filterParamsSendEmail(req){
+    return new Promise(function (resolve, reject) {
+        var result={
+            params:req.ext.params,
+            isEmail:false
+        };
+        if(!req.ext.haveOwnproperty(result.params,'username')){
+            return reject(errInfo.userParamUsernameError);
+        }else if(verifyreg.isEmail(result.params.username.trim().toLowerCase())){
+            result.isEmail=true; return resolve(result);
+        }else return  resolve(result);
+    });
+};
 function sendEmail(req,res){
 
 }
