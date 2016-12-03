@@ -5,7 +5,8 @@ var options={};
 var config=
 {
     siteInfo:[],
-    "siteId" : {type: String, index: true},   //国家
+    "siteId" : {type: String, index: true},   //乐园
+    version: {type: Number},
     country: {type: String, index: true},   //国家
     province: String,   //省
     city: String,   //城市

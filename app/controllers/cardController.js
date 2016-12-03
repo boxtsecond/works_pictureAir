@@ -27,9 +27,6 @@ exports.getCouponsByUserId = function (req, res, next) {
             return res.ext.json(result);
         })
         .catch(function (error) {
-            if(error.status){
-                return res.ext.json(error);
-            }
             return res.ext.json(errInfo.getCouponsByUserId.promiseError);
         });
 }
@@ -325,7 +322,8 @@ function getListByUserIdAndOType(oType, userId) {
             if (collection) {
                 var count = 0;
                 var countType = {type: false};
-                return Promise.each(collection, function (ppp) {
+                var data = [];
+                Promise.each(collection, function (ppp) {
                     ppp._doc.isExpired = false;
                     if (ppp.expiredOn && ppp.expiredOn < Date.now()) {
                         ppp._doc.isExpired = true;
@@ -346,14 +344,16 @@ function getListByUserIdAndOType(oType, userId) {
                                 ppp._doc.codeDesc = pType.codeDesc;
                             }
                             count++;
-                            if (count == collection.length) {
-                                return [1, collection];
+                            if (count == collection.length){
+                                data[0] = 1;
+                                data[1] = collection;
                             }
                         })
                         .catch(function (err) {
                             return Promise.reject(errInfo.getCouponsByUserId.pppTypeError);
                         });
                 })
+                return data;
             }else {
                 if (oType == codeType.coupon) {
                     var baklist = collection.sort(function (a, b) {
@@ -436,8 +436,9 @@ function getListByUserIdAndOType(oType, userId) {
                 if(result[1].result){
                     resultObj.result = result[1].result;
                     return resultObj;
+                }else {
+                    return errInfo.getCouponsByUserId.countError;
                 }
-                return errInfo.getCouponsByUserId.countError;
             }
         })
         .catch(function (error) {

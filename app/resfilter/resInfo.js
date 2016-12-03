@@ -111,7 +111,7 @@ var errInfo={
 
     "socketController": {
         redisSetError: {status: 3022, msg: "system error", desc: "set token to redis error"},
-        redisGetError: {status: 3023, msg: "system error", desc: "set token to redis error"},
+        redisGetError: {status: 3023, msg: "system error", desc: "get token from redis error"},
         APNSConnectError: {status: 4023, msg: "params is incomplete", desc: "missing userId"},
         APNSDisconnectError: {status: 4024, msg: "params is incomplete", desc: "missing userId"},
         clearSocketData: {status: 4025, msg: "params is incomplete", desc: "missing userId"},
@@ -128,6 +128,25 @@ var errInfo={
         saveError: {status: 3025, msg: "system error", desc: "save photo to db error"},
 
     },
+    "getAllParks": {
+        notFind: {status: 4028, msg: "not find park", desc: "not find park from db"},
+        redisGetError: {status: 3026, msg: "system error", desc: "get parks form redis error"},
+        redisSetError: {status: 3027, msg: "system error", desc: "set parkVersion to redis error"},
+        promiseError: {status: 3028, msg: "system error", desc: "promise error"}
+    },
+    "getParksVersionBySiteId": {
+        paramsError: {status: 4029, msg: "params is incomplete", desc: "missing siteId"},
+        redisGetError: {status: 3029, msg: "system error", desc: "get parks form redis error"},
+        promiseError: {status: 3030, msg: "system error", desc: "promise error"},
+        parkError: {status: 3031, msg: "system error", desc: "get parkModel from db error"},
+    },
+    "getParkBySiteId": {
+        paramsError: {status: 4030, msg: "params is incomplete", desc: "missing siteId"},
+        notFind: {status: 4031, msg: "not find park", desc: "not find park from db"},
+        redisGetError: {status: 3032, msg: "system error", desc: "get parks form redis error"},
+        redisSetError: {status: 3033, msg: "system error", desc: "set Park_Cache to redis error"},
+        promiseError: {status: 3034, msg: "system error", desc: "promise error"}
+    }
 
     //-------------------system 5x 9x-------------------
 };

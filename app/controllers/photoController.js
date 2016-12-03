@@ -370,7 +370,7 @@ function getOptions(params) {
 
 exports.removePhotosFromPP = function (req, res, next) {
     var params = req.ext.params;
-    if (req.ext.haveOwnproperty(params, ['ids', 'pp'])) {
+    if (!req.ext.haveOwnproperty(params, ['ids', 'pp'])) {
         res.ext.json(errInfo.removePhotosFromPP.paramsError);
     }
     var customerId = params.pp;
@@ -389,7 +389,8 @@ exports.removePhotosFromPP = function (req, res, next) {
     photoModel.findAsync({'customerIds.code': customerId, _id: {$in: ids}})
         .then(function (list) {
             var count = 0;
-            return Promise.each(list, function (item) {
+            var flag = false;
+            Promise.mapSeries(list, function (item) {
                 var index = -1;
                 var pushUserIds = [];
                 photoIds.push(item.photoId);
@@ -426,7 +427,6 @@ exports.removePhotosFromPP = function (req, res, next) {
                 item.save(function (err) {
                     if (err) {
                         console.log('unBindCodeFromUser', err);
-                        return  Promise.reject(errInfo.removePhotosFromPP.saveError);
                     }
 
                     socketController.pushToUsers(pushMsgType.delPhotos, pUserIds, pubScribeList.pushDelPhotos,
@@ -446,10 +446,15 @@ exports.removePhotosFromPP = function (req, res, next) {
                     count++;
                     if (count == list.length) {
 
-                        return true;
+                        flag = true;
                     }
                 })
             });
+            if(flag){
+                return true;
+            }else {
+                return  Promise.reject(errInfo.removePhotosFromPP.saveError);
+            }
         })
         .then(function (result) {
             if(result){
