@@ -583,6 +583,16 @@ function forgotPassword(req,res){
     //邮箱验证是否点击相关连接
 
 }
+
+function sendEmail(req,res){
+
+
+}
+function switchLanguage(req,res){
+
+
+}
+
 //验证用户是否点击email
 function verifyEmail(req,res){
     // 获取msgid
@@ -594,5 +604,7 @@ function verifyEmail(req,res){
 module.exports={
     login:login,
     register:register,
-    sendSMS:sendSMS
+    sendSMS:sendSMS,
+    sendEmail:sendEmail,
+    switchLanguage:switchLanguage
 };
