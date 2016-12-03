@@ -41,7 +41,7 @@ var errInfo={
 
     "authUnauthorized":{ status: 420, msg: 'unauthorized',desc:"unauthorized"},
     "authUnauthorizedExpire":{ status: 421, msg: 'unauthorized',desc:"unauthorized Expire error"},
-    "userSendSMSParamPhoneParameterError":{status: 420, msg:"param not valid",desc:"phone is required"},
+    "userSendSMSParamPhoneParameterError":{status: 432, msg:"param not valid",desc:"phone is required"},
     "userSendSMSParamTypeVierifyError":{status: 423, msg:"param not valid",desc:"type vierify Error"},
     "userSendSMSError":{status: 424, msg:"send sms Error",desc:"type vierify Error"},
     "userSendSMSValidateSendingCodeError":{status: 425, msg:"sms Sending",desc:"sms sending "},
@@ -50,6 +50,8 @@ var errInfo={
     "userVerifyVcodeError":{status: 428, msg:"verify code Error",desc:"verify code Error"},
     "userLoginParamUserNameError":{status: 429, msg:"userName is not exist",desc:"userName is not exist"},
     "userLoginParamUserNameisabledError":{status: 430, msg:"userName is disabled",desc:"userName is disabled"},
+    "userSendEmailParamError":{status: 431, msg:"param not valid",desc:"userName is must email"},
+    //433
     //402
 
     "getCouponsByUserId":{

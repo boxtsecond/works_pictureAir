@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 var options={versionKey: false};
 var config= {
     // 图片总数pictureCount  pp卡总数pictureCount 优惠券总数coupons
-    userName:{type:String,index:true},// 用户名
+    userName:{type:String,index:true,required: true, unique: true },// 用户名
     mobile: {type: String,index: true}, //电话号码
     email: {type: String, index: true,default:''}, //Email
     emailVerified:{type: Boolean, default: false},//Email 是否已经验证通过

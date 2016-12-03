@@ -63,7 +63,11 @@
      "guestExpireTime":604800,
      "expireTime":604800,
      "userExpireTime":604800,
-     "validateCodeExpireTime":60000
+     "validateCodeExpireTime":60000,
+     "ForgotPwdMsgExpireTime":60000
+  },
+  "apiCall":{
+    "sendEmailMaxnum":3
   },
   "token":{
     "iss":"pictureAir",

@@ -9,6 +9,7 @@ router.get('/',function(req,res){
 router.post('/login',users.login);
 router.post('/register',users.register);
 router.post('/sendsms',users.sendSMS);
+router.post('/sendemailpwd',users.sendEmailForgotPwdMsg);
 router.get('/register',function(req,res){
     //console.log(req.ext);
     //console.log(getReqParam(req,res));
