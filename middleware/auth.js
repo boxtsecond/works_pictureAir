@@ -27,7 +27,6 @@ function authGuest(req,res,next){
     var token=getAccessToken(req);
     if(token) {
       access_token.verifyGuestAccess_token(token).then(function(token){
-          console.log(token)
           req.ext.params.token=token;
           req.ext.params.token.expire_in=Math.floor(token.exp-Math.floor(Date.now() / 1000));
           return next();

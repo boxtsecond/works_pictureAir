@@ -40,7 +40,6 @@ function filterParams(req){
             isEmail:false,
             isMobile:false
         };
-        console.log(req.ext.params);
         if(req.ext.haveOwnproperty(result.params,'token')){
         }
         if(!req.ext.haveOwnproperty(result.params,'username')){
@@ -173,7 +172,6 @@ function login(req,res){
                              });
                          }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
-                        console.error(err)
                          if(req.ext.isArray(err)) return  Promise.reject(err);
                          else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
                     });
