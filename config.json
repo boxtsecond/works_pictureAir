@@ -6,7 +6,7 @@
       "port":1008,
       "bport":1009,
       "arbport":1010,
-      "dbName":"pictureAirTest",
+      "dbName":"pictureAir",
       "user": "",
       "pass": ""
     },
