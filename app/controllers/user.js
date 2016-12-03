@@ -585,8 +585,7 @@ function forgotPassword(req,res){
 }
 
 function sendEmail(req,res){
-
-
+    var params = req.ext.params;
 }
 function switchLanguage(req,res){
 

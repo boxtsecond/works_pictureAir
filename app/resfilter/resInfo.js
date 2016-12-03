@@ -12,9 +12,8 @@
 //40000  80000 prompt 用户输入错误(需要提示给用户) 对外的
 //50000  90000 system 服务器内部错误 （内部日志记录）
 var errInfo={
-    //"dbErrorMax": 316,
-    //"userErrorMax": 414,
-    "errorType": 'newError',
+    //"dbErrorMax": 3025,
+    //"userErrorMax": 4027,
     //-------------------normal 2x 6x -----------------
     "success": {status: 200, msg: "success", result:{}},
     //-------------------prompt 3x 4x 7x 8x -------------------
@@ -125,7 +124,7 @@ var errInfo={
     },
     "removePhotosFromPP": {
         paramsError: {status: 4008, msg: "params is incomplete", desc: "missing ids or pp"},
-        photoError: {status: 3024, msg: "system error", desc: "get photoModel from db error"},
+        promiseError: {status: 3024, msg: "system error", desc: "promise error"},
         saveError: {status: 3025, msg: "system error", desc: "save photo to db error"},
 
     },

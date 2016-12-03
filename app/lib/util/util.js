@@ -234,30 +234,22 @@ function customDateDiff(strInterval, dtStart, dtEnd) {
     }
 }
 
-function newError(msg) {
-    this.message = msg || 'Error';
-    this.name = 'newError';
-}
-newError.prototype = new Error();
-newError.prototype.constructor = newError;
-
-module.exports={
-    enUrl:enUrl,
-    deUrl:deUrl,
-    memoryPercentageLimit:memoryPercentageLimit,
-    arrayIsexist:arrayIsexist,
-    arrayIsexistEnginelist:arrayIsexistEnginelist,
-    formatDate:formatDate,
-    getLocationIdFromFilename:getLocationIdFromFilename,
-    getDateStringFromData:getDateStringFromData,
-    getDataString:getDataString,
-    getFileNameFromPath:getFileNameFromPath,
-    Padstr:Padstr,
-    getphotocode:getphotocode,
-    generatorCode:generatorCode,
-    cloneObj:cloneObj,
+module.exports= {
+    enUrl: enUrl,
+    deUrl: deUrl,
+    memoryPercentageLimit: memoryPercentageLimit,
+    arrayIsexist: arrayIsexist,
+    arrayIsexistEnginelist: arrayIsexistEnginelist,
+    formatDate: formatDate,
+    getLocationIdFromFilename: getLocationIdFromFilename,
+    getDateStringFromData: getDateStringFromData,
+    getDataString: getDataString,
+    getFileNameFromPath: getFileNameFromPath,
+    Padstr: Padstr,
+    getphotocode: getphotocode,
+    generatorCode: generatorCode,
+    cloneObj: cloneObj,
     shortUrlGenerate: shortUrlGenerate,
     customFormat: customFormat,
-    customDateDiff: customDateDiff,
-    newError: newError
+    customDateDiff: customDateDiff
 }
