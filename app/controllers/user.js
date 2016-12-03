@@ -131,6 +131,8 @@ function login(req,res){
                 if(access_token){
                     var user=JSON.parse(access_token);
                     if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
+                    else if(user.password==""||user.password!=req.ext.md5(userobj.params.password))
+                         return  Promise.reject(0);
                     else  return  Promise.resolve({
                         user:user,
                         userobj:userobj,
@@ -139,6 +141,7 @@ function login(req,res){
                 }else  return  Promise.reject(null);
             }).catch(function(err){
                 if(req.ext.isArray(err)) return  Promise.reject(err);
+                else if(req.ext.isnumber(err)) return  Promise.reject(errInfo.userLoginPasswordError);
                 else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
                 else return Promise.resolve({ user:null,  userobj:userobj,md5Useranme:md5Useranme});
             });
@@ -149,6 +152,8 @@ function login(req,res){
                     return  userMode.findOne({ email: obj.userobj.params.username}).then(function (user) {
                         if(user) {
                             if (user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                            else if(user.password==""||user.password!=req.ext.md5(obj.userobj.params.password))
+                                return  Promise.reject(0);
                             else return Promise.resolve({
                                 user: new resfilter_user.filterUserToredis(user,
                                     obj.userobj.params.token.t, obj.userobj.params.token.lg
@@ -157,6 +162,7 @@ function login(req,res){
                         } else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
                           if(req.ext.isArray(err)) return  Promise.reject(err);
+                          else if(req.ext.isnumber(err)) return  Promise.reject(errInfo.userLoginPasswordError);
                           else return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
                     });
                 }else if(obj.userobj.isMobile) {
@@ -165,6 +171,8 @@ function login(req,res){
                              //console.log(obj.userobj.params);
                              if (user.disabled)
                                  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                             else if(user.password==""||user.password!=req.ext.md5(obj.userobj.params.password))
+                                 return  Promise.reject(0);
                              else  return Promise.resolve({
                                  user: new resfilter_user.filterUserToredis(user,
                                      obj.userobj.params.token.t, obj.userobj.params.token.lg
@@ -173,6 +181,7 @@ function login(req,res){
                          }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
                          if(req.ext.isArray(err)) return  Promise.reject(err);
+                         else if(req.ext.isnumber(err)) return  Promise.reject(errInfo.userLoginPasswordError);
                          else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
                     });
                }else  return  Promise.reject(errInfo.userParamUserNameParameterError);
@@ -300,7 +309,6 @@ function register(req,res){
                     //console.log(access_token);
                     return Promise.resolve([userobj[0],userobj[1],configData.expireTime.expireTime,access_token,md5Useranme]);
                 }).catch(function(er){
-                    console.error("....",er)
                     return Promise.reject(errInfo.userRegisterGenerateError);
                 });
             }

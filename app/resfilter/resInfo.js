@@ -51,6 +51,7 @@ var errInfo={
     "userLoginParamUserNameError":{status: 429, msg:"userName is not exist",desc:"userName is not exist"},
     "userLoginParamUserNameisabledError":{status: 430, msg:"userName is disabled",desc:"userName is disabled"},
     "userSendEmailParamError":{status: 431, msg:"param not valid",desc:"userName is must email"},
+    "userLoginPasswordError":{status: 433, msg:"password is error",desc:"password is error"},
     //433
     //402
 
