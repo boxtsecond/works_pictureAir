@@ -131,7 +131,7 @@ function login(req,res){
                 if(access_token){
                     var user=JSON.parse(access_token);
                     if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
-                    else if(user.password==""||user.password!=req.ext.md5(userobj.params.password))
+                    else if(user.user.password==""||user.user.password!=req.ext.md5(userobj.params.password))
                          return  Promise.reject(0);
                     else  return  Promise.resolve({
                         user:user,
@@ -536,15 +536,15 @@ function resetPassword(req,res){
     }) .then(function(obj){
         if(obj.isEmail){
             //  从redis 里面获取vcode 并比对
-            //redisclient.get("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase()))
-            //return redisclient.exists("sendEmail:"+req.ext.md5(obj.params.v.toString().toLocaleLowerCase())).then(function(access_token){
-            //    if(!access_token){
-            //        return Promise.resolve(obj);
-            //    }else   return  Promise.reject(null);
-            //}).catch(function(err){
-            //    if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
-            //    else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
-            //});
+            redisclient.get("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase()))
+            return redisclient.exists("sendEmail:"+req.ext.md5(obj.params.v.toString().toLocaleLowerCase())).then(function(access_token){
+                if(!access_token){
+                    return Promise.resolve(obj);
+                }else   return  Promise.reject(null);
+            }).catch(function(err){
+                if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+                else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+            });
         }else   if(obj.isMobile){
 
             //return redisclient.exists("validateCode:"+smsobj.params.phone).then(function(access_token){
@@ -814,7 +814,8 @@ module.exports={
     register:register,
     sendSMS:sendSMS,
     sendEmailForgotPwdMsg:sendEmailForgotPwdMsg,
-    switchLanguage:switchLanguage
+    switchLanguage:switchLanguage,
+    resetPassword:resetPassword
 };
 //signin //登陆
 //signup 注册
