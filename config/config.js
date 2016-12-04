@@ -26,7 +26,7 @@ module.exports.config={
     },
     "redis":{
         expireTime: 60 * 60 * 24 * 30,
-        parkVersionName: "Park_Version_1",
+        parkVersionName: "Park_Version_",
         parkName: "Park_Cache",
     },
     "dashboard": {
