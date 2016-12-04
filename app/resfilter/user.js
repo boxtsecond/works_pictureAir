@@ -8,6 +8,7 @@ function  filterUser(user){
     this.name=user.name; if(!this.name)this.name="";
     this.userName=user.userName;if(!this.userName)this.userName="";
     this.password=user.password;if(!this.password)this.password="";
+    this.userType=user.userType;if(!this.userType)this.userType="user";
     this.mobile=user.mobile; if(!this.mobile)this.mobile="";
     this.email=user.email; if(!this.email)this.email="";
     this.country=user.country;if(!this.country)this.country="";

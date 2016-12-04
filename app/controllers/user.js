@@ -270,7 +270,6 @@ function register(req,res){
                 }else{
                       if(userobj.isMobile){
                           // 验证验证码
-
                           return redisclient.get("validateCode:"+"0-"+req.ext.md5(userobj.params.username.toString().toLocaleLowerCase())).then(function(validateCode){
                               if(validateCode){
                                    if(Number(validateCode)==Number(userobj.params.vcode)) {
@@ -360,7 +359,16 @@ function register(req,res){
             });
         })
         .then(function(userobj){
-            //从redis删除验证码
+            if(userobj[0][0].isMobile){
+                //从redis删除验证码
+                 return redisclient.del("validateCode:"+"0-"+req.ext.md5(userobj[0][0].params.username.toString().toLocaleLowerCase()))
+                     .then(function(validateCode){
+                         return  Promise.resolve(userobj);
+                     }).catch(function(err){ return  Promise.resolve(userobj);  });
+            }else return userobj;
+          }
+        )
+        .then(function(userobj){
             //console.log(new resfilter_user.filterUser(userobj[1]))
             res.ext.json([200,'success',{
                 user:userobj[1],
@@ -563,11 +571,71 @@ function resetPassword(req,res){
             //return redisclient.exists("validateCode:"+smsobj.params.phone).then(function(access_token){
         }
         else  return Promise.reject(errInfo.userResetPasswordParamVcodeParameterError);
-        }).then(function(obj){
+        }).then(function(userobj){
+        // 从redis mongodb  查找用户是否被禁用
+        //查询redis中是否存在 access_token
+        var md5Useranme =req.ext.md5(userobj.params.username);
+        // console.log('access_token',md5Useranme,userobj);
+        return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
+            if(access_token){
+                var user=JSON.parse(access_token);
+                if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
+                else  return  Promise.resolve({
+                        user:user,
+                        userobj:userobj,
+                        md5Useranme:md5Useranme
+                    });
+            }else  return  Promise.reject(null);
+        }).catch(function(err){
+            if(req.ext.isArray(err)) return  Promise.reject(err);
+            else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+            else return Promise.resolve({ user:null,  userobj:userobj,md5Useranme:md5Useranme});
+        });
+    })
+        .then(function(obj){
+            if(obj.userobj.isEmail){
+                return  userMode.findOne({ email: obj.userobj.params.username}).then(function (user) {
+                    if(user) {
+                        if (user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+
+                        else return Promise.resolve({
+                                user: new resfilter_user.filterUserToredis(user,
+                                    obj.userobj.params.token.t, obj.userobj.params.token.lg
+                                ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                            });
+                    } else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
+                }).catch(function (err) {
+                    if(req.ext.isArray(err)) return  Promise.reject(err);
+                    else return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
+                });
+            }else if(obj.userobj.isMobile) {
+                return userMode.findOne({mobile: obj.userobj.params.username}).then(function (user) {
+                    if(user) {
+                        //console.log(obj.userobj.params);
+                        if (user.disabled)
+                            return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                        else  return Promise.resolve({
+                                user: new resfilter_user.filterUserToredis(user,
+                                    obj.userobj.params.token.t, obj.userobj.params.token.lg
+                                ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                            });
+                    }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
+                }).catch(function (err) {
+                    if(req.ext.isArray(err)) return  Promise.reject(err);
+                    else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
+                });
+            }else  return  Promise.reject(errInfo.userParamUserNameParameterError);
+      }).then(function(obj){
           console.log(obj);
+        //userMode.up
           //修改mongodb  修改redis
         // 从redis 删除 vcode
 
+    }).then(function(userobj){
+        //return redisclient.del("validateCode:"+"0-"+req.ext.md5(userobj[0][0].params.username.toString().toLocaleLowerCase()))
+        //    .then(function(validateCode){
+        //        return  Promise.resolve(userobj);
+        //    }).catch(function(err){ return  Promise.resolve(userobj);  });
     }).catch(function(err){
             res.ext.json(err);
         });
