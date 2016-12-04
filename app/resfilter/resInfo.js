@@ -139,15 +139,16 @@ var errInfo={
     },
     "getParksVersionBySiteId": {
         paramsError: {status: 4029, msg: "params is incomplete", desc: "missing siteId"},
+        notFind: {status: 4030, msg: "not find park", desc: "not find park from db"},
         redisGetError: {status: 3029, msg: "system error", desc: "get parks form redis error"},
         promiseError: {status: 3030, msg: "system error", desc: "promise error"},
         parkError: {status: 3031, msg: "system error", desc: "get parkModel from db error"},
     },
     "getParkBySiteId": {
-        paramsError: {status: 4030, msg: "params is incomplete", desc: "missing siteId"},
-        notFind: {status: 4031, msg: "not find park", desc: "not find park from db"},
+        paramsError: {status: 4031, msg: "params is incomplete", desc: "missing siteId"},
+        notFind: {status: 4032, msg: "not find park", desc: "not find park from db"},
         redisGetError: {status: 3032, msg: "system error", desc: "get parks form redis error"},
-        redisSetError: {status: 3033, msg: "system error", desc: "set Park_Cache to redis error"},
+        redisSetError: {status: 3033, msg: "system error", desc: "set Park_Version_ to redis error"},
         promiseError: {status: 3034, msg: "system error", desc: "promise error"}
     }
 
