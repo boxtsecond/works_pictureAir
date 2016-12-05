@@ -6,7 +6,7 @@ var photoController = require('../controllers/photoController.js');
 
 var users=require("../controllers/user.js");
 var userController = require('../controllers/userController.js');
-models.exports={
+module.exports={
     users:users,
     userController:userController,
     cacheController:cacheController,
