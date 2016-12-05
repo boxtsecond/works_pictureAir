@@ -196,7 +196,7 @@ function login(req,res){
                     audience:obj.md5Useranme,
                     t:obj.userobj.params.token.t,//web photo
                     // lgcode:obj.userobj.params.token.lg,
-                    lgcode:obj.user.lgcode,
+                    lgcode:obj.user.user.lgcode,
                     appid:obj.userobj.params.token.appid,
                     expnumber:configData.expireTime.expireTime
                 };
@@ -325,7 +325,7 @@ function register(req,res){
                     }
                    user.registerTerminal=registerTerminalArray[userobj[1].params.token.t];
                    user.lgsyscode=userobj[1].params.token.lg;
-                   user.lgusercode=userobj[1].params.token.lg;
+                   user.lgcode=userobj[1].params.token.lg;
                    user.name=userobj[1].params.username;
                    user.userName=userobj[1].params.username;
                    user.disabled=false;
@@ -411,7 +411,6 @@ function filterParamsSendSMS(req){
     });
 };
 function sendSMS(req,res){
-    console.log(req);
     filterParamsSendSMS(req).
         // 验证码是否已经发送
         then(function(smsobj){

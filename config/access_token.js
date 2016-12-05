@@ -58,7 +58,6 @@ function verifyGuestAccess_token(token){
     return getcert('public.pem')
     //return   fs.readFileAsync(path.join(__dirname,'public.pem'))
         .then(function(certPublic){
-            console.log(certPublic)
             return jwt.verify(token, certPublic, { algorithm: 'RS512'});
         });
 }

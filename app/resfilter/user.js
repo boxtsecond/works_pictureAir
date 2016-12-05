@@ -27,13 +27,14 @@ function  filterUser(user){
     this.emailVerified=user.emailVerified;
     this.disabled=user.disabled;
     this.disablereason=user.disablereason;
+    this.lgcode=user.lgcode;if(!this.lgcode)this.lgcode="en-US";
     //this.cart={};
     //console.log(this);
 }
 function filterUserToredis(user,t,lg){
     this.userid=user._id;
     this.t=t;
-    this.lgcode=lg;
+    // this.lgcode=lg;
     this.user=new filterUser(user);
 }
 function  filterUserRes(user){
@@ -56,6 +57,7 @@ function  filterUserRes(user){
     this.emailVerified=user.emailVerified;
     this.disabled=user.disabled;
     this.disablereason=user.disablereason;
+    this.lgcode=user.lgcode;
     //this.cart={};
     //console.log(this);
 }

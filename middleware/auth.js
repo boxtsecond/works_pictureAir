@@ -28,9 +28,9 @@ function getAccessToken(req){
 function authGuest(req,res,next){
     var token=getAccessToken(req);
     if(token) {
-      access_token.verifyGuestAccess_token(token).then(function(token){
-          req.ext.params.token=token;
-          req.ext.params.token.expire_in=Math.floor(token.exp-Math.floor(Date.now() / 1000));
+      access_token.verifyGuestAccess_token(token).then(function(toke){
+          req.ext.params.token=toke;
+          req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
           return next();
       }).catch(function(err){
           return res.ext.json({ status: 421, msg: 'unauthorized'});
