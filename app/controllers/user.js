@@ -272,7 +272,7 @@ function register(req,res){
                 }else{
                       if(userobj.isMobile){
                           // 验证验证码
-                          return redisclient.get("validateCode:"+"0-"+req.ext.md5(userobj.params.username.toString().toLocaleLowerCase())).then(function(validateCode){
+                          return redisclient.get("validateCode:"+"0-"+req.ext.md5(userobj.params.username.toString().trim().toLocaleLowerCase())).then(function(validateCode){
                               if(validateCode){
                                    if(Number(validateCode)==Number(userobj.params.vcode)) {
                                       // 注册的时候验证手机号码的验证码
@@ -285,7 +285,6 @@ function register(req,res){
                                   else  return  Promise.reject(null);
                               }else   return  Promise.reject(null);
                           }).catch(function(err){
-                              console.log(err);
                               if(err)  return  Promise.reject(errInfo.userVerifyVcodeError);
                               else return  Promise.reject(errInfo.userVerifyVcodeError);
                           });
@@ -383,8 +382,6 @@ function register(req,res){
             res.ext.json(err);
      });
 };
-
-
 //{
 //    phone:string，必填，手机号，（例如：+8613598734567）
 //    msgType:string,选填，默认为register，可选值（forgotPassword,register）
@@ -403,8 +400,7 @@ function filterParamsSendSMS(req){
             return reject(errInfo.userParamPhoneParameterError);
         }
         else if(req.ext.haveOwnproperty(result.params,'type')){
-            //console.log(result.params.type)
-            if([0,1].indexOf(result.params.type)>=0) {
+            if([0,1].indexOf(Number(result.params.type))>=0) {
                 result.type=result.params.type;
                 return  resolve(result);
             }
@@ -414,6 +410,7 @@ function filterParamsSendSMS(req){
     });
 };
 function sendSMS(req,res){
+    console.log(req);
     filterParamsSendSMS(req).
         // 验证码是否已经发送
         then(function(smsobj){
@@ -559,9 +556,9 @@ function resetPassword(req,res){
                     }
                 }).catch(function(err){
                     if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
-                    else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+                    else return  Promise.reject(errInfo.userResetPasswordVcodeParameterError);
                 });
-        }else   if(obj.isMobile){
+        }else if(obj.isMobile){
             return redisclient.get("validateCode:"+"1-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
                 if(!code&&code==""){
                     return Promise.reject(null);
@@ -571,11 +568,11 @@ function resetPassword(req,res){
                 }
             }).catch(function(err){
                 if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
-                else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+                else return  Promise.reject(errInfo.userResetPasswordVcodeParameterError);
             });
             //return redisclient.exists("validateCode:"+smsobj.params.phone).then(function(access_token){
         }
-        else  return Promise.reject(errInfo.userResetPasswordParamVcodeParameterError);
+        else  return Promise.reject(errInfo.userParamUserNameParameterError);
         }).then(function(userobj){
         // 从redis mongodb  查找用户是否被禁用
         //查询redis中是否存在 access_token
@@ -607,9 +604,10 @@ function resetPassword(req,res){
                                     obj.userobj.params.token.t, obj.userobj.params.token.lg
                                 ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
                             });
-                    } else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
+                    } else return  Promise.reject(-1);
                 }).catch(function (err) {
-                    if(req.ext.isArray(err)) return  Promise.reject(err);
+                    if(req.ext.isnumber(err)) return  Promise.reject(errInfo.userLoginParamUserNameError);
+                    else if(req.ext.isArray(err)) return  Promise.reject(err);
                     else return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
                 });
             }else if(obj.userobj.isMobile) {
@@ -622,16 +620,16 @@ function resetPassword(req,res){
                                     obj.userobj.params.token.t, obj.userobj.params.token.lg
                                 ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
                             });
-                    }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
+                    }else return  Promise.reject(-1);
                 }).catch(function (err) {
-                    if(req.ext.isArray(err)) return  Promise.reject(err);
+                    if(req.ext.isnumber(err)) return  Promise.reject(errInfo.userLoginParamUserNameError);
+                    else if(req.ext.isArray(err)) return  Promise.reject(err);
                     else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
                 });
             }else  return  Promise.reject(errInfo.userParamUserNameParameterError);
       }).then(function(obj){
             //console.log(obj.userobj.params.password,obj.user.userid);
             var pwd=req.ext.md5(obj.userobj.params.password);
-            console.log("########",obj,obj.user.password);
             obj.user.user.password=pwd;
             //obj.user.userid  "5843e74a7ead5522ac3ad159"
             //修改mongodb
@@ -639,18 +637,14 @@ function resetPassword(req,res){
                  if(uer&&uer.n>0){
                      return obj;
                  }else {
-
+                     return  Promise.reject(uer);
                  }
            }).catch(function (err) {
                if(req.ext.isArray(err)) return  Promise.reject(err);
-               else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
+               else return Promise.reject(errInfo.userResetPasswordError);
            });
-
-
-
     }).then(function(obj){
             //  修改redis   延期失效
-            console.log("access_token:"+obj.md5Useranme,obj.user.password)
             return redisclient.setex("access_token:"+obj.md5Useranme,configData.expireTime.expireTime,
                 JSON.stringify(obj.user)).then(function(err){
                     return  obj;
@@ -658,30 +652,29 @@ function resetPassword(req,res){
                     return  obj;
                 });
      }) .then(function(obj){
-            return  obj;
+          //  return  obj;
             // 从redis 删除 vcode
-            //if(obj.userobj.isMobile){
-            //    return redisclient.del("validateCode:"+"1-"+obj.md5Useranme)
-            //        .then(function(validateCode){
-            //            return  obj;
-            //        }).catch(function(err){ return  obj;  });
-            //}else {
-            //    return redisclient.del("sendEmail:"+obj.md5Useranme)
-            //        .then(function(validateCode){
-            //            return  obj;
-            //        }).catch(function(err){ return  obj;  });
-            //}
+            if(obj.userobj.isMobile){
+                return redisclient.del("validateCode:"+"1-"+obj.md5Useranme)
+                    .then(function(validateCode){
+                        return  obj;
+                    }).catch(function(err){ return  obj;  });
+            }else {
+                return redisclient.del("sendEmail:"+obj.md5Useranme)
+                    .then(function(validateCode){
+                        return  obj;
+                    }).catch(function(err){ return  obj;  });
+            }
         }
     )
       .then(function(obj){
             res.ext.json([200,'success',{}]);
     }).catch(function(err){
-            console.error(err);
             res.ext.json(err);
         });
 }
 // 忘记密码两种找回方式，手机号,邮件
-//username, vcode手机号验证验证码
+//username, password  vcode手机号验证验证码
 function filterParamsforgotPassword(req){
     return new Promise(function (resolve, reject) {
         var result={
@@ -691,6 +684,8 @@ function filterParamsforgotPassword(req){
         };
         if(!req.ext.haveOwnproperty(result.params,'username')){
             return reject(errInfo.userParamUsernameError);
+        }else if(!verifyreg.verifyPassword(result.params.password.trim().toLowerCase())){
+            return reject(errInfo.userParamPasswordVierifyError);
         }else if(verifyreg.isEmail(result.params.username.trim().toLowerCase())){
             result.isEmail=true; return resolve(result);
         }else if(verifyreg.isMobile(result.params.username.trim().toLowerCase())){
@@ -768,25 +763,17 @@ elemforgotPassword.addListener("send",function(nobj){
                     });
                 });
         }).then(function(obj){
-            //console.log(obj)
-            return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
-                obj.msg.msgid).then(function(err){
-                    return  Promise.resolve(obj);
-                }).catch(function(err){
-                    return Promise.reject(errInfo.userSMSRedisSetValidateCodeError);
-                });
-        }).then(function(obj){
             //存 mongodb
             var userMsg=new userMsgModel();
             userMsg.channelType="email";
             userMsg.msgid=obj.msg.msgid;
             userMsg.sendFrom=obj.msg.sendFrom;
             userMsg.sendTo=[obj.msg.email];
-            userMsg.subject=obj.msg.data.sign,
-                userMsg.content=obj.msg.data.content,
-                userMsg.code=obj.msg.msgid,
+            userMsg.subject=obj.msg.data.sign;
+                userMsg.content=obj.msg.data.content;
+                userMsg.code=obj.msg.msgid;
                 userMsg.validateCode=obj.msg.msgid,
-                userMsg.msgType="forgotPassword",
+                userMsg.msgType="forgotPassword";
                 //userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type],
                 userMsg.expiredTime=rq.util.getNextNumberSecondDate(obj.msg.sendTime,
                     configData.expireTime.ForgotPwdMsgExpireTime);
@@ -797,44 +784,14 @@ elemforgotPassword.addListener("send",function(nobj){
             }).catch(function (err) {
                 return  Promise.reject(errInfo.userSMSdbSaveValidateCodeError);
             });
+        }).catch(function (err) {
+            return redisclient.del("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase())).then(function(err){
+                    return  Promise.resolve(obj);
+                }).catch(function(err){
+                    return Promise.reject(errInfo.userSMSRedisSetValidateCodeError);
+                });
         });
-    //    .then(function(obj){
-    //    return sendMsg.sendEmailforgotPwdMsg(obj.params.token.lg,obj.params.username,new Date())
-    //        .then(function(msg){
-    //            return Promise.resolve({
-    //                msg:msg,obj:obj
-    //            });
-    //        });
-    //}).then(function(obj){
-    //    return redisclient.setex("sendEmail:"+req.ext.md5(obj.msg.email.toString().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
-    //        obj.msg.msgid).then(function(err){
-    //            return  Promise.resolve(obj);
-    //        }).catch(function(err){
-    //            return Promise.reject(errInfo.userSMSRedisSetValidateCodeError);
-    //        });
-    //}).then(function(obj){
-    //    //存 mongodb
-    //    var userMsg=new userMsgModel();
-    //    userMsg.channelType="email";
-    //    userMsg.msgid=obj.msg.msgid;
-    //    userMsg.sendFrom=obj.msg.sendFrom;
-    //    userMsg.sendTo=[obj.msg.email];
-    //    userMsg.subject=obj.msg.data.sign,
-    //        userMsg.content=obj.msg.data.content,
-    //        userMsg.code=obj.msg.msgid,
-    //        userMsg.validateCode=obj.msg.msgid,
-    //        userMsg.msgType="forgotPassword",
-    //        //userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type],
-    //        userMsg.expiredTime=rq.util.getNextNumberSecondDate(obj.msg.sendTime,
-    //            configData.expireTime.ForgotPwdMsgExpireTime);
-    //    userMsg.sendTime=obj.msg.sendTime;
-    //    userMsg.active=false;
-    //    return userMsg.save().then(function(){
-    //        return  Promise.resolve(obj);
-    //    }).catch(function (err) {
-    //        return  Promise.reject(errInfo.userSMSdbSaveValidateCodeError);
-    //    });
-    //})
+
 });
 //elemforgotPassword.emit("send",{ params:
 //{ access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
@@ -877,8 +834,15 @@ function sendEmailForgotPwdMsg(req,res){
             }else   return  Promise.reject(null);
         }).catch(function(err){
             if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
-            else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+            else return  Promise.reject(errInfo.userSendemailValidateSendingCodeError);
         });
+    }).then(function(obj){
+        return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
+            obj.msg.msgid).then(function(err){
+                return  Promise.resolve(obj);
+            }).catch(function(err){
+                return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
+            });
     }).then(function(obj){
         elemforgotPassword.emit("send",obj);
         res.ext.json([200,'success',{}]);
@@ -922,6 +886,11 @@ function verifyEmail(req,res){
         res.ext.json(err);
     });
 }
+function logout(){
+
+
+}
+
 
 
 

@@ -1,7 +1,9 @@
 /**
  * Created by meteor on 16/11/22.
  */
+var redisclient=require("../app/redis/redis").redis;
 var access_token=require("../config/access_token");
+var Promise=require('bluebird');
 function getAccessToken(req){
     var  token=null;
     if(req.ext.haveOwnproperty(req.ext.params,"access_token")){
@@ -29,18 +31,29 @@ function authGuest(req,res,next){
       access_token.verifyGuestAccess_token(token).then(function(token){
           req.ext.params.token=token;
           req.ext.params.token.expire_in=Math.floor(token.exp-Math.floor(Date.now() / 1000));
+          console.log(token)
           return next();
       }).catch(function(err){
-          return res.ext.json({ status: 421, msg: 'unauthorized'});
+          console.error(err);
+          //return res.ext.json({ status: 421, msg: 'unauthorized'});
       })
     }
     else  return res.ext.json({ status: 420, msg: 'unauthorized'});
 }
-//user
-function authUser(req,res){
+// user
+function authUser(req,res,next){
     var token=getAccessToken(req);
     if(token) {
-        access_token.verifyGuestAccess_token(token).then(function(token){
+        access_token.verifyAccess_token(token).then(function(token){
+            // 从redis中获取
+            //redisclient.get()
+            return  redisclient.get("access_token:"+token.audience).then(function(user){
+                if(user) return token;
+                else Promise.reject(false)
+            }).catch(function(err){
+                return res.ext.json({ status: 421, msg: 'unauthorized'});
+            });
+        }).then(function(token){
             req.ext.params.token=token;
             req.ext.params.token.expire_in=Math.floor(token.exp-Math.floor(Date.now() / 1000));
             return next();
