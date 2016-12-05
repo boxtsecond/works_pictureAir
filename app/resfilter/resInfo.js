@@ -53,6 +53,10 @@ var errInfo={
     "userSendEmailParamError":{status: 431, msg:"param not valid",desc:"userName is must email"},
     "userLoginPasswordError":{status: 433, msg:"password is error",desc:"password is error"},
     "userResetPasswordParamVcodeParameterError":{status: 434, msg:"param not valid",desc:"resetPassword vcode  is required"},
+    "userResetPasswordVcodeParameterError":{status: 435, msg:"verify code Error",desc:"ResetPassword    error"},
+    "userResetPasswordError":{status: 436, msg:"modify password Error",desc:"modify password Error"},
+    "userSendemailValidateSendingCodeError":{status: 437, msg:"email Sending",desc:"sms sending "},
+    "userEmailRedisSetValidateCodeError":{status: 438, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
     //402
 
     "getCouponsByUserId":{
@@ -148,8 +152,15 @@ var errInfo={
         paramsError: {status: 4031, msg: "params is incomplete", desc: "missing siteId"},
         notFind: {status: 4032, msg: "not find park", desc: "not find park from db"},
         redisGetError: {status: 3032, msg: "system error", desc: "get parks form redis error"},
-        redisSetError: {status: 3033, msg: "system error", desc: "set Park_Version_ to redis error"},
-        promiseError: {status: 3034, msg: "system error", desc: "promise error"}
+        redisSetError: {status: 3033, msg: "system error", desc: "set park version to redis error"},
+        promiseError: {status: 3034, msg: "system error", desc: "promise error"},
+        parkError: {status: 3035, msg: "system error", desc: "get park from db error"}
+    },
+    "getAllParksVersion": {
+        notFind: {status: 4033, msg: "not find park", desc: "not find park from db"},
+        redisGetError: {status: 3036, msg: "system error", desc: "get parks form redis error"},
+        redisSetError: {status: 3037, msg: "system error", desc: "set parkVersion to redis error"},
+        promiseError: {status: 3038, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------

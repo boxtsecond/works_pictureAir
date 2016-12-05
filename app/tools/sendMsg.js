@@ -1,6 +1,8 @@
 /**
  * Created by meteor on 16/11/25.
  */
+var util = require("util");
+var events = require("events");
 var rq=require("../rq");
 var _=rq._;
 var redisclient=rq.redisclient;
@@ -81,6 +83,46 @@ function sendSMSFrom3tongReport(phones, msgid){
 //   console.error(err)
 //});
 
+function sendSMSE(){
+    events.EventEmitter.call(this);
+}
+util.inherits(sendSMSE, events.EventEmitter);
+var elemsendSMSE = new sendSMSE();
+
+
+elemsendSMSE.addListener("send",function(smsobj){
+    Promise.resolve(smsobj)
+        .then(function(obj){
+            return sendSMSFrom3tong(obj.phones,obj.data.sign,obj.data.content,obj.msgid,obj.sendTime).then(function(res){
+                if(res.body.result==0)return res;
+                else{
+                    var type=-1;
+                    if(obj.type=="validateCode") type=0;
+                    else if(obj.type=="forgotPwdMsg_test"||obj.type=="forgotPwdMsg") type=1;
+                    if(!rq.util.isArray(obj.phone)){
+                        return redisclient.del("validateCode:"+type+"-"+req.ext.md5(obj.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
+                            obj.msg.validateCode).then(function(err){
+                                return  Promise.resolve(obj);
+                            }).catch(function(err){
+                                return Promise.reject(err);
+                            });
+                    }
+                }
+            });
+        }).catch(function(err){
+                var type=-1;
+                if(obj.type=="validateCode") type=0;
+                else if(obj.type=="forgotPwdMsg_test"||obj.type=="forgotPwdMsg") type=1;
+                if(!rq.util.isArray(obj.phone)){
+                    return redisclient.del("validateCode:"+type+"-"+req.ext.md5(obj.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
+                        obj.msg.validateCode).then(function(err){
+                            return  Promise.resolve(obj);
+                        }).catch(function(err){
+                            return Promise.reject(err);
+                        });
+                }
+        });
+});
 function sendMSMvalidateCode(lg,phone,sendTime){
     return getValidateCode("MSM:msmLastIndexNum").then(function(validateCode){
         var msgid=uuid.v1().replace(/-/g,'');
@@ -147,23 +189,19 @@ function sendSMS(lg,type,phone,dReplaceArray,msgid,sendTime){
                      data:txtobj,
                      msgid:msgid,
                      phones:phoneNumber,
-                     sendTime:sendT
+                     sendTime:sendT,
+                     phone:phone,
+                     type:type
                  });
          });
     }).then(function(obj){
         //console.log(obj)
-        return sendSMSFrom3tong(obj.phones,obj.data.sign,obj.data.content,obj.msgid,obj.sendTime).then(function(res){
-            return {
-                obj:obj,
-                body:res.body
-            };
-        }).catch(function(err){
-                //console.error(err)
-            return {
-                obj:obj,
-                body:{}
-            };
-       });
+        elemsendSMSE.emit("send",obj);
+        return {
+            obj:obj,
+            body:{result:0
+            }
+        };
 
         //return {
         //    obj:obj,

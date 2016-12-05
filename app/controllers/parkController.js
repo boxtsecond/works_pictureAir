@@ -5,9 +5,10 @@ var errInfo = require('../resfilter/resInfo.js').errInfo;
 var parkModel = require('../mongodb/Model/parkModel');
 var common = require('../tools/common.js');
 var redisclient=require('../rq').redisclient;
-var config = require('../../config/config.js').config;
+var config = require('../../config/config.js').config.configJSONData;
 var util=require('../../config/util.js');
 var request = require('request');
+var parkFilter = require('../resfilter/park.js').filterPark;
 
 exports.getAllLocations = function (req, res, next) {
     var condition = {isDel: false, active: true};
@@ -105,20 +106,28 @@ exports.getAllParks = function (req, res, next) {
     Promise.resolve()
         .then(function () {
             //查询redis是否有缓存
-            return redisclient.get(config.redis.parkName)
+            return redisclient.hgetall(config.redis.parkName)
                 .then(function (parkCache) {
-                    if(parkCache){
-                        resultObj.result.parks = JSON.parse(parkCache);
-                        return Promise.reject(resultObj);
+                    if(JSON.stringify(parkCache) !== '{}'){
+                        for(var i in parkCache){
+                            result.push(JSON.parse(parkCache[i]));
+                        }
                     }else {
                         console.log("Can't find parks cache in Redis, pull parks from Mongo now.");
                         return parkCache;
+                    }
+                })
+                .then(function () {
+                    if(result.length > 0){
+                        resultObj.result.parks = result;
+                        return Promise.reject(resultObj);
                     }
                 })
                 .catch(function (err) {
                     if(err.status){
                         return Promise.reject(err);
                     }else {
+                        console.log(err);
                         return Promise.reject(errInfo.getAllParks.redisGetError);
                     }
                 });
@@ -138,12 +147,16 @@ exports.getAllParks = function (req, res, next) {
         })
         .then(function (parks) {
             return Promise.mapSeries(parks, function (onePark) {
-                var parkInfo = {};
-                parkInfo.park = onePark;
-                return redisclient.incr(config.redis.parkVersionName + onePark.siteId)
-                    .then(function (version) {
-                        parkInfo.version = version;
-                        result.push(parkInfo);
+                var pushPark = new parkFilter(onePark);
+                return redisclient.hset(config.redis.parkName, onePark.siteId, JSON.stringify(pushPark))
+                    .then(function () {
+                        return redisclient.hset(config.redis.parkVersionName, onePark.siteId, onePark.version)
+                            .then(function () {
+                                result.push(pushPark);
+                            })
+                            .catch(function (err) {
+                                return Promise.reject(errInfo.getAllParks.redisSetError)
+                            });
                     })
                     .catch(function (err) {
                         return Promise.reject(errInfo.getAllParks.redisSetError)
@@ -151,24 +164,13 @@ exports.getAllParks = function (req, res, next) {
             });
         })
         .then(function () {
-            return redisclient.set(config.redis.parkName, JSON.stringify(result))
-                .then(function () {
-                    if(result.length > 0){
-                        var resultObj = errInfo.success;
-                        resultObj.parks = result
-                        return res.ext.json(resultObj);
-                    }else {
-
-                        return Promise.reject(errInfo.getAllParks.promiseError);
-                    }
-                })
-                .catch(function (err) {
-                    if(err.status){
-                        return Promise.reject(err);
-                    }else {
-                        return Promise.reject(errInfo.getAllParks.redisSetError);
-                    }
-                })
+            if(result.length > 0){
+                var resultObj = errInfo.success;
+                resultObj.parks = result
+                return res.ext.json(resultObj);
+            }else {
+                return Promise.reject(errInfo.getAllParks.promiseError);
+            }
         })
         .catch(function (error) {
             if(error.status){
@@ -180,10 +182,54 @@ exports.getAllParks = function (req, res, next) {
         });
 }
 
+exports.getAllParksVersion = function (req, res, next) {
+    var park = {};
+    Promise.resolve()
+        .then(function () {
+            //从redis里获取
+            return redisclient.hgetall(config.redis.parkVersionName)
+                .then(function (parks) {
+                    park = parks;
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(errInfo.getAllParksVersion.redisGetError);
+                });
+        })
+        .then(function () {
+            //从Mongo里获取
+            if(JSON.stringify(park) === '{}'){
+                return parkModel.findAsync({})
+                    .then(function (pks) {
+                        return Promise.each(pks, function (pk) {
+                            park[pk.siteId] = pk.version;
+                            redisclient.hset(config.redis.parkVersionName, pk.siteId, pk.version);
+                        });
+                    })
+                    .catch(function (err) {
+                        return Promise.reject(errInfo.getAllParksVersion.parkError);
+                    });
+            }
+        })
+        .then(function () {
+            var resultObj = errInfo.success;
+            resultObj.result = park;
+            return res.ext.json(resultObj);
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.getAllParksVersion.promiseError);
+            }
+        })
+}
+
 exports.getParksVersionBySiteId = function(req, res, next){
     var params = req.ext.params;
     var siteIdArr = [];
-    var parksInfo = [];
+    var parksInfo = {};
     if (!req.ext.haveOwnproperty(params, 'siteId')) {
         return res.ext.json(errInfo.getParksVersionBySiteId.paramsError);
     }
@@ -196,83 +242,46 @@ exports.getParksVersionBySiteId = function(req, res, next){
     Promise.resolve()
         .then(function () {
             //从redis里获取
-            if(!(/^(A|a)ll$/.test(siteIdArr[0]))){
-                return Promise.each(siteIdArr, function (siteId) {
-                    var park = {};
-                    if(siteId){
-                        return redisclient.get(config.redis.parkVersionName+siteId)
-                            .then(function (version) {
-                                if(version){
-                                    park.siteId = siteId;
-                                    park.version = version;
-                                    parksInfo.push(park);
-                                }
-                            })
-                    }else {
-                        return Promise.reject(errInfo.getParksVersionBySiteId.paramsError);
-                    }
-                });
-            }else {
-                return redisclient.get(config.redis.parkName)
+            return Promise.each(siteIdArr, function (siteId) {
+                return redisclient.hget(config.redis.parkVersionName, siteId)
                     .then(function (parks) {
-                        if(JSON.parse(parks)){
-                            return Promise.each(JSON.parse(parks), function (pk) {
-                                var park = {};
-                                park.siteId = pk.park.siteId;
-                                park.version = pk.version;
-                                parksInfo.push(park);
-                            })
+                        if(parks){
+                            parksInfo[siteId] = parks;
                         }
                     })
-                    .catch(function (error) {
+                    .catch(function (err) {
+                        console.log(err);
                         return Promise.reject(errInfo.getParksVersionBySiteId.redisGetError);
                     });
-            }
+            });
         })
         .then(function () {
             //从Mongo里获取
-            console.log(parksInfo);
-            if(!parksInfo && !(/^(A|a)ll$/.test(siteIdArr[0]))){
-                var condition = {'$in': siteIdArr};
+            if(JSON.stringify(parksInfo) === '{}'){
+                var condition = {siteId:{'$in': siteIdArr}};
                 return parkModel.findAsync(condition)
                     .then(function (pks) {
                         return Promise.each(pks, function (pk) {
-                            var park = {};
-                            park.siteId = pk.siteId;
-                            park.version = pk.version;
-                            parksInfo.push(park);
+                            parksInfo[pk.siteId] = pk.version;
+                            redisclient.hset(config.redis.parkVersionName, pk.siteId, pk.version);
                         });
-                        redisclient.del(config.redis.parkName);
-                    })
-                    .catch(function (err) {
-                        return Promise.reject(errInfo.getParksVersionBySiteId.parkError);
-                    })
-            }else if(!parksInfo && (/^(A|a)ll$/.test(siteIdArr[0]))){
-                return parkModel.findAsync({})
-                    .then(function (pks) {
-                        return Promise.each(pks, function (pk) {
-                            var park = {};
-                            park.siteId = pk.siteId;
-                            park.version = pk.version;
-                            parksInfo.push(park);
-                        });
-                        redisclient.del(config.redis.parkName);
                     })
                     .catch(function (err) {
                         return Promise.reject(errInfo.getParksVersionBySiteId.parkError);
                     });
-            }else if(parksInfo){
-                var resultObj = errInfo.success;
-                resultObj.result.parks = parksInfo;
-                return res.ext.json(resultObj);
-            } else {
                 return Promise.reject(errInfo.getParksVersionBySiteId.promiseError);
             }
+        })
+        .then(function () {
+            var resultObj = errInfo.success;
+            resultObj.result = parksInfo;
+            return res.ext.json(resultObj);
         })
         .catch(function (error) {
             if(error.status){
                 return res.ext.json(error);
             }else {
+                console.log(error);
                 return res.ext.json(errInfo.getParksVersionBySiteId.promiseError);
             }
         });
@@ -295,29 +304,22 @@ exports.getParkBySiteId = function (req, res, next) {
     Promise.resolve()
         .then(function () {
             //查询redis是否有缓存
-            return redisclient.get(config.redis.parkName)
-                .then(function (parkCache) {
-                    var pks = JSON.parse(parkCache);
-                    if(pks && pks.length > 0){
-                        return Promise.each(siteIdArr, function (siteId) {
-                            return Promise.each(pks, function (pk) {
-                                if(pk.park.siteId == siteId){
-                                    var park = {};
-                                    park.park = pk.park;
-                                    park.version = pk.version;
-                                    parksInfo.push(park);
-                                }
-                            })
-                        })
-                    }else {
-                        console.log("Can't find parks cache in Redis, pull parks from Mongo now.");
-                        return parkCache;
-                    }
-                })
-                .catch(function (err) {
-                    console.log(err);
-                    return Promise.reject(errInfo.getParkBySiteId.redisGetError);
-                });
+            return Promise.each(siteIdArr, function (siteId) {
+                return redisclient.hget(config.redis.parkName, siteId)
+                    .then(function (parkCache) {
+                        var pks = JSON.parse(parkCache);
+                        if(pks && parkCache !== '{}'){
+                            parksInfo.push(pks);
+                        }else {
+                            console.log("Can't find parks cache in Redis, pull parks from Mongo now.");
+                            return parkCache;
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                        return Promise.reject(errInfo.getParkBySiteId.redisGetError);
+                    });
+            })
         })
         .then(function () {
             if(parksInfo.length > 0){
@@ -328,6 +330,7 @@ exports.getParkBySiteId = function (req, res, next) {
         .then(function () {
             //redis里无缓存，从Mongo里获取
             console.log('Get parks from Mongo...');
+            redisclient.del(config.redis.parkName);
             var condition = {isDel: false, active: true};
             condition.siteId = {'$in': siteIdArr};
             return parkModel.findAsync(condition)
@@ -338,24 +341,23 @@ exports.getParkBySiteId = function (req, res, next) {
                         return Promise.reject(errInfo.getParkBySiteId.notFind);
                     }
                 })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        return Promise.reject(errInfo.getParkBySiteId.parkError);
+                    }
+                })
         })
         .then(function (parks) {
-            return Promise.mapSeries(parks, function (onePark) {
-                var parkInfo = {};
-                parkInfo.park = onePark;
-                return redisclient.incr(config.redis.parkVersionName+onePark.siteId)
-                    .then(function (version) {
-                        parkInfo.version = version;
-                        parksInfo.push(parkInfo);
-                    })
-                    .catch(function (err) {
-                        return Promise.reject(errInfo.getParkBySiteId.redisSetError)
-                    });
-            });
+            return Promise.each(parks, function (onePark) {
+                var pushPark = new parkFilter(onePark);
+                parksInfo.push(pushPark);
+            })
         })
         .then(function () {
-            pullAllParksCacheIntoRedis();
             if(parksInfo && parksInfo.length > 0){
+                redisclient.del(config.redis.parkName);
                 resultObj.result.parks = parksInfo;
                 return res.ext.json(resultObj);
             }else {
@@ -370,19 +372,4 @@ exports.getParkBySiteId = function (req, res, next) {
             }
         });
 
-}
-
-function pullAllParksCacheIntoRedis() {
-    Promise.resolve()
-        .then(function () {
-            //先把redis里存在的缓存删除
-            return redisclient.del(config.redis.parkName);
-        })
-        .then(function () {
-            console.log('begin pull parks cache into redis');
-            return request('http://localhost:'+config.port+'/park/getAllParks');
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
 }
