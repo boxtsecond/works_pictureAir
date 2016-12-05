@@ -285,6 +285,7 @@ function register(req,res){
                                   else  return  Promise.reject(null);
                               }else   return  Promise.reject(null);
                           }).catch(function(err){
+                              console.log(err);
                               if(err)  return  Promise.reject(errInfo.userVerifyVcodeError);
                               else return  Promise.reject(errInfo.userVerifyVcodeError);
                           });
