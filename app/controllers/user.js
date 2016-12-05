@@ -400,8 +400,7 @@ function filterParamsSendSMS(req){
             return reject(errInfo.userParamPhoneParameterError);
         }
         else if(req.ext.haveOwnproperty(result.params,'type')){
-            //console.log(result.params.type)
-            if([0,1].indexOf(result.params.type)>=0) {
+            if([0,1].indexOf(Number(result.params.type))>=0) {
                 result.type=result.params.type;
                 return  resolve(result);
             }

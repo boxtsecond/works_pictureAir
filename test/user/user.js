@@ -14,38 +14,38 @@ var should=require('should');
 request = request('http://localhost:4001');
 
 describe('/auth/getAccessToken', function() {
-    //it('should getAccessToken', function(done) {
-    //    request.post('/auth/getAccessToken')
-    //        .send({
-    //            appid: '6c8c8dc48280ed2163136ad416e1dbfe',
-    //            password: "password",
-    //            t:1,
-    //            lg:"zh-CN"
-    //        })
-    //        .expect(200, function(err, res) {
-    //            request.post('/user/sendsms')
-    //                .send({
-    //                    access_token:res.body.result.access_token,
-    //                    //appid: '6c8c8dc48280ed2163136ad416e1dbfe',
-    //                    //password: "password",
-    //                    //t:1,
-    //                    //lg:"zh-CN"
-    //                }).set('authorization', res.body.result.access_token)
-    //                .expect(200, function(err1, res1) {
-    //                    console.log(res1.body)
-    //                    should.not.exist(err1);
-    //                    // res.body.status.should.eql(401);
-    //                    // res.text.should.containEql('用户名或密码不能为空');
-    //                    //done();
-    //                });
-    //            //console.log(res.body)
-    //            //should.not.exist(err);
-    //           // res.body.status.should.eql(401);
-    //            // res.text.should.containEql('用户名或密码不能为空');
-    //            done();
-    //        });
-    //});
-    //
+    it('should getAccessToken', function(done) {
+        request.post('/auth/getAccessToken')
+            .send({
+                appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+                password: "password",
+                t:1,
+                lg:"zh-CN"
+            })
+            .expect(200, function(err, res) {
+                request.post('/user/sendsms')
+                    .send({
+                        access_token:res.body.result.access_token,
+                        //appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+                        //password: "password",
+                        //t:1,
+                        //lg:"zh-CN"
+                    }).set('authorization', res.body.result.access_token)
+                    .expect(200, function(err1, res1) {
+                        console.log(res1.body)
+                        should.not.exist(err1);
+                        // res.body.status.should.eql(401);
+                        // res.text.should.containEql('用户名或密码不能为空');
+                        //done();
+                    });
+                //console.log(res.body)
+                //should.not.exist(err);
+               // res.body.status.should.eql(401);
+                // res.text.should.containEql('用户名或密码不能为空');
+                done();
+            });
+    });
+
     //it('should getAccessToken2', function(done) {
     //    request.post('/user/sendsms')
     //        .send({
