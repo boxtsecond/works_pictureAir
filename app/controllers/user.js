@@ -195,7 +195,8 @@ function login(req,res){
                 var tokenData={
                     audience:obj.md5Useranme,
                     t:obj.userobj.params.token.t,//web photo
-                    lgcode:obj.userobj.params.token.lg,
+                    // lgcode:obj.userobj.params.token.lg,
+                    lgcode:obj.user.lgcode,
                     appid:obj.userobj.params.token.appid,
                     expnumber:configData.expireTime.expireTime
                 };
@@ -806,6 +807,8 @@ function switchLanguage(req,res){
         }
     })
     .then(function(obj){
+        // 修改mongodb
+        // 修改redis数据
             res.ext.json([200,'success',obj]);
 
         }).catch(function(err){
@@ -845,7 +848,7 @@ function verifyEmail(req,res){
     });
 }
 function logout(req,res){
-
+// 从redis里面删除用户信息
 
 }
 
