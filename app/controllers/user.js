@@ -673,81 +673,10 @@ function resetPassword(req,res){
             res.ext.json(err);
         });
 }
-// 忘记密码两种找回方式，手机号,邮件
-//username, password  vcode手机号验证验证码
-function filterParamsforgotPassword(req){
-    return new Promise(function (resolve, reject) {
-        var result={
-            params:req.ext.params,
-            isEmail:false,
-            isMobile:false
-        };
-        if(!req.ext.haveOwnproperty(result.params,'username')){
-            return reject(errInfo.userParamUsernameError);
-        }else if(!verifyreg.verifyPassword(result.params.password.trim().toLowerCase())){
-            return reject(errInfo.userParamPasswordVierifyError);
-        }else if(verifyreg.isEmail(result.params.username.trim().toLowerCase())){
-            result.isEmail=true; return resolve(result);
-        }else if(verifyreg.isMobile(result.params.username.trim().toLowerCase())){
-            result.isMobile=true;
-            return resolve(result);
-        }
-        else return  resolve(result);
-    });
-};
-
-function forgotPassword(req,res){
-    filterParamsforgotPassword(req).then(function(obj){
-        if(!obj.isEmail&&!obj.isMobile) return  Promise.reject(errInfo.userParamUserNameParameterError);
-        else return obj;
-    }).then(function(userobj){
-        //查询redis中是否存在 access_token
-        var md5Useranme =req.ext.md5(userobj.params.username);
-        return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
-            if(access_token){
-                //是否被禁用
-                return  Promise.resolve(userobj);
-            }else  return  Promise.reject(null);
-        }).catch(function(err){
-            if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
-            else if(req.ext.isArray(err)) return  Promise.reject(err);
-            else return  Promise.reject(errInfo.userLoginParamUserNameError);
-        });
-    }).then(function(userobj){
-        if(userobj.isEmail){
-            return  userMode.findOne({ email: userobj.params.username}).then(function (user) {
-                if(user) {
-                    //if(disabled) return Promise.reject(errInfo.userLoginParamUserNameDisabledError);//  账户已经禁用
-                    return  Promise.resolve(userobj);
-                }
-                else    return  Promise.reject(null);
-            }).catch(function (err) {
-                if(err)  return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
-                else return  Promise.reject(errInfo.userLoginParamUserNameError);
-            });
-        }else {
-
-        }
-    }).then(function(userobj){
-        //{obj:obj}
-        //console.log()
-        res.ext.json([200,'success',userobj]);
-    }).catch(function(err){
-        console.error(err);
-        res.ext.json(err);
-    });
-
-// 手机号验证验证码
-    //邮箱验证是否点击相关连接
-
-}
-
 
 // 验证用户名必须是email
 // 验证用户名必须存在
 // 发送验证email信息
-
-
 function SendEmail(){
     events.EventEmitter.call(this);
 }
@@ -854,6 +783,7 @@ function sendEmailForgotPwdMsg(req,res){
 //登陆之后才能切换
 //lg
 function switchLanguage(req,res){
+
  // 重新生成token
  // 验证用户是否存在
 
