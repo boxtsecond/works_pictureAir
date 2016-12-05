@@ -13,6 +13,7 @@ var config = require('../../config/config.js').config;
 var request = require('request');
 var utilFun = require('../lib/util/util.js');
 var enums = require('../tools/enums.js');
+var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
 
 /* Bo 查询图片
  * @param {condition type: Array} 查询条件
@@ -20,7 +21,8 @@ var enums = require('../tools/enums.js');
  * */
 exports.getPhotosByConditions = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.haveOwnproperty(params, params.conditon)){
+    var photos = [];
+    if(!req.ext.haveOwnproperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
     }
     var conditions = getCondition(params);
@@ -67,226 +69,35 @@ exports.getPhotosByConditions = function (req, res, next) {
         bundleWithPPP: 1,
         adInfo: 1
     }
-    var paidCondition = false;
-    var isPaid = false;
-    if(params.isPaid || params.isPaid == 0){
-        paidCondition = true;
-        if(params.isPaid == 0){
-            isPaid = false;
-        }else if(params.isPaid == 1){
-            isPaid = true;
-        }
-    }
-    var t = new Date().getTime();
-    var locationStockMedia = config.locationStockMedia;
-    var userId = params.userId || '';
 
     photoModel.findAsync(conditions, fields, options)
         .then(function (list) {
-            var result = [];
-            var pps = [];
-            var resultObj = errInfo.success;
             if (list && list.length > 0) {
-                userModel.findById(userId, {likePhotos: 1, favoritePhotos: 1})
-                    .then(function (user) {
-                    if (user != null) {
-                        for (var i = 0; i < list.length; i++) {
-                            list[i]._doc.strShootOn = utilFun.customFormat(list[i].shootOn, 'yyyy-MM-dd hh:mm:ss');
-                            list[i]._doc.shootDate = utilFun.customFormat(list[i].shootOn, 'yyyy-MM-dd');
-                            list[i]._doc.isPaid = common.checkExistByArrayProperty('userId', list[i].orderHistory, userId);
-                            if (list[i]._doc.isFree == true) {
-                                list[i]._doc.isPaid = true;
-                            }
-                            //防盗操作:
-                            list[i].thumbnail.x1024.path = '';
-                            list[i].thumbnail.x512.path = '';
-                            list[i].thumbnail.x128.path = '';
-                            list[i].originalInfo.path = '';
-                            list[i].originalInfo.originalName = '';
-                            //新增文件类型 steve
-                            // list[i].mimeType = list[i].mimeType;
-                            // list[i].bundleWithPPP
-
-                            // if (list[i]._doc.isFree == false && list[i]._doc.isPaid == false && req.query.terminal != enums.terminal.android && req.query.terminal != enums.terminal.ios) {
-                            list[i]._doc.enImage = false;
-                            //true 已经加密了,需要解密,网页加模糊处理
-
-                            //手机端
-                            if (list[i]._doc.isFree == false && list[i]._doc.isPaid == false
-                                && (params.terminal == enums.terminal.android || params.terminal == enums.terminal.ios)
-                            ) {
-
-                                if (list[i].mimeType == 'mp4') {
-                                    //视频处理
-                                    list[i].thumbnail.x1024 = list[i].thumbnail.x512;
-                                } else {
-                                    //如果加密图片存在,则未付款的预览图手机端返回加密图,否则返回512图片
-                                    if (list[i].thumbnail.en1024) {
-                                        list[i]._doc.enImage = true;
-
-                                        list[i].thumbnail.en1024.path = '';
-                                        // list[i].thumbnail.en512.path='';
-                                        list[i].thumbnail.x512 = list[i].thumbnail.en1024;
-                                        list[i].thumbnail.x1024 = list[i].thumbnail.en1024;
-                                    }
-                                    else {
-                                        list[i].thumbnail.x1024 = list[i].thumbnail.x512;
-                                    }
-                                }
-                            }
-
-                            //网页端
-                            if (list[i]._doc.isFree == false && list[i]._doc.isPaid == false && params.terminal != enums.terminal.android && params.terminal != enums.terminal.ios) {
-                                //如果水印图片存在,则未付款的预览图返回水印图,网页不做touchClear,,否则返回512图片,网页上需要做touchclear
-                                if (list[i].thumbnail.wk512) {
-                                    list[i]._doc.enImage = true;
-                                    list[i].thumbnail.wk512.path = '';
-                                    list[i].thumbnail.x512 = list[i].thumbnail.wk512;
-                                    list[i].thumbnail.x1024 = list[i].thumbnail.wk512;
-                                }
-                                else {
-                                    list[i].thumbnail.x1024 = list[i].thumbnail.x512;
-                                }
-
-                            }
-                            // list[i].originalInfo.url = list[i].thumbnail.x1024.url; //原来是缩略图,现在换原图地址 steve
-                            if (list[i]._doc.isPaid != true) {
-                                //list[i].originalInfo.url = list[i].thumbnail.x1024.url;
-                                list[i].originalInfo.url = "";
-                            } else {
-                                try {
-                                    if (params.isDownload) {
-                                        photoModel.update({_id: list[i]._id}, {
-                                            $inc: {downloadCount: 1}
-                                        }, function (err) {
-                                            if (err) {
-                                                console.log(err);
-                                                //log.error('getPhotosByConditions download photos count', err);
-                                            }
-                                        });
-                                    }
-                                } catch (e) {
-                                    console.log('getPhotosByConditions download photos count', e.toString());
-                                }
-                            }
-
-                            if (user.likePhotos && user.likePhotos.indexOf(list[i]._id) > -1) {
-                                list[i]._doc.isLike = true;
-                            } else {
-                                list[i]._doc.isLike = false;
-                            }
-                            if (user.favoritePhotos && user.favoritePhotos.indexOf(list[i]._id) > -1) {
-                                list[i]._doc.isFavorite = true;
-                            } else {
-                                list[i]._doc.isFavorite = false;
-                            }
-                            //去除不需要返回的的字段
-                            delete list[i]._doc.orderHistory;
-
-                            delete list[i]._doc.userIds;
-
-                            //只返回当前用户的pplist
-                            // console.log('before---');
-                            // console.log(list[i].customerIds);
-
-                            pps = [];
-                            for (var c = 0; c < list[i].customerIds.length; c++) {
-                                if (list[i].customerIds[c].userIds.indexOf(userId) > -1) {
-                                    pps.push(list[i].customerIds[c]);
-                                }
-                            }
-                            list[i].customerIds = pps;
-                            // console.log('after---');
-                            // console.log(list[i].customerIds);
-
-
-                            var isPush = true;
-
-                            if (paidCondition) {
-                                if (isPaid != list[i]._doc.isPaid) {
-                                    isPush = false;
-                                }
-                            }
-                            if (params.isLike == 0 || params.isLike == 1) {
-                                if ((params.isLike == 0 && list[i]._doc.isLike == true) || (params.isLike == 1 && list[i]._doc.isLike == false)) {
-                                    isPush = false;
-                                }
-                            }
-                            if (params.isFavorite == 0 || params.isFavorite == 1) {
-                                if ((params.isFavorite == 0 && list[i]._doc.isFavorite == true) || (params.isFavorite == 1 && list[i]._doc.isFavorite == false)) {
-                                    isPush = false;
-                                }
-                            }
-                            if (list[i].mobileEditActive) {
-                                list[i]._doc.presetId = "000000000000000000000000";
-                            } else {
-                                list[i]._doc.presetId = "111111111111111111111111";
-                            }
-                            if (list[i].locationId == null || list[i].locationId.length == 0) {
-                                list[i].locationId = 'others';
-                            } else { // give free stock content // Johnny Loke
-                                for (var s in locationStockMedia) {
-                                    if (s == list[i].locationId) {
-
-                                        locationStockMedia[s].forEach(function (s1, i, a) {
-                                            console.log('*************************', s1);
-                                            var stockImg = JSON.parse(JSON.stringify(list[i]));
-                                            stockImg._id = s1._id;
-                                            stockImg.name = s1.originalInfo.originalName;
-                                            //stockImg.userIds.push(userId);
-                                            stockImg.isPresent = true;
-                                            stockImg.originalInfo = s1.originalInfo;
-                                            stockImg.thumbnail = s1.thumbnail;
-                                            stockImg.photoSource = 'stock';
-                                            stockImg.isFree = true;
-                                            stockImg.allowDownload = true;
-                                            stockImg.photoCode = list[i].photoCode + 'S';
-                                            stockImg.parentId = list[i]._id;
-
-                                            result.push(stockImg);
-                                            console.warn(stockImg);
-                                        })
-                                        delete locationStockMedia[s];
-                                    }
-                                }
-                            }
-
-
-                            if ((utilFun.customDateDiff('s', list[i].shootOn, Date.now()) / (24 * 60 * 60 )) >= 30 && list[i]._doc.isPaid == false) {
-                                isPush = false;
-                            }
-                            if (isPush) {
-                                result.push(list[i]);
-                            }
-
-
-                        }
-                        resultObj.result = {photos: result, time: t};
-                        return res.ext.json(resultObj);
-                    } else {
-                        resultObj.result = {photos: result, time: t};
-                        return res.ext.json(resultObj);
-                    }
+                return Promise.each(list, function (pto) {
+                    var pushPhoto = new filterPhoto(pto);
+                    photos.push(pushPhoto);
                 })
-                    .catch(function (err) {
-                        console.log(err);
-                        //log.error('getPhotoByConditions', err);
-                        return Promise.reject(errInfo.getPhotosByConditions.userError);
-                });
-            } else {
-                resultObj.result = {photos: result, time: t};
-                return res.ext.json(resultObj);
+            }else {
+                return Promise.reject(errInfo.getPhotosByConditions.notFind);
             }
         })
-        .catch(function(error){
-            console.log(error);
-            //log.error('getPhotoByConditions', error);
-            if(error.status){
-                return res.ext.json(JSON.parse(error.message));
+        .then(function () {
+            if(photos.length > 0){
+                var resultObj = errInfo.success;
+                resultObj.result.photos = photos;
+                return res.ext.json(resultObj);
             }else {
-                return res.ext.json(errInfo.getPhotosByConditions.photoError);
+                return res.ext.json(errInfo.getPhotosByConditions.notFind);
             }
-    });
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.getPhotosByConditions.promiseError);
+            }
+        })
 }
 
 function getCondition(params) {

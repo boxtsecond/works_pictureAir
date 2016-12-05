@@ -11,7 +11,7 @@ var config= {
     registerTerminal:{type:String,index:true},//注册终端// ios，android,web
     registerOn: {type: Date, required: true, default: Date.now()}, //注册日期
     lgsyscode:{type: String, index: true},//操作系统语言码
-    lgusercode:{type: String, index: true},//用户使用的语言码
+    lgcode:{type: String, index: true},//用户使用的语言码
     //uuid:{type: String, index: true},//用户手机的UUID
     //用户信息
     name: {type: String}, //姓名

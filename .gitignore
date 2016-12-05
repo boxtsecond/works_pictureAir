@@ -1,6 +1,12 @@
 .idea
 dist
 node_modules
+node_modules/*
+node_modeles*
+node_modules/
+node_modules/*.*
+node_modules/*/*.*
+node_modules/*/*/.*
 ######## OSX #########
 .DS_Store
 .AppleDouble

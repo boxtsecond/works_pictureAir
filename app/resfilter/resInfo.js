@@ -57,6 +57,7 @@ var errInfo={
     "userResetPasswordError":{status: 436, msg:"modify password Error",desc:"modify password Error"},
     "userSendemailValidateSendingCodeError":{status: 437, msg:"email Sending",desc:"sms sending "},
     "userEmailRedisSetValidateCodeError":{status: 438, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
+    "userswitchLanguageParamlgError":{status: 439, msg:"param not valid",desc:"lg is required"},
     //402
 
     "getCouponsByUserId":{
@@ -87,7 +88,9 @@ var errInfo={
     "getPhotosByConditions": {
         paramsError: {status: 4007, msg: "params is incomplete", desc: "missing condition"},
         userError: {status: 3014, msg: "system error", desc: "get userModel from db error"},
-        photoError: {status: 3015, msg: "system error", desc: "get photoModel from db error"}
+        photoError: {status: 3015, msg: "system error", desc: "get photoModel from db error"},
+        notFind: {status: 4034, msg: 'not find photo', desc: "not find photo from db"},
+        promiseError: {status: 3039, msg: "system error", desc: "promise error"}
     },
     "carousel": {
         paramsError: {status: 4009, msg: "request error", desc: "can not find request"}

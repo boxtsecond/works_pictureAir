@@ -289,9 +289,9 @@ exports.getParksVersionBySiteId = function(req, res, next){
 
 exports.getParkBySiteId = function (req, res, next) {
     var params = req.ext.params;
-    var resultObj = errInfo.success;
     var parksInfo = [];
     var siteIdArr = [];
+    var resultObj = errInfo.success;
     if (!req.ext.haveOwnproperty(params, 'siteId')) {
         return res.ext.json(errInfo.getParkBySiteId.paramsError);
     }
@@ -323,6 +323,7 @@ exports.getParkBySiteId = function (req, res, next) {
         })
         .then(function () {
             if(parksInfo.length > 0){
+                resultObj.result = {};
                 resultObj.result.parks = parksInfo;
                 return Promise.reject(resultObj);
             }
@@ -357,6 +358,7 @@ exports.getParkBySiteId = function (req, res, next) {
         })
         .then(function () {
             if(parksInfo && parksInfo.length > 0){
+                resultObj.result = {};
                 redisclient.del(config.redis.parkName);
                 resultObj.result.parks = parksInfo;
                 return res.ext.json(resultObj);

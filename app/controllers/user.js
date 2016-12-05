@@ -195,7 +195,8 @@ function login(req,res){
                 var tokenData={
                     audience:obj.md5Useranme,
                     t:obj.userobj.params.token.t,//web photo
-                    lgcode:obj.userobj.params.token.lg,
+                    // lgcode:obj.userobj.params.token.lg,
+                    lgcode:obj.user.user.lgcode,
                     appid:obj.userobj.params.token.appid,
                     expnumber:configData.expireTime.expireTime
                 };
@@ -324,7 +325,7 @@ function register(req,res){
                     }
                    user.registerTerminal=registerTerminalArray[userobj[1].params.token.t];
                    user.lgsyscode=userobj[1].params.token.lg;
-                   user.lgusercode=userobj[1].params.token.lg;
+                   user.lgcode=userobj[1].params.token.lg;
                    user.name=userobj[1].params.username;
                    user.userName=userobj[1].params.username;
                    user.disabled=false;
@@ -400,8 +401,7 @@ function filterParamsSendSMS(req){
             return reject(errInfo.userParamPhoneParameterError);
         }
         else if(req.ext.haveOwnproperty(result.params,'type')){
-            //console.log(result.params.type)
-            if([0,1].indexOf(result.params.type)>=0) {
+            if([0,1].indexOf(Number(result.params.type))>=0) {
                 result.type=result.params.type;
                 return  resolve(result);
             }
@@ -673,81 +673,10 @@ function resetPassword(req,res){
             res.ext.json(err);
         });
 }
-// 忘记密码两种找回方式，手机号,邮件
-//username, password  vcode手机号验证验证码
-function filterParamsforgotPassword(req){
-    return new Promise(function (resolve, reject) {
-        var result={
-            params:req.ext.params,
-            isEmail:false,
-            isMobile:false
-        };
-        if(!req.ext.haveOwnproperty(result.params,'username')){
-            return reject(errInfo.userParamUsernameError);
-        }else if(!verifyreg.verifyPassword(result.params.password.trim().toLowerCase())){
-            return reject(errInfo.userParamPasswordVierifyError);
-        }else if(verifyreg.isEmail(result.params.username.trim().toLowerCase())){
-            result.isEmail=true; return resolve(result);
-        }else if(verifyreg.isMobile(result.params.username.trim().toLowerCase())){
-            result.isMobile=true;
-            return resolve(result);
-        }
-        else return  resolve(result);
-    });
-};
-
-function forgotPassword(req,res){
-    filterParamsforgotPassword(req).then(function(obj){
-        if(!obj.isEmail&&!obj.isMobile) return  Promise.reject(errInfo.userParamUserNameParameterError);
-        else return obj;
-    }).then(function(userobj){
-        //查询redis中是否存在 access_token
-        var md5Useranme =req.ext.md5(userobj.params.username);
-        return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
-            if(access_token){
-                //是否被禁用
-                return  Promise.resolve(userobj);
-            }else  return  Promise.reject(null);
-        }).catch(function(err){
-            if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
-            else if(req.ext.isArray(err)) return  Promise.reject(err);
-            else return  Promise.reject(errInfo.userLoginParamUserNameError);
-        });
-    }).then(function(userobj){
-        if(userobj.isEmail){
-            return  userMode.findOne({ email: userobj.params.username}).then(function (user) {
-                if(user) {
-                    //if(disabled) return Promise.reject(errInfo.userLoginParamUserNameDisabledError);//  账户已经禁用
-                    return  Promise.resolve(userobj);
-                }
-                else    return  Promise.reject(null);
-            }).catch(function (err) {
-                if(err)  return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
-                else return  Promise.reject(errInfo.userLoginParamUserNameError);
-            });
-        }else {
-
-        }
-    }).then(function(userobj){
-        //{obj:obj}
-        //console.log()
-        res.ext.json([200,'success',userobj]);
-    }).catch(function(err){
-        console.error(err);
-        res.ext.json(err);
-    });
-
-// 手机号验证验证码
-    //邮箱验证是否点击相关连接
-
-}
-
 
 // 验证用户名必须是email
 // 验证用户名必须存在
 // 发送验证email信息
-
-
 function SendEmail(){
     events.EventEmitter.call(this);
 }
@@ -854,6 +783,37 @@ function sendEmailForgotPwdMsg(req,res){
 //登陆之后才能切换
 //lg
 function switchLanguage(req,res){
+    Promise.resolve(req.ext.params).then(function (obj) {
+        if(!req.ext.haveOwnproperty(obj,'lg')){
+            return Promise.reject(errInfo.userswitchLanguageParamlgError);
+        }else return obj;
+    }).then(function(obj){
+        if(obj.lg==obj.token.lg) return {access_token:obj.access_token,expire_in:obj.token.expire_in};
+        else{
+            console.log(obj);
+            var tokenData={
+                audience:obj.token.audience,
+                t:obj.token.t,//web photo
+                lgcode:obj.lg,
+                appid:obj.token.appid,
+                expnumber:configData.expireTime.expireTime
+            };
+            return access_token.getAccess_token(tokenData).then(function(access_token){
+                return Promise.resolve({expire_in:configData.expireTime.expireTime-60,access_token:access_token});
+            }).catch(function(er){
+                return Promise.reject(errInfo.userRegisterGenerateError);
+            });
+        }
+    })
+    .then(function(obj){
+        // 修改mongodb
+        // 修改redis数据
+            res.ext.json([200,'success',obj]);
+
+        }).catch(function(err){
+            console.log(err);
+        res.ext.json(err);
+    });
  // 重新生成token
  // 验证用户是否存在
 
@@ -886,8 +846,8 @@ function verifyEmail(req,res){
         res.ext.json(err);
     });
 }
-function logout(){
-
+function logout(req,res){
+// 从redis里面删除用户信息
 
 }
 
@@ -900,7 +860,8 @@ module.exports={
     sendSMS:sendSMS,
     sendEmailForgotPwdMsg:sendEmailForgotPwdMsg,
     switchLanguage:switchLanguage,
-    resetPassword:resetPassword
+    resetPassword:resetPassword,
+    logout:logout
 };
 //signin //登陆
 //signup 注册
