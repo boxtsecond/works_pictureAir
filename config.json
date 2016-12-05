@@ -66,6 +66,10 @@
      "validateCodeExpireTime":60000,
      "ForgotPwdMsgExpireTime":60000
   },
+  "redis":{
+    "parkVersionName": "Park:ParkSiteIdList",
+    "parkName": "Park:ParkList"
+  },
   "apiCall":{
     "sendEmailMaxnum":3
   },
