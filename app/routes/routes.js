@@ -9,7 +9,10 @@ module.exports=function(app){
     app.use('/auth',require('./auth'));
     //Guest
     app.use('/g',auth.authGuest,require('./guestRoute'));
-    app.use('*',auth.authUser);
+    app.use('/p',auth.authUser,require('./privateRoute'));
+    app.use('*',auth.authGuest);
+
+
 
     //app.use('/cache',auth.authGuest,require('./cacheRoute.js'));
     //app.use('/user',auth.authGuest,require('./user'));
