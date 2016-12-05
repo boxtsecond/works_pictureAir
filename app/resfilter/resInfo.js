@@ -57,6 +57,7 @@ var errInfo={
     "userResetPasswordError":{status: 436, msg:"modify password Error",desc:"modify password Error"},
     "userSendemailValidateSendingCodeError":{status: 437, msg:"email Sending",desc:"sms sending "},
     "userEmailRedisSetValidateCodeError":{status: 438, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
+    "userswitchLanguageParamlgError":{status: 439, msg:"param not valid",desc:"lg is required"},
     //402
 
     "getCouponsByUserId":{

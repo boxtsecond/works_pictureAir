@@ -7,6 +7,8 @@
 var express = require('express');
 var router = express.Router();
 var ctr=require("./ctr");
+router.post('/user/switchlg',ctr.users.switchLanguage);
+router.post('/user/switchlg',ctr.users.logout);
 
 router.all('/photo/removePhotosFromPP', ctr.photoController.removePhotosFromPP);
 router.all('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);

@@ -31,11 +31,9 @@ function authGuest(req,res,next){
       access_token.verifyGuestAccess_token(token).then(function(token){
           req.ext.params.token=token;
           req.ext.params.token.expire_in=Math.floor(token.exp-Math.floor(Date.now() / 1000));
-          console.log(token)
           return next();
       }).catch(function(err){
-          console.error(err);
-          //return res.ext.json({ status: 421, msg: 'unauthorized'});
+          return res.ext.json({ status: 421, msg: 'unauthorized'});
       })
     }
     else  return res.ext.json({ status: 420, msg: 'unauthorized'});
@@ -49,9 +47,10 @@ function authUser(req,res,next){
             //redisclient.get()
             return  redisclient.get("access_token:"+token.audience).then(function(user){
                 if(user) return token;
-                else Promise.reject(false)
+                else return Promise.reject(user);
             }).catch(function(err){
-                return res.ext.json({ status: 421, msg: 'unauthorized'});
+                return Promise.reject(err);
+                // return res.ext.json({ status: 421, msg: 'unauthorized'});
             });
         }).then(function(token){
             req.ext.params.token=token;

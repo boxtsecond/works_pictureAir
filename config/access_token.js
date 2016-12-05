@@ -72,6 +72,7 @@ function getAccess_token(tokenData){
                 iss:configData.token.iss,
                 audience:tokenData.audience,//md5(user)
                 t:tokenData.t,//web photo
+                appid:tokenData.appid,
                 lg:tokenData.lgcode
             };
            return jwt.sign(token, certPrivate, { algorithm: 'RS512'});

@@ -783,7 +783,35 @@ function sendEmailForgotPwdMsg(req,res){
 //登陆之后才能切换
 //lg
 function switchLanguage(req,res){
+    Promise.resolve(req.ext.params).then(function (obj) {
+        if(!req.ext.haveOwnproperty(obj,'lg')){
+            return Promise.reject(errInfo.userswitchLanguageParamlgError);
+        }else return obj;
+    }).then(function(obj){
+        if(obj.lg==obj.token.lg) return {access_token:obj.access_token,expire_in:obj.token.expire_in};
+        else{
+            console.log(obj);
+            var tokenData={
+                audience:obj.token.audience,
+                t:obj.token.t,//web photo
+                lgcode:obj.lg,
+                appid:obj.token.appid,
+                expnumber:configData.expireTime.expireTime
+            };
+            return access_token.getAccess_token(tokenData).then(function(access_token){
+                return Promise.resolve({expire_in:configData.expireTime.expireTime-60,access_token:access_token});
+            }).catch(function(er){
+                return Promise.reject(errInfo.userRegisterGenerateError);
+            });
+        }
+    })
+    .then(function(obj){
+            res.ext.json([200,'success',obj]);
 
+        }).catch(function(err){
+            console.log(err);
+        res.ext.json(err);
+    });
  // 重新生成token
  // 验证用户是否存在
 
@@ -816,7 +844,7 @@ function verifyEmail(req,res){
         res.ext.json(err);
     });
 }
-function logout(){
+function logout(req,res){
 
 
 }
@@ -830,7 +858,8 @@ module.exports={
     sendSMS:sendSMS,
     sendEmailForgotPwdMsg:sendEmailForgotPwdMsg,
     switchLanguage:switchLanguage,
-    resetPassword:resetPassword
+    resetPassword:resetPassword,
+    logout:logout
 };
 //signin //登陆
 //signup 注册
