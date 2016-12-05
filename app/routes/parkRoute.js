@@ -6,6 +6,7 @@ var parkController = require('../controllers/parkController.js');
 
 router.all('/getAllLocations', parkController.getAllLocations);
 router.all('/getAllParks', parkController.getAllParks);
+router.all('/getAllParksVersion', parkController.getAllParksVersion);
 router.all('/getParksVersionBySiteId', parkController.getParksVersionBySiteId);
 router.all('/getParkBySiteId', parkController.getParkBySiteId);
 

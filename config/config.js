@@ -24,11 +24,6 @@ module.exports.config={
         },
         "assets":configJSONData.assets
     },
-    "redis":{
-        expireTime: 60 * 60 * 24 * 30,
-        parkVersionName: "Park_Version_",
-        parkName: "Park_Cache",
-    },
     "dashboard": {
         dashBoardParkId: "DisneyShangHai",
         dashBoardRoom: "dashboard"
