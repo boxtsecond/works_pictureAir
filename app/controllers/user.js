@@ -1,6 +1,8 @@
 /**
  * Created by meteor on 16/11/22.
  */
+var util = require("util");
+var events = require("events");
 var rq=require('../rq');
 var sendMsg=require("../tools/sendMsg");
 var errInfo=rq.resInfo.errInfo;
@@ -223,7 +225,7 @@ function login(req,res){
             //    audience:userobj[5]
             //};
             res.ext.json([200,'success',{
-                user:obj.obj.user.user,
+                user:new resfilter_user.filterUserRes(obj.obj.user.user),
                 expire_in:configData.expireTime.expireTime-60,
                 access_token:obj.access_token
             }]);
@@ -270,7 +272,7 @@ function register(req,res){
                 }else{
                       if(userobj.isMobile){
                           // 验证验证码
-                          return redisclient.get("validateCode:"+userobj.params.username).then(function(validateCode){
+                          return redisclient.get("validateCode:"+"0-"+req.ext.md5(userobj.params.username.toString().toLocaleLowerCase())).then(function(validateCode){
                               if(validateCode){
                                    if(Number(validateCode)==Number(userobj.params.vcode)) {
                                       // 注册的时候验证手机号码的验证码
@@ -283,6 +285,7 @@ function register(req,res){
                                   else  return  Promise.reject(null);
                               }else   return  Promise.reject(null);
                           }).catch(function(err){
+                              console.log(err);
                               if(err)  return  Promise.reject(errInfo.userVerifyVcodeError);
                               else return  Promise.reject(errInfo.userVerifyVcodeError);
                           });
@@ -359,9 +362,19 @@ function register(req,res){
             });
         })
         .then(function(userobj){
+            if(userobj[0][0].isMobile){
+                //从redis删除验证码
+                 return redisclient.del("validateCode:"+"0-"+req.ext.md5(userobj[0][0].params.username.toString().toLocaleLowerCase()))
+                     .then(function(validateCode){
+                         return  Promise.resolve(userobj);
+                     }).catch(function(err){ return  Promise.resolve(userobj);  });
+            }else return userobj;
+          }
+        )
+        .then(function(userobj){
             //console.log(new resfilter_user.filterUser(userobj[1]))
             res.ext.json([200,'success',{
-                user:userobj[1],
+                user:new resfilter_user.filterUserRes(userobj[1]),
                 expire_in:userobj[0][2]-60,
                 access_token:userobj[0][3]
             }]);
@@ -376,6 +389,8 @@ function register(req,res){
 //    phone:string，必填，手机号，（例如：+8613598734567）
 //    msgType:string,选填，默认为register，可选值（forgotPassword,register）
 //}
+
+
 function filterParamsSendSMS(req){
     return new Promise(function (resolve, reject) {
         var result={
@@ -402,7 +417,7 @@ function sendSMS(req,res){
     filterParamsSendSMS(req).
         // 验证码是否已经发送
         then(function(smsobj){
-            return redisclient.exists("validateCode:"+smsobj.params.phone).then(function(access_token){
+            return redisclient.exists("validateCode:"+smsobj.type+"-"+req.ext.md5(smsobj.params.phone.toString().toLocaleLowerCase())).then(function(access_token){
                 if(!access_token){
                     return Promise.resolve(smsobj);
                 }else   return  Promise.reject(null);
@@ -412,7 +427,7 @@ function sendSMS(req,res){
             });
         })
         .then(function(smsobj){
-            var md5Useranme =req.ext.md5(smsobj.params.phone);
+            var md5Useranme =req.ext.md5(smsobj.params.phone.toString().toLocaleLowerCase());
             return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
                 if(!access_token){
                      return Promise.resolve(smsobj);
@@ -433,7 +448,7 @@ function sendSMS(req,res){
             });
         }).
         then(function(smsobj){
-           return  userMode.findOne({mobile: smsobj.params.phone}).then(function(user){
+           return  userMode.findOne({mobile: smsobj.params.phone.toString().toLocaleLowerCase()}).then(function(user){
                if(user){
                   if(Number(smsobj.params.type)==1){
                       //是否被禁用
@@ -467,7 +482,7 @@ function sendSMS(req,res){
                 });
         });
     }).then(function(obj){
-            return redisclient.setex("validateCode:"+obj.msg.phone,configData.expireTime.validateCodeExpireTime,
+            return redisclient.setex("validateCode:"+obj.smsobj.type+"-"+req.ext.md5(obj.msg.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
                 obj.msg.validateCode).then(function(err){
                 return  Promise.resolve(obj);
             }).catch(function(err){
@@ -480,13 +495,12 @@ function sendSMS(req,res){
             userMsg.msgid=obj.msg.msgid;
             userMsg.sendFrom=obj.msg.sendFrom;
             userMsg.sendTo=[obj.msg.phone];
-            userMsg.subject=obj.msg.sign,
-            userMsg.content=obj.msg.content,
-            userMsg.code=obj.msg.code,
-            userMsg.validateCode=obj.msg.validateCode,
+            userMsg.subject=obj.msg.sign;
+            userMsg.content=obj.msg.content;
+            userMsg.code=obj.msg.code;
+            userMsg.validateCode=obj.msg.validateCode;
             //userMsg.msgType="register",
-            userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type],
-
+            userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type];
             userMsg.expiredTime=rq.util.getNextNumberSecondDate(obj.msg.sendTime,
                 configData.expireTime.validateCodeExpireTime);
             userMsg.sendTime=obj.msg.sendTime;
@@ -536,25 +550,133 @@ function resetPassword(req,res){
     }) .then(function(obj){
         if(obj.isEmail){
             //  从redis 里面获取vcode 并比对
-            redisclient.get("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase()))
-            return redisclient.exists("sendEmail:"+req.ext.md5(obj.params.v.toString().toLocaleLowerCase())).then(function(access_token){
-                if(!access_token){
-                    return Promise.resolve(obj);
-                }else   return  Promise.reject(null);
+                return redisclient.get("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
+                    if(!code&&code==""){
+                        return Promise.reject(null);
+                    }else   {
+                        if(code==obj.params.vcode.toString().trim())  return  Promise.resolve(obj);
+                        else return Promise.reject(null);
+                    }
+                }).catch(function(err){
+                    if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+                    else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+                });
+        }else   if(obj.isMobile){
+            return redisclient.get("validateCode:"+"1-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
+                if(!code&&code==""){
+                    return Promise.reject(null);
+                }else   {
+                    if(Number(code)==Number(obj.params.vcode))  return  Promise.resolve(obj);
+                    else return Promise.reject(null);
+                }
             }).catch(function(err){
                 if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
                 else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
             });
-        }else   if(obj.isMobile){
-
             //return redisclient.exists("validateCode:"+smsobj.params.phone).then(function(access_token){
         }
         else  return Promise.reject(errInfo.userResetPasswordParamVcodeParameterError);
-        }).then(function(obj){
-          //修改mongodb  修改redis
-        // 从redis 删除 vcode
+        }).then(function(userobj){
+        // 从redis mongodb  查找用户是否被禁用
+        //查询redis中是否存在 access_token
+        var md5Useranme =req.ext.md5(userobj.params.username);
+        // console.log('access_token',md5Useranme,userobj);
+        return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
+            if(access_token){
+                var user=JSON.parse(access_token);
+                if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
+                else  return  Promise.resolve({
+                        user:user,
+                        userobj:userobj,
+                        md5Useranme:md5Useranme
+                    });
+            }else  return  Promise.reject(null);
+        }).catch(function(err){
+            if(req.ext.isArray(err)) return  Promise.reject(err);
+            else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+            else return Promise.resolve({ user:null,  userobj:userobj,md5Useranme:md5Useranme});
+        });
+    })
+        .then(function(obj){
+            if(obj.userobj.isEmail){
+                return  userMode.findOne({ email: obj.userobj.params.username}).then(function (user) {
+                    if(user) {
+                        if (user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                        else return Promise.resolve({
+                                user: new resfilter_user.filterUserToredis(user,
+                                    obj.userobj.params.token.t, obj.userobj.params.token.lg
+                                ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                            });
+                    } else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
+                }).catch(function (err) {
+                    if(req.ext.isArray(err)) return  Promise.reject(err);
+                    else return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
+                });
+            }else if(obj.userobj.isMobile) {
+                return userMode.findOne({mobile: obj.userobj.params.username}).then(function (user) {
+                    if(user) {
+                        if (user.disabled)
+                            return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                        else  return Promise.resolve({
+                                user: new resfilter_user.filterUserToredis(user,
+                                    obj.userobj.params.token.t, obj.userobj.params.token.lg
+                                ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                            });
+                    }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
+                }).catch(function (err) {
+                    if(req.ext.isArray(err)) return  Promise.reject(err);
+                    else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
+                });
+            }else  return  Promise.reject(errInfo.userParamUserNameParameterError);
+      }).then(function(obj){
+            //console.log(obj.userobj.params.password,obj.user.userid);
+            var pwd=req.ext.md5(obj.userobj.params.password);
+            console.log("########",obj,obj.user.password);
+            obj.user.user.password=pwd;
+            //obj.user.userid  "5843e74a7ead5522ac3ad159"
+            //修改mongodb
+             return  userMode.update({_id:obj.user.userid},{$set: {password: pwd}}).then(function(uer){
+                 if(uer&&uer.n>0){
+                     return obj;
+                 }else {
 
+                 }
+           }).catch(function (err) {
+               if(req.ext.isArray(err)) return  Promise.reject(err);
+               else return Promise.reject(errInfo.userRegisterFinddbForMobileError);
+           });
+
+
+
+    }).then(function(obj){
+            //  修改redis   延期失效
+            console.log("access_token:"+obj.md5Useranme,obj.user.password)
+            return redisclient.setex("access_token:"+obj.md5Useranme,configData.expireTime.expireTime,
+                JSON.stringify(obj.user)).then(function(err){
+                    return  obj;
+                }).catch(function(err){
+                    return  obj;
+                });
+     }) .then(function(obj){
+            return  obj;
+            // 从redis 删除 vcode
+            //if(obj.userobj.isMobile){
+            //    return redisclient.del("validateCode:"+"1-"+obj.md5Useranme)
+            //        .then(function(validateCode){
+            //            return  obj;
+            //        }).catch(function(err){ return  obj;  });
+            //}else {
+            //    return redisclient.del("sendEmail:"+obj.md5Useranme)
+            //        .then(function(validateCode){
+            //            return  obj;
+            //        }).catch(function(err){ return  obj;  });
+            //}
+        }
+    )
+      .then(function(obj){
+            res.ext.json([200,'success',{}]);
     }).catch(function(err){
+            console.error(err);
             res.ext.json(err);
         });
 }
@@ -630,10 +752,7 @@ function forgotPassword(req,res){
 // 验证用户名必须存在
 // 发送验证email信息
 
-var events = require("events");
 
-var util = require("util");
-var events = require("events");
 function SendEmail(){
     events.EventEmitter.call(this);
 }
@@ -641,9 +760,6 @@ util.inherits(SendEmail, events.EventEmitter);
 var elemforgotPassword = new SendEmail();
 elemforgotPassword.addListener("send",function(nobj){
     Promise.resolve(nobj)
-    //    .then(function(){
-    //    return nobj;
-    //})
         .then(function(obj){
             return sendMsg.sendEmailforgotPwdMsg(obj.params.token.lg,obj.params.username,new Date())
                 .then(function(msg){
