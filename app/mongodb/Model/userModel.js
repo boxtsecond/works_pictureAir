@@ -3,11 +3,8 @@ var mongoose=require('mongoose');
 var db=require('../mongodb.js');
 var SchemaInfo=require('../Schema/'+collectionname+'Schema.js');
 var Schema = new mongoose.Schema(SchemaInfo.config,SchemaInfo.options);
-Schema.statics.getAllPark = function(dispaly, callback) {
-    return this.model(collectionname).find({active : true},dispaly, callback);
-}
-Schema.statics.getParkFromId = function(id,dispaly, callback) {
-    return this.model(collectionname).find({_id:id},dispaly, callback);
+Schema.statics.updateUserFromId = function(id,pwd, callback) {
+    return this.model(collectionname).find({_id:id},{$set: {password: pwd}}, callback);
 }
 //##################实例方法##################
 Schema.methods.insert= function(callback) {
