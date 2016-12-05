@@ -20,6 +20,8 @@ function getcert(fileName){
                 if(fileName=='private.key') certPrivateCaChe.private=certPrivate;
                 if(fileName=='public.pem') certPrivateCaChe.public=certPrivate;
                 return  resolve(certPrivate);
+            }).catch(function(err){
+                return reject(err)
             });
         }else {
             if(fileName=='private.key'&&certPrivateCaChe.private)  return  resolve(certPrivateCaChe.private);
@@ -29,6 +31,8 @@ function getcert(fileName){
                     if(fileName=='private.key') certPrivateCaChe.private=certPrivate;
                     if(fileName=='public.pem') certPrivateCaChe.public=certPrivate;
                     return  resolve(certPrivate);
+                }).catch(function(err){
+                    return reject(err)
                 });
             }
         }
@@ -54,6 +58,7 @@ function verifyGuestAccess_token(token){
     return getcert('public.pem')
     //return   fs.readFileAsync(path.join(__dirname,'public.pem'))
         .then(function(certPublic){
+            console.log(certPublic)
             return jwt.verify(token, certPublic, { algorithm: 'RS512'});
         });
 }

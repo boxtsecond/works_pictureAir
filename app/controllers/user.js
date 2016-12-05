@@ -410,6 +410,7 @@ function filterParamsSendSMS(req){
     });
 };
 function sendSMS(req,res){
+    console.log(req);
     filterParamsSendSMS(req).
         // 验证码是否已经发送
         then(function(smsobj){
