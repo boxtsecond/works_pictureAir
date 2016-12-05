@@ -14,13 +14,25 @@ var request = require('request');
 var utilFun = require('../lib/util/util.js');
 var enums = require('../tools/enums.js');
 
+function filterPhoto(photo) {
+    this._id=photo._id; if(!this._id)this._id="";
+    this.siteId=photo.siteId;if(!this.siteId)this.siteId="";
+    this.photoId=photo.photoId;if(!this.photoId)this.photoId="";
+    this.photoCode=photo.photoCode;if(!this.photoCode)this.photoCode="";
+    this.name=photo.name; if(!this.name)this.name="";
+    this.locationId=photo.locationId; if(!this.locationId)this.locationId="";
+    this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail="";
+    this.shootOn=photo.shootOn;if(!this.shootOn)this.shootOn="";
+    this.shootOn=photo.shootOn;if(!this.shootOn)this.shootOn="";
+}
+
 /* Bo 查询图片
  * @param {condition type: Array} 查询条件
  * must have [locationId, userId]
  * */
 exports.getPhotosByConditions = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.haveOwnproperty(params, params.conditon)){
+    if(!req.ext.haveOwnproperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
     }
     var conditions = getCondition(params);
@@ -78,8 +90,14 @@ exports.getPhotosByConditions = function (req, res, next) {
         }
     }
     var t = new Date().getTime();
-    var locationStockMedia = config.locationStockMedia;
     var userId = params.userId || '';
+
+    photoModel.findAsync(conditions, fields, options)
+        .then(function (list) {
+            if (list && list.length > 0) {
+
+            }
+        })
 
     photoModel.findAsync(conditions, fields, options)
         .then(function (list) {
@@ -87,7 +105,7 @@ exports.getPhotosByConditions = function (req, res, next) {
             var pps = [];
             var resultObj = errInfo.success;
             if (list && list.length > 0) {
-                userModel.findById(userId, {likePhotos: 1, favoritePhotos: 1})
+                userModel.findByIdAsync(userId, {likePhotos: 1, favoritePhotos: 1})
                     .then(function (user) {
                     if (user != null) {
                         for (var i = 0; i < list.length; i++) {

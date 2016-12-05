@@ -8,7 +8,7 @@ exports.filterPark = function (park){
     this.siteId=park.siteId;if(!this.siteId)this.siteId="";
     this.version=park.version;if(!this.version)this.version="";
     this.isDel=park.isDel; if(!this.isDel)this.isDel="";
-    this.modifiedOn=park.modifiedOn;if(!this.modifiedOn)this.country="";
+    this.modifiedOn=park.modifiedOn;if(!this.modifiedOn)this.modifiedOn="";
     this.createdOn=park.createdOn;if(!this.createdOn)this.createdOn="";
 
     var locations = [];
