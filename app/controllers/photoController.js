@@ -32,6 +32,7 @@ function filterPhoto(photo) {
  * */
 exports.getPhotosByConditions = function (req, res, next) {
     var params = req.ext.params;
+    
     if(!req.ext.haveOwnproperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
     }
@@ -79,23 +80,11 @@ exports.getPhotosByConditions = function (req, res, next) {
         bundleWithPPP: 1,
         adInfo: 1
     }
-    var paidCondition = false;
-    var isPaid = false;
-    if(params.isPaid || params.isPaid == 0){
-        paidCondition = true;
-        if(params.isPaid == 0){
-            isPaid = false;
-        }else if(params.isPaid == 1){
-            isPaid = true;
-        }
-    }
-    var t = new Date().getTime();
-    var userId = params.userId || '';
 
     photoModel.findAsync(conditions, fields, options)
         .then(function (list) {
             if (list && list.length > 0) {
-
+                return Promise.each()
             }
         })
 
