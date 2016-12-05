@@ -53,6 +53,10 @@ var errInfo={
     "userSendEmailParamError":{status: 431, msg:"param not valid",desc:"userName is must email"},
     "userLoginPasswordError":{status: 433, msg:"password is error",desc:"password is error"},
     "userResetPasswordParamVcodeParameterError":{status: 434, msg:"param not valid",desc:"resetPassword vcode  is required"},
+    "userResetPasswordVcodeParameterError":{status: 435, msg:"verify code Error",desc:"ResetPassword    error"},
+    "userResetPasswordError":{status: 436, msg:"modify password Error",desc:"modify password Error"},
+    "userSendemailValidateSendingCodeError":{status: 437, msg:"email Sending",desc:"sms sending "},
+    "userEmailRedisSetValidateCodeError":{status: 438, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
     //402
 
     "getCouponsByUserId":{

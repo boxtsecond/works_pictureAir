@@ -8,7 +8,6 @@ module.exports=function(app){
     app.use('/',require('./index'));
     //Guest
     app.use('/auth',require('./auth'));
-    //app.use('/user',auth.authGuest ,require('./user'));
     app.use('/cache',auth.authGuest,require('./cacheRoute.js'));
     app.use('/user',auth.authGuest,require('./user'));
     app.use('/user',auth.authUser,require('./userRoute'));
