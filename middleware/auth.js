@@ -47,6 +47,7 @@ function authUser(req,res,next){
             //redisclient.get()
             return  redisclient.get("access_token:"+token.audience).then(function(user){
                 if(user) return token;
+                // if(user.user.disabled) return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
                 else return Promise.reject(user);
             }).catch(function(err){
                 return Promise.reject(err);

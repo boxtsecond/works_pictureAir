@@ -218,7 +218,7 @@ function sendSMS(lg,type,phone,dReplaceArray,msgid,sendTime){
 }
 
 function sendEmailforgotPwdMsg(lg,email){
-    var msgid=uuid.v1().replace(/-/g,'');
+     var msgid=uuid.v1().replace(/-/g,'');
     return sendEmail(lg,"forgotPwdMsg_test",email,
         [{name:"%validateCode%",value:msgid}],msgid,new Date()
     );
@@ -259,11 +259,19 @@ function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
              });
         })
 };
+function sendEmailTO(email,subject,content) {
+    return  rq.nodemailer.createTransport({ host : cfgEmail.host,port : cfgEmail.port,auth: cfgEmail.auth})
+        .sendMail({
+            from: cfgEmail.fromEmailUser,to: email,subject:subject,text: content, html: content
+        });
+}
+
 module.exports={
     sendEmail:sendEmail,
     sendSMS:sendSMS,
     sendMSMvalidateCode:sendMSMvalidateCode,
     sendEmailforgotPwdMsg:sendEmailforgotPwdMsg,
-    getValidateCode:getValidateCode
+    getValidateCode:getValidateCode,
+    sendEmailTO:sendEmailTO
 }
 

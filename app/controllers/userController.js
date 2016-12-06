@@ -8,9 +8,11 @@ var util = require('../lib/util/util.js');
 var Promise = require('bluebird');
 var enums = require('../tools/enums.js');
 var userModel = require('../mongodb/Model/userModel.js');
-var photoModel = require('../mongodb/Model/photoModel.js');
+var contactModel = require('../mongodb/Model/contactModel.js');
+var userModel = require('../mongodb/Model/userModel.js');
 var async = require('async');
 var common = require('../tools/common.js');
+var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -560,4 +562,43 @@ function getUpdateUserInfo(params) {
     }
 
     return [updateInfo, isEmail, isMobile];
+}
+
+exports.contactUs = function (req, res, next) {
+    var params = req.ext.params;
+    var subject = 'contact us';
+    var content = params.name + params.feedback;
+    if(!req.ext.haveOwnproperty(params, ['name', 'EmailAddress', 'parkName', 'feedback'])){
+        return res.ext.json(errInfo.contactUs.paramsError);
+    }
+    Promise.resolve()
+        .then(function () {
+            return sendEmail(params.EmailAddress, subject, content);
+        })
+        .then(function () {
+            //存入mongo
+            var date = new Date();
+            var contactMsg=new contactModel();
+            contactMsg.name=params.name;
+            contactMsg.EmailAddress=params.EmailAddress;
+            contactMsg.subject=subject;
+            contactMsg.content=content;
+            contactMsg.parkName=params.parkName;
+            contactMsg.createdBy=params.userId || 'Guest';
+            contactMsg.dataOfVisit=params.dataOfVisit || date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+            contactMsg.orderId=params.orderId || '';
+            contactMsg.operatingSystem=params.operatingSystem || '';
+            contactMsg.feedback=params.feedback;
+            contactMsg.code=params.token.lg;
+            contactMsg.sendFrom=params.EmailAddress;
+            contactMsg.sendTo="PictureAir.com";
+            return contactMsg.save();
+        })
+        .then(function () {
+            return res.ext.json();
+        })
+        .catch(function (error) {
+            console.log(error);
+            return res.ext.json(errInfo.contactUs.promiseError);
+        })
 }

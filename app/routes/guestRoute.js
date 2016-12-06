@@ -11,7 +11,10 @@ router.post('/user/login',ctr.users.login);
 router.post('/user/register',ctr.users.register);
 router.post('/user/sendsms',ctr.users.sendSMS);
 router.post('/user/sendemailpwd',ctr.users.sendEmailForgotPwdMsg);
+router.post('/user/verifymobilecode',ctr.users.verifyMobileCode);
 router.post('/user/forgotpwd',ctr.users.resetPassword);
+
+router.all('/user/contactUs', ctr.userController.contactUs);
 
 router.all('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
 
@@ -25,6 +28,7 @@ router.all('/park/getParkBySiteId', ctr.parkController.getParkBySiteId);
 
 
 router.all('/cache/carousel', ctr.cacheController.carousel);
+
 
 //分享
 

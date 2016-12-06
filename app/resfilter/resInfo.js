@@ -58,7 +58,11 @@ var errInfo={
     "userSendemailValidateSendingCodeError":{status: 437, msg:"email Sending",desc:"sms sending "},
     "userEmailRedisSetValidateCodeError":{status: 438, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
     "userswitchLanguageParamlgError":{status: 439, msg:"param not valid",desc:"lg is required"},
-    //402
+    "userverifyMobileCodeVcodeParameterError":{status: 440, msg:"verify code Error",desc:"verifyMobileCode    error"},
+    "userverifyMobileCodeParamVcodeParameterError":{status: 442, msg:"param not valid",desc:"verifyMobileCode vcode  is required"},
+    "userverifyEmailCodeParamVcodeParameterError":{status: 443, msg:"param not valid",desc:"verifyEmail vcode  is required"},
+    "userverifyEmailCodeVcodeExpireParameterError":{status: 444, msg:"code expire",desc:"expire vcode"},
+
 
     "getCouponsByUserId":{
         paramsError: {status: 4001, msg: "params is incomplete", desc: "missing userId"},
@@ -164,6 +168,10 @@ var errInfo={
         redisGetError: {status: 3036, msg: "system error", desc: "get parks form redis error"},
         redisSetError: {status: 3037, msg: "system error", desc: "set parkVersion to redis error"},
         promiseError: {status: 3038, msg: "system error", desc: "promise error"}
+    },
+    "contactUs": {
+        paramsError: {status: 4034, msg: "params is incomplete", desc: "missing name or EmailAddress or parkName or feedback"},
+        promiseError: {status: 3039, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------
