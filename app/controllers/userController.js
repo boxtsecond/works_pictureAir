@@ -561,3 +561,7 @@ function getUpdateUserInfo(params) {
 
     return [updateInfo, isEmail, isMobile];
 }
+
+exports.contactUs = function (req, res, next) {
+
+}
