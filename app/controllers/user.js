@@ -841,8 +841,7 @@ function verifyEmail(req,res){
     });
 }
 function logout(req,res){
-// 从redis里面删除用户信息
-
+    // 从redis里面删除用户信息
 }
 
 
