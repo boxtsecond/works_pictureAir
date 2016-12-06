@@ -167,6 +167,10 @@ var errInfo={
         redisGetError: {status: 3036, msg: "system error", desc: "get parks form redis error"},
         redisSetError: {status: 3037, msg: "system error", desc: "set parkVersion to redis error"},
         promiseError: {status: 3038, msg: "system error", desc: "promise error"}
+    },
+    "contactUs": {
+        paramsError: {status: 4034, msg: "params is incomplete", desc: "missing name or EmailAddress or parkName or feedback"},
+        promiseError: {status: 3039, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------
