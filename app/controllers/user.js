@@ -788,9 +788,8 @@ function switchLanguage(req,res){
             return Promise.reject(errInfo.userswitchLanguageParamlgError);
         }else return obj;
     }).then(function(obj){
-        if(obj.lg==obj.token.lg) return {access_token:obj.access_token,expire_in:obj.token.expire_in};
+        if(obj.lg==obj.token.lg) return {obj:obj,access_token:obj.access_token,expire_in:obj.token.expire_in};
         else{
-            console.log(obj);
             var tokenData={
                 audience:obj.token.audience,
                 t:obj.token.t,//web photo
@@ -799,17 +798,31 @@ function switchLanguage(req,res){
                 expnumber:configData.expireTime.expireTime
             };
             return access_token.getAccess_token(tokenData).then(function(access_token){
-                return Promise.resolve({expire_in:configData.expireTime.expireTime-60,access_token:access_token});
+                return Promise.resolve({obj:obj,expire_in:configData.expireTime.expireTime-60,access_token:access_token});
             }).catch(function(er){
                 return Promise.reject(errInfo.userRegisterGenerateError);
             });
         }
+    }) .then(function(obj){
+        return redisclient.get("access_token:"+obj.obj.token.audience).then(function(access_token){
+            if(access_token){
+                var user=JSON.parse(access_token);
+                if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
+                else  return   {obj:obj.obj,user:user,expire_in:obj.expire_in,access_token:obj.access_token}
+            }else  return  Promise.reject("切换失败");
+    }).then(function(obj){
+          return redisclient.set("access_token:"+obj.obj.token.audience).then(function(access_token){
+                    if(access_token){
+                        var user=JSON.parse(access_token);
+                        if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
+                        else  return   obj
+                    }else  return  Promise.reject(null);
     })
     .then(function(obj){
         // 修改mongodb
         // 修改redis数据
             res.ext.json([200,'success',obj]);
-
+        //
         }).catch(function(err){
             console.log(err);
         res.ext.json(err);
