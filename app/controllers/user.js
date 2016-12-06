@@ -195,8 +195,8 @@ function login(req,res){
                 var tokenData={
                     audience:obj.md5Useranme,
                     t:obj.userobj.params.token.t,//web photo
-                    // lgcode:obj.userobj.params.token.lg,
-                    lgcode:obj.user.user.lgcode,
+                    lgcode:obj.userobj.params.token.lg,
+                    // lgcode:obj.user.user.lgcode,
                     appid:obj.userobj.params.token.appid,
                     expnumber:configData.expireTime.expireTime
                 };
@@ -803,33 +803,14 @@ function switchLanguage(req,res){
                 return Promise.reject(errInfo.userRegisterGenerateError);
             });
         }
-    }) .then(function(obj){
-        return redisclient.get("access_token:"+obj.obj.token.audience).then(function(access_token){
-            if(access_token){
-                var user=JSON.parse(access_token);
-                if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
-                else  return   {obj:obj.obj,user:user,expire_in:obj.expire_in,access_token:obj.access_token}
-            }else  return  Promise.reject("切换失败");
-    }).then(function(obj){
-          return redisclient.set("access_token:"+obj.obj.token.audience).then(function(access_token){
-                    if(access_token){
-                        var user=JSON.parse(access_token);
-                        if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
-                        else  return   obj
-                    }else  return  Promise.reject(null);
     })
     .then(function(obj){
-        // 修改mongodb
-        // 修改redis数据
             res.ext.json([200,'success',obj]);
         //
         }).catch(function(err){
             console.log(err);
         res.ext.json(err);
     });
- // 重新生成token
- // 验证用户是否存在
-
 }
 
 //验证用户是否点击email
