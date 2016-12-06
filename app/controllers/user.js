@@ -734,7 +734,14 @@ function resetPassword(req,res){
                     }).catch(function(err){ return  obj;  });
             }
         }
-    )
+    ).then(function(obj){
+        if(obj.userobj.isEmail){
+            return redisclient.del("sendEmail:msgid-"+obj.userobj.params.vcode)
+                .then(function(validateCode){
+                    return  obj;
+                }).catch(function(err){ return  obj;  });
+        }else return obj;
+    })
       .then(function(obj){
             res.ext.json([200,'success',{}]);
     }).catch(function(err){
