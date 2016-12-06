@@ -582,10 +582,10 @@ function verifyMobileCode(req,res){
         });
 }
 function verifyEmailCode(req,res){
-    filterverifyMobileCode(req).then(function (obj) {
-        if(obj.isEmail) return obj;
-        else return Promise.reject(errInfo.userSendEmailParamError);
-    }).then(function(obj){
+    Promise.resolve(req).then(function (req) {
+        return  {params:req.ext.params};
+    })
+        .then(function(obj){
         if(!req.ext.haveOwnproperty(obj.params,'vcode'))
             return Promise.reject(errInfo.userverifyEmailCodeParamVcodeParameterError);
         else  return obj;
