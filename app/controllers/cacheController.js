@@ -33,7 +33,7 @@ exports.carousel = function (req, res, next) {
             ]
           }
     };
-    var resultObj = errInfo.success;
-    resultObj.result = str;
-    return res.ext.json(resultObj);
+    // var resultObj = errInfo.success;
+    // resultObj.result = str;
+    return res.ext.json([200,"success",str]);
 }
