@@ -58,7 +58,6 @@ function verifyGuestAccess_token(token){
     return getcert('public.pem')
     //return   fs.readFileAsync(path.join(__dirname,'public.pem'))
         .then(function(certPublic){
-            console.log(certPublic)
             return jwt.verify(token, certPublic, { algorithm: 'RS512'});
         });
 }
@@ -72,6 +71,7 @@ function getAccess_token(tokenData){
                 iss:configData.token.iss,
                 audience:tokenData.audience,//md5(user)
                 t:tokenData.t,//web photo
+                appid:tokenData.appid,
                 lg:tokenData.lgcode
             };
            return jwt.sign(token, certPrivate, { algorithm: 'RS512'});

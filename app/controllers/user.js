@@ -196,6 +196,7 @@ function login(req,res){
                     audience:obj.md5Useranme,
                     t:obj.userobj.params.token.t,//web photo
                     lgcode:obj.userobj.params.token.lg,
+                    // lgcode:obj.user.user.lgcode,
                     appid:obj.userobj.params.token.appid,
                     expnumber:configData.expireTime.expireTime
                 };
@@ -324,7 +325,7 @@ function register(req,res){
                     }
                    user.registerTerminal=registerTerminalArray[userobj[1].params.token.t];
                    user.lgsyscode=userobj[1].params.token.lg;
-                   user.lgusercode=userobj[1].params.token.lg;
+                   user.lgcode=userobj[1].params.token.lg;
                    user.name=userobj[1].params.username;
                    user.userName=userobj[1].params.username;
                    user.disabled=false;
@@ -410,7 +411,6 @@ function filterParamsSendSMS(req){
     });
 };
 function sendSMS(req,res){
-    console.log(req);
     filterParamsSendSMS(req).
         // 验证码是否已经发送
         then(function(smsobj){
@@ -783,10 +783,34 @@ function sendEmailForgotPwdMsg(req,res){
 //登陆之后才能切换
 //lg
 function switchLanguage(req,res){
-
- // 重新生成token
- // 验证用户是否存在
-
+    Promise.resolve(req.ext.params).then(function (obj) {
+        if(!req.ext.haveOwnproperty(obj,'lg')){
+            return Promise.reject(errInfo.userswitchLanguageParamlgError);
+        }else return obj;
+    }).then(function(obj){
+        if(obj.lg==obj.token.lg) return {obj:obj,access_token:obj.access_token,expire_in:obj.token.expire_in};
+        else{
+            var tokenData={
+                audience:obj.token.audience,
+                t:obj.token.t,//web photo
+                lgcode:obj.lg,
+                appid:obj.token.appid,
+                expnumber:configData.expireTime.expireTime
+            };
+            return access_token.getAccess_token(tokenData).then(function(access_token){
+                return Promise.resolve({obj:obj,expire_in:configData.expireTime.expireTime-60,access_token:access_token});
+            }).catch(function(er){
+                return Promise.reject(errInfo.userRegisterGenerateError);
+            });
+        }
+    })
+    .then(function(obj){
+            res.ext.json([200,'success',obj]);
+        //
+        }).catch(function(err){
+            console.log(err);
+        res.ext.json(err);
+    });
 }
 
 //验证用户是否点击email
@@ -816,8 +840,8 @@ function verifyEmail(req,res){
         res.ext.json(err);
     });
 }
-function logout(){
-
+function logout(req,res){
+// 从redis里面删除用户信息
 
 }
 
@@ -830,7 +854,8 @@ module.exports={
     sendSMS:sendSMS,
     sendEmailForgotPwdMsg:sendEmailForgotPwdMsg,
     switchLanguage:switchLanguage,
-    resetPassword:resetPassword
+    resetPassword:resetPassword,
+    logout:logout
 };
 //signin //登陆
 //signup 注册
