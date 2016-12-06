@@ -590,16 +590,12 @@ function verifyEmailCode(req,res){
             return Promise.reject(errInfo.userverifyEmailCodeParamVcodeParameterError);
         else  return obj;
     }).then(function (obj) {
-        return redisclient.get("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
-            if(!code&&code==""){
-                return Promise.reject(null);
-            }else   {
-                if(Number(code)==Number(obj.params.vcode))  return  Promise.resolve(obj);
-                else return Promise.reject(null);
-            }
+        return redisclient.exists("sendEmail:msgid-"+obj.params.vcode).then(function(exists){
+            if(exists)   return  obj;
+            else return Promise.reject(null);
         }).catch(function(err){
-            if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
-            else return  Promise.reject(errInfo.userverifyMobileCodeVcodeParameterError);
+            if(err)  return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
+            else return Promise.reject(errInfo.userverifyEmailCodeVcodeExpireParameterError);
         });
     }).then(function (obj) {
         res.ext.json([200,'success',{}]);
@@ -764,28 +760,42 @@ elemforgotPassword.addListener("send",function(nobj){
                     });
                 });
         }).then(function(obj){
-            //存 mongodb
-            var userMsg=new userMsgModel();
-            userMsg.channelType="email";
-            userMsg.msgid=obj.msg.msgid;
-            userMsg.sendFrom=obj.msg.sendFrom;
-            userMsg.sendTo=[obj.msg.email];
-            userMsg.subject=obj.msg.data.sign;
-                userMsg.content=obj.msg.data.content;
-                userMsg.code=obj.msg.msgid;
-                userMsg.validateCode=obj.msg.msgid,
-                userMsg.msgType="forgotPassword";
-                //userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type],
-                userMsg.expiredTime=rq.util.getNextNumberSecondDate(obj.msg.sendTime,
-                    configData.expireTime.ForgotPwdMsgExpireTime);
-            userMsg.sendTime=obj.msg.sendTime;
-            userMsg.active=false;
-            return userMsg.save().then(function(){
-                return  Promise.resolve(obj);
-            }).catch(function (err) {
-                return  Promise.reject(errInfo.userSMSdbSaveValidateCodeError);
+            return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
+                obj.msg.msgid).then(function(err){
+                return  obj;
+            }).catch(function(err){
+                return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
             });
+    }).then(function(obj){
+        //存 mongodb
+        var userMsg=new userMsgModel();
+        userMsg.channelType="email";
+        userMsg.msgid=obj.msg.msgid;
+        userMsg.sendFrom=obj.msg.sendFrom;
+        userMsg.sendTo=[obj.msg.email];
+        userMsg.subject=obj.msg.data.sign;
+        userMsg.content=obj.msg.data.content;
+        userMsg.code=obj.msg.msgid;
+        userMsg.validateCode=obj.msg.msgid;
+            userMsg.msgType="forgotPassword";
+        //userMsg.msgType=SendSMStypeArray[obj.smsobj.params.type],
+        userMsg.expiredTime=rq.util.getNextNumberSecondDate(obj.msg.sendTime,
+            configData.expireTime.ForgotPwdMsgExpireTime);
+        userMsg.sendTime=obj.msg.sendTime;
+        userMsg.active=false;
+        return userMsg.save().then(function(){
+            return  Promise.resolve(obj);
         }).catch(function (err) {
+            return  Promise.reject(errInfo.userSMSdbSaveValidateCodeError);
+        });
+    }).then(function (obj) {
+            return redisclient.setex("sendEmail:msgid-"+obj.msg.msgid,configData.expireTime.ForgotPwdMsgExpireTime,
+               0).then(function(err){
+                return  obj;
+            }).catch(function(err){
+                return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
+            });
+    }).catch(function (err) {
             return redisclient.del("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase())).then(function(err){
                     return  Promise.resolve(obj);
                 }).catch(function(err){
@@ -837,14 +847,6 @@ function sendEmailForgotPwdMsg(req,res){
             if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
             else return  Promise.reject(errInfo.userSendemailValidateSendingCodeError);
         });
-    }).then(function(obj){
-        console.log(obj);
-        return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
-            obj.msg.msgid).then(function(err){
-                return  Promise.resolve(obj);
-            }).catch(function(err){
-                return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
-            });
     }).then(function(obj){
         elemforgotPassword.emit("send",obj);
         res.ext.json([200,'success',{}]);

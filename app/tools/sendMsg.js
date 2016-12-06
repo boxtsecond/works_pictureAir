@@ -218,7 +218,7 @@ function sendSMS(lg,type,phone,dReplaceArray,msgid,sendTime){
 }
 
 function sendEmailforgotPwdMsg(lg,email){
-    var msgid=uuid.v1().replace(/-/g,'');
+     var msgid=uuid.v1().replace(/-/g,'');
     return sendEmail(lg,"forgotPwdMsg_test",email,
         [{name:"%validateCode%",value:msgid}],msgid,new Date()
     );
