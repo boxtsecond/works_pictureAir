@@ -536,6 +536,78 @@ function sendSMS(req,res){
 //}).catch(function(err){
 //  console.error(err);
 //});
+//验证用户是否点击email
+// 手机号验证码是否正确
+function filterverifyMobileCode(req){
+    return new Promise(function (resolve, reject) {
+        var result={
+            params:req.ext.params,
+            isMobile:false,
+            isEmail:false
+        };
+        if(!req.ext.haveOwnproperty(result.params,'username')){
+            return reject(errInfo.userParamUsernameError);
+        }else if(verifyreg.isMobile(result.params.username.trim().toLowerCase())){
+            result.isMobile=true; return resolve(result);
+        }if(verifyreg.isEmail(result.params.username.trim().toLowerCase())){
+            result.isEmail=true; return resolve(result);
+        }else return  resolve(result);
+    });
+};
+function verifyMobileCode(req,res){
+    filterverifyMobileCode(req).then(function (obj) {
+        if(obj.isMobile) return obj;
+        else return Promise.reject(errInfo.userParamPhoneParameterError);
+    }).then(function(obj){
+        if(!req.ext.haveOwnproperty(obj.params,'vcode'))
+            return Promise.reject(errInfo.userverifyMobileCodeParamVcodeParameterError);
+        else  return obj;
+    }).then(function (obj) {
+        return redisclient.get("validateCode:"+"1-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
+            if(!code&&code==""){
+                return Promise.reject(null);
+            }else   {
+                if(Number(code)==Number(obj.params.vcode))  return  Promise.resolve(obj);
+                else return Promise.reject(null);
+            }
+        }).catch(function(err){
+            if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+            else return  Promise.reject(errInfo.userverifyMobileCodeVcodeParameterError);
+        });
+    }).then(function (obj) {
+        res.ext.json([200,'success',{}]);
+    })
+        .catch(function(err){
+            res.ext.json(err);
+        });
+}
+function verifyEmailCode(req,res){
+    filterverifyMobileCode(req).then(function (obj) {
+        if(obj.isEmail) return obj;
+        else return Promise.reject(errInfo.userSendEmailParamError);
+    }).then(function(obj){
+        if(!req.ext.haveOwnproperty(obj.params,'vcode'))
+            return Promise.reject(errInfo.userverifyEmailCodeParamVcodeParameterError);
+        else  return obj;
+    }).then(function (obj) {
+        return redisclient.get("sendEmail:"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
+            if(!code&&code==""){
+                return Promise.reject(null);
+            }else   {
+                if(Number(code)==Number(obj.params.vcode))  return  Promise.resolve(obj);
+                else return Promise.reject(null);
+            }
+        }).catch(function(err){
+            if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+            else return  Promise.reject(errInfo.userverifyMobileCodeVcodeParameterError);
+        });
+    }).then(function (obj) {
+        res.ext.json([200,'success',{}]);
+    })
+        .catch(function(err){
+            res.ext.json(err);
+        });
+}
 function resetPassword(req,res){
     filterParams(req).then(function(obj){
         if(!req.ext.haveOwnproperty(obj.params,'vcode'))
@@ -766,6 +838,7 @@ function sendEmailForgotPwdMsg(req,res){
             else return  Promise.reject(errInfo.userSendemailValidateSendingCodeError);
         });
     }).then(function(obj){
+        console.log(obj);
         return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
             obj.msg.msgid).then(function(err){
                 return  Promise.resolve(obj);
@@ -777,6 +850,7 @@ function sendEmailForgotPwdMsg(req,res){
         res.ext.json([200,'success',{}]);
 
     }).catch(function(err){
+        console.log(err)
         res.ext.json(err);
     });
 }
@@ -813,33 +887,9 @@ function switchLanguage(req,res){
     });
 }
 
-//验证用户是否点击email
-function filterParamsverifyEmail(req){
-    return new Promise(function (resolve, reject) {
-        if(!req.ext.haveOwnproperty(req.ext.params,'v')){
-            return reject(errInfo.userParamUsernameError);
-        }else if(result.params.v.length!=32){
 
-        }else return  resolve(req.ext.params);
-    });
-};
-function verifyEmail(req,res){
-    // 获取msgid
-    //查看redis 中是否存在
-    // 存在则验证成功并reids mongodb 修改emailVerified=true
-    filterParamsverifyEmail(req).then(function(obj){
-        return redisclient.exists("sendEmail:"+req.ext.md5(obj.params.v.toString().toLocaleLowerCase())).then(function(access_token){
-            if(!access_token){
-                return Promise.resolve(obj);
-            }else   return  Promise.reject(null);
-        }).catch(function(err){
-            if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
-            else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
-        });
-    }).catch(function(err){
-        res.ext.json(err);
-    });
-}
+
+
 function logout(req,res){
     // 从redis里面删除用户信息
 }
@@ -854,7 +904,9 @@ module.exports={
     sendEmailForgotPwdMsg:sendEmailForgotPwdMsg,
     switchLanguage:switchLanguage,
     resetPassword:resetPassword,
-    logout:logout
+    logout:logout,
+    verifyMobileCode:verifyMobileCode,
+    verifyEmailCode:verifyEmailCode
 };
 //signin //登陆
 //signup 注册

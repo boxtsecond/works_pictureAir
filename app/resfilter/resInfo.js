@@ -58,7 +58,10 @@ var errInfo={
     "userSendemailValidateSendingCodeError":{status: 437, msg:"email Sending",desc:"sms sending "},
     "userEmailRedisSetValidateCodeError":{status: 438, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
     "userswitchLanguageParamlgError":{status: 439, msg:"param not valid",desc:"lg is required"},
-    //402
+    "userverifyMobileCodeVcodeParameterError":{status: 440, msg:"verify code Error",desc:"verifyMobileCode    error"},
+    "userverifyMobileCodeParamVcodeParameterError":{status: 442, msg:"param not valid",desc:"verifyMobileCode vcode  is required"},
+    "userverifyEmailCodeParamVcodeParameterError":{status: 443, msg:"param not valid",desc:"verifyEmail vcode  is required"},
+
 
     "getCouponsByUserId":{
         paramsError: {status: 4001, msg: "params is incomplete", desc: "missing userId"},
