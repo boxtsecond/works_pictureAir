@@ -263,9 +263,6 @@ function sendEmailTO(email,subject,content) {
     return  rq.nodemailer.createTransport({ host : cfgEmail.host,port : cfgEmail.port,auth: cfgEmail.auth})
         .sendMail({
             from: cfgEmail.fromEmailUser,to: email,subject:subject,text: content, html: content
-        }).then(function(res){
-            if(res.accepted.length>=1) return Promise.resolve(obj);
-            else return Promise.reject(obj);
         });
 }
 

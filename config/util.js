@@ -128,12 +128,14 @@ var haveOwnproperty=function haveOwnproperty(data,propertyname){
     //    return result;
     //}
 
-
-    var result=false;
     for(var itemdata in data) {
-        if(itemdata===propertyname) if(data[itemdata]!==null) result=true;
+        if(itemdata===propertyname) if(data[itemdata]===null) return false;
+        else return false;
     }
-    return result;
+    return true;
+
+
+
     //if(Object.prototype.hasOwnProperty.call(data, propertyname)) return true;
     //else return false;
 };
