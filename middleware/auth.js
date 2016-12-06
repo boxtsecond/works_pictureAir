@@ -33,29 +33,29 @@ function authGuest(req,res,next){
           req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
           return next();
       }).catch(function(err){
-          return res.ext.json({ status: 421, msg: 'unauthorized'});
+          return res.ext.json({ status: 421, msg: 'unauthorized',result:{}});
       })
     }
-    else  return res.ext.json({ status: 420, msg: 'unauthorized'});
+    else  return res.ext.json({ status: 420, msg: 'unauthorized',result:{}});
 }
 // user
 function authUser(req,res,next){
     var token=getAccessToken(req);
     if(token) {
-        access_token.verifyAccess_token(token).then(function(token){
+        access_token.verifyAccess_token(token).then(function(toke){
             // 从redis中获取
             //redisclient.get()
-            return  redisclient.get("access_token:"+token.audience).then(function(user){
-                if(user) return token;
+            return  redisclient.get("access_token:"+toke.audience).then(function(user){
+                if(user) return toke;
                 // if(user.user.disabled) return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
                 else return Promise.reject(user);
             }).catch(function(err){
                 return Promise.reject(err);
                 // return res.ext.json({ status: 421, msg: 'unauthorized'});
             });
-        }).then(function(token){
-            req.ext.params.token=token;
-            req.ext.params.token.expire_in=Math.floor(token.exp-Math.floor(Date.now() / 1000));
+        }).then(function(toke){
+            req.ext.params.token=toke;
+            req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
             return next();
         }).catch(function(err){
             return res.ext.json({ status: 421, msg: 'unauthorized'});

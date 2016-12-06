@@ -112,7 +112,7 @@ var isDate=function isDate(data)
     if(isundefined(data)) return false;
     if((data instanceof Date)&& Date === data.constructor) return true;else return false;
 }
-////属性不能为null  or  '' 并且存在   才返回true
+////属性不能为null      才返回true
 var haveOwnproperty=function haveOwnproperty(data,propertyname){
     //var result=false;
     //if(isArray(propertyname)){
@@ -128,17 +128,15 @@ var haveOwnproperty=function haveOwnproperty(data,propertyname){
     //    return result;
     //}
 
+    var result=false;
     for(var itemdata in data) {
-        if(itemdata===propertyname) if(data[itemdata]===null) return false;
-        else return false;
+        if(itemdata===propertyname) if(data[itemdata]!==null) result=true;
     }
-    return true;
-
-
-
+    return result;
     //if(Object.prototype.hasOwnProperty.call(data, propertyname)) return true;
     //else return false;
 };
+// console.log(haveOwnproperty({ username: '', password: 'password' },"username"))
 //console.log(haveOwnproperty({ username: '', password: 'password' },"username"))
 //console.log(haveOwnproperty({aa:"1",haveOwnproperty:haveOwnproperty},["aa"]));
 
