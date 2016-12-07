@@ -35,13 +35,33 @@ function getTxtFromCode(code,type,txtlist){
         else return resolve(txtlist[0]);
     });
 }
+// var cfgEmail={
+//     "sendFrom":"PictureAir.com",
+//     host: 'partner.outlook.cn',
+//     port: 25,
+//     fromEmailUser: 'technology.monitor@pictureworks.biz',
+//     auth: { user: 'meteor.liu@pictureworks.biz', pass: 'Ai131415926' }
+// };
 var cfgEmail={
-    "sendFrom":"PictureAir.com",
-    host: 'partner.outlook.cn',
-    port: 25,
-    fromEmailUser: 'technology.monitor@pictureworks.biz',
-    auth: { user: 'meteor.liu@pictureworks.biz', pass: 'Ai131415926' }
+    sendFrom:"PictureAir.com",
+    pool: true,
+    host :"smtp.office365.com",
+    port : 587,
+    secure: false,
+    auth: { user: 'do-not-reply@pictureair.com', pass: 'CN-SH-PA-6001' },
+    maxConnections:10,
+    maxMessages:1000,
+    fromEmailUser: "PictureAir.com Auto-Mailer <do-not-reply@pictureair.com>"
 };
+var transporter=rq.nodemailer.createTransport({
+    pool: cfgEmail.pool,
+    host :cfgEmail.host,
+    port : cfgEmail.port,
+    secure: cfgEmail.secure,
+    auth: cfgEmail.auth,
+    maxConnections:cfgEmail.maxConnections,
+    maxMessages:cfgEmail.maxMessages
+});
 var cfgSMS={
     "sendFrom":"3tong",
     account:"dh74641",
@@ -228,12 +248,12 @@ function sendEmailforgotPwdMsg(lg,email){
         //    console.error(err)
         //});
 }
-//forgotPwdMsg("zh-CN","forgotPwdMsg_test",["meteor.liu@pictureworks.biz"],new Date()
-//).then(function(msg){
+// sendEmailforgotPwdMsg("zh-CN",["meteor.liu@pictureworks.biz"]
+// ).then(function(msg){
 //    console.log(msg);
-//}).catch(function(err){
+// }).catch(function(err){
 //        console.error(err)
-//});
+// });
 
 function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
         return getTxtFromCode(lg,type,email_txt).then(function(txtobj){
@@ -250,8 +270,7 @@ function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
                 });
         }).then(function(obj){
             //console.log(obj)
-          return  rq.nodemailer.createTransport({ host : cfgEmail.host,port : cfgEmail.port,auth: cfgEmail.auth})
-                .sendMail({
+          return  transporter.sendMail({
              from: cfgEmail.fromEmailUser,to: obj.email,subject:obj.data.sign,text: obj.data.content, html: obj.data.content
              }).then(function(res){
                     if(res.accepted.length>=1) return Promise.resolve(obj);
@@ -260,11 +279,31 @@ function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
         })
 };
 function sendEmailTO(email,subject,content) {
-    return  rq.nodemailer.createTransport({ host : cfgEmail.host,port : cfgEmail.port,auth: cfgEmail.auth})
+    // var cfgEmail={
+    //     "sendFrom":"PictureAir.com",
+    //     host: 'smtp.office365.com',
+    //     port: 587,
+    //     // host: ' outlook.office365.com',
+    //     //  port: 995,
+    //     secureConnection: true,
+    //     ignoreTLS: false ,// don't turn off STARTTLS support
+    //     // fromEmailUser: 'do-not-reply@pictureair.com',
+    //     fromEmailUser: 'PictureAir.com Auto-Mailer',
+    //     auth: { user: 'do-not-reply@pictureair.com', pass: 'CN-SH-PA-6001' }
+    // };
+    // { host : cfgEmail.host,port : cfgEmail.port,auth: cfgEmail.auth
+    return transporter
         .sendMail({
-            from: cfgEmail.fromEmailUser,to: email,subject:subject,text: content, html: content
+            from: "PictureAir.com Auto-Mailer <do-not-reply@pictureair.com>",to: email,subject:subject,text: content, html: content
         });
 }
+
+// sendEmailTO("meteor.liu@pictureworks.biz","test","test").then(function(msg){
+//    console.log(">>>>",msg);
+// }).catch(function(err){
+//        console.error(err)
+// });
+
 
 module.exports={
     sendEmail:sendEmail,
