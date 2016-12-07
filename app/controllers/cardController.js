@@ -17,12 +17,9 @@ var util = require('../lib/util/util.js');
 
 exports.getCouponsByUserId = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.checkExistProperty(params, 'userId')){
-        return res.ext.json(errInfo.getCouponsByUserId.paramsError);
-    }
     Promise.resolve()
         .then(function () {
-            return getListByUserIdAndOType(codeType.coupon, params.userId);
+            return getListByUserIdAndOType(codeType.coupon, params.token.userId);
         })
         .then(function (result){
             return res.ext.json(result);
@@ -34,10 +31,7 @@ exports.getCouponsByUserId = function (req, res, next) {
 
 exports.getPPsByUserId = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.checkExistProperty(params, ['userId'])){
-        return res.ext.json(errInfo.getPPsByUserId.paramsError);
-    }
-    var userId = params.userId;
+    var userId = params.token.userId;
     var PPList = [];
     var emptyPPs = [];
     var flag = false;
@@ -222,13 +216,13 @@ exports.getPPsByUserId = function (req, res, next) {
 
 exports.removePPFromUser = function (req, res, next) {
     var params = req.ext.params;
+    var userId = params.token.userId;
     if (!req.ext.checkExistProperty(params, ['customerId'])) {
         res.ext.json(errInfo.removePPFromUser.paramsError);
     }
     var customerId = params.customerId.trim() || '';
     customerId = customerId.toUpperCase().replace(/-/g, "");
 //    customerId=customerId.replace('http://140.206.125.194:3001/downloadApp.html?','');
-    var userId = params.userId.trim() || '';
     //判断customerId是否有效
     var cType = pppController.getCodeTypeByCode(customerId);
     if (cType != codeType.photoPass && cType != codeType.eventPass) {
@@ -270,7 +264,7 @@ exports.removePPFromUser = function (req, res, next) {
         .then(function () {
             return photoModel.updateAsync({'customerIds.code': customerId}, {$pull: {"customerIds.$.userIds": userId}}, {multi: true})
                         .then(function () {
-                            photoModel.update({'customerIds.code':customerId,'customerIds.userIds':{$ne:userId}},{$pull:{userIds:userId}},{multi:true});
+                            return photoModel.updateAsync({'customerIds.code':customerId,'customerIds.userIds':{$ne:userId}},{$pull:{userIds:userId}},{multi:true});
                         })
                         .catch(function (err) {
                             console.log('update', err);

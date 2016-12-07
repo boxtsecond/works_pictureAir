@@ -13,6 +13,8 @@ var userModel = require('../mongodb/Model/userModel.js');
 var async = require('async');
 var common = require('../tools/common.js');
 var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
+var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
+var redisclient=require('../rq').redisclient;
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -107,7 +109,7 @@ exports.getShareUrl = function (req, res, next) {
             if (targetData.length != 0 && targetData.length != shareContent.ids.split(',').length) {
                 return Promise.reject(errInfo.getShareUrl.paramsError);
             }
-            return shareModel.findOneAsync({"sharerId": params.userId, "shareContent.ids": shareContent.ids.split(",")});
+            return shareModel.findOneAsync({"sharerId": params.token.userId, "shareContent.ids": shareContent.ids.split(",")});
         })
         .then(function (shareData) {
             var info = {};
@@ -117,7 +119,7 @@ exports.getShareUrl = function (req, res, next) {
             }else {
                 shareData = new shareModel({
                     shareDomain: config.serverIP + ':' + config.apiPort,
-                    sharerId: params.userId,
+                    sharerId: params.token.userId,
                     shareUrl: fullUrl,
                     shareShortUrl: url.resolve(config.serverIP + ':' + config.apiPort, '/share/' + secretKey),
                     secretKey: secretKey,
@@ -274,7 +276,7 @@ exports.addCodeToUser = function (req, res, next) {
     var customerId = params.customerId.trim() || '';
     customerId = customerId.toUpperCase().replace(/-/g, "");
 //    customerId=customerId.replace('http://140.206.125.194:3001/downloadApp.html?','');
-    var userId = params.userId.trim() || '';
+    var userId = params.token.userId;
     //判断customerId是否有效
     var cType = getCodeTypeByCode(customerId);
     if (cType != enums.codeType.photoPass && cType != enums.codeType.eventPass) {
@@ -680,5 +682,60 @@ exports.contactUs = function (req, res, next) {
         .catch(function (error) {
             console.log(error);
             return res.ext.json(errInfo.contactUs.promiseError);
+        })
+}
+
+exports.modifyUserPwd = function (req, res, next) {
+    var params = req.ext.params;
+    var audience = params.token.audience;
+    if(!req.ext.checkExistProperty(params, ['oldPwd', 'newPwd']) || params.oldPwd == params.newPwd){
+        return res.ext.json(errInfo.modifyUserPwd.paramsError);
+    }
+    Promise.resolve()
+        .then(function () {
+            //修改redis中的信息
+            return redisclient.get("access_token:"+audience)
+                .then(function (data) {
+                    if(params.oldPwd.length !== 32 || data.user.password !== params.oldPwd){
+                        return Promise.reject(errInfo.modifyUserPwd.oldPwdError);
+                    }else {
+                        data.user.password = params.newPwd;
+                        return data;
+                    }
+                })
+                .then(function (data) {
+                    return redisclient.set("access_token:"+audience, data);
+                })
+                .catch(function (err) {
+                    return Promise.reject(errInfo.modifyUserPwd.redisError);
+                })
+        })
+        .then(function (data) {
+            //修改Mongo中的信息
+            return userModel.findOneAsync({"_id": params.token.userId})
+                .then(function (user) {
+                    if(!user){
+                        return Promise.reject(errInfo.modifyUserPwd.notFind);
+                    }else {
+                        return userModel.updateAsync({"password": params.newPwd});
+                    }
+                })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        return Promise.reject(errInfo.modifyUserPwd.userError);
+                    }
+                })
+        })
+        .then(function () {
+            return res.ext.json();
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                return res.ext.json(errInfo.modifyUserPwd.promiseError);
+            }
         })
 }

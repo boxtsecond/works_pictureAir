@@ -179,6 +179,14 @@ var errInfo={
         notFind: {status: 4036, msg: "not find shareModel", desc: "not find shareModel from db"},
         notFindTargetData: {status: 4037, msg: "not find TargetDataModel", desc: "not find TargetDataModel from db"},
         promiseError: {status: 3040, msg: "system error", desc: "promise error"}
+    },
+    "modifyUserPwd": {
+        paramsError: {status: 4038, msg: "params is incomplete", desc: "missing oldPwd or newPwd"},
+        oldPwdError: {status: 4039, msg: "oldPwd is not correct", desc: "oldPwd is not correct"},
+        redisError: {status: 3041, msg: "system error", desc: "get or set user cache in redis error"},
+        notFind: {status: 3042, msg: "system error", desc: "not find user in mongo"},
+        userError: {status: 3043, msg: "system error", desc: "get or update userModel error"},
+        promiseError: {status: 3044, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------

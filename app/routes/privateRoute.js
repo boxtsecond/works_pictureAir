@@ -15,6 +15,7 @@ router.post('/user/share', ctr.userController.share);
 router.post('/user/getShareInfo', ctr.userController.getShareInfo);
 router.get('/user/addCodeToUser', ctr.userController.addCodeToUser);
 router.post('/user/updateUser', ctr.userController.updateUser);
+router.post('/user/modifyUserPwd', ctr.userController.modifyUserPwd);
 
 router.get('/photo/removePhotosFromPP', ctr.photoController.removePhotosFromPP);
 router.get('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);
