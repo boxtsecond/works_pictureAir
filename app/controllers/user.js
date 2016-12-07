@@ -563,10 +563,16 @@ function verifyMobileCode(req,res){
     }).then(function(obj){
         if(!req.ext.haveOwnproperty(obj.params,'vcode'))
             return Promise.reject(errInfo.userverifyMobileCodeParamVcodeParameterError);
-        else  return obj;
+        else if(!req.ext.haveOwnproperty(obj.params,'type'))
+            return Promise.reject(errInfo.userverifyMobileCodeParamTypeParameterError);
+        else  {
+            if([0,1].indexOf(Number(obj.params.type))>=0) {
+                return obj;
+            }
+            else  return reject(errInfo.userSendSMSParamTypeVierifyError);
+        }
     }).then(function (obj) {
-        //
-        return redisclient.get("validateCode:"+"1-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
+        return redisclient.get("validateCode:"+obj.params.type+"-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
             if(!code&&code==""){
                 return Promise.reject(null);
             }else   {
