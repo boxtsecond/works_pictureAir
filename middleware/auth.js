@@ -53,7 +53,7 @@ function authUser(req,res,next){
                         userid:user.userid
                     };
                 }
-                 else return Promise.reject(user);
+                 else return Promise.reject(access_token);
             }).catch(function(err){
                 return Promise.reject(err);
             });
