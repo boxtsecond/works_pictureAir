@@ -31,8 +31,18 @@ function getTxtFromCode(code,type,txtlist){
                 &&chr.type.toLocaleLowerCase().trim() ==type.toString().toLocaleLowerCase().trim())
                 return chr;
         });
-        if(findItem)  return resolve(findItem);
-        else return resolve(txtlist[0]);
+        if(findItem)  return resolve({
+            code:findItem.code,
+            type: findItem.type,
+            sign:findItem.sign,
+            content:findItem.content
+        });
+        else return resolve({
+            code:txtlist[0].code,
+            type: txtlist[0].type,
+            sign:txtlist[0].sign,
+            content:txtlist[0].content
+        });
     });
 }
 // var cfgEmail={
@@ -254,6 +264,12 @@ function sendEmailforgotPwdMsg(lg,email){
 // }).catch(function(err){
 //        console.error(err)
 // });
+function  getd() {
+    getTxtFromCode(lg,type,email_txt).then(function (txtobj) {
+        console.log(txtobj)
+    });
+}
+
 
 function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
         return getTxtFromCode(lg,type,email_txt).then(function(txtobj){
