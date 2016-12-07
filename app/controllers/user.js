@@ -894,6 +894,13 @@ function sendEmailForgotPwdMsg(req,res){
                 else    return  Promise.reject(errInfo.userLoginParamUserNameError);
             });
         }
+    }).then(function(obj){
+        return redisclient.setex("sendEmail:"+rq.util.md5(obj.params.username.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
+            0).then(function(err){
+            return  obj;
+        }).catch(function(err){
+            return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
+        });
     })
         .then(function(obj){
         elemforgotPassword.emit("send",obj);
