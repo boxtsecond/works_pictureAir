@@ -554,6 +554,8 @@ function filterverifyMobileCode(req){
         }else return  resolve(result);
     });
 };
+
+// type 0  1
 function verifyMobileCode(req,res){
     filterverifyMobileCode(req).then(function (obj) {
         if(obj.isMobile) return obj;
@@ -563,6 +565,7 @@ function verifyMobileCode(req,res){
             return Promise.reject(errInfo.userverifyMobileCodeParamVcodeParameterError);
         else  return obj;
     }).then(function (obj) {
+        //
         return redisclient.get("validateCode:"+"1-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
             if(!code&&code==""){
                 return Promise.reject(null);
@@ -859,7 +862,6 @@ function sendEmailForgotPwdMsg(req,res){
         res.ext.json([200,'success',{}]);
 
     }).catch(function(err){
-        console.log(err)
         res.ext.json(err);
     });
 }
@@ -891,13 +893,9 @@ function switchLanguage(req,res){
             res.ext.json([200,'success',obj]);
         //
         }).catch(function(err){
-            console.log(err);
         res.ext.json(err);
     });
 }
-
-
-
 
 function logout(req,res){
     // 从redis里面删除用户信息
@@ -920,3 +918,5 @@ module.exports={
 //signin //登陆
 //signup 注册
 //signout //登出
+
+//updatepassw0rd
