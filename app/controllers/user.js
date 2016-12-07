@@ -432,15 +432,15 @@ function sendSMS(req,res){
                     if(Number(smsobj.params.type)==1) {
                         //是否被禁用
                         var user=JSON.parse(access_token);
-                        if(user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                        if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
                         else
                         return Promise.resolve(smsobj);//忘记密码用户必须存在
                     }
                     else   return  Promise.reject(null);
                 }
             }).catch(function(err){
-                if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
-                 else if(req.ext.isArray(err)) return  Promise.reject(err);
+                if(req.ext.isArray(err)) return  Promise.reject(err);
+                else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
                  else    return  Promise.reject(errInfo.userParamUserNameExistError);
             });
         }).
@@ -864,6 +864,38 @@ function sendEmailForgotPwdMsg(req,res){
             else return  Promise.reject(errInfo.userSendemailValidateSendingCodeError);
         });
     }).then(function(obj){
+        var md5Useranme =req.ext.md5(obj.params.username.toString().toLocaleLowerCase());
+        return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
+            if(!access_token){
+                return { exist:false, obj:obj };
+            }else{
+                var user=JSON.parse(access_token);
+                if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                else   return {   exist:true, obj:obj  };
+            }
+        }).catch(function(err){
+            if(req.ext.isArray(err)) return  Promise.reject(err);
+            else  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+        });
+    }).
+    then(function(obj) {
+        if (obj.exist) return obj.obj;
+        else {
+            return userMode.findOne({email: obj.obj.params.username.toString().toLocaleLowerCase()}).then(function (user) {
+                if (user) {
+                    if (user.disabled)  return Promise.reject([430, 'userName is disabled', {disablereason: user.disablereason}]);
+                    else return obj.obj;
+                } else {
+                    return  Promise.reject(null);
+                }
+            }).catch(function(err){
+                if(req.ext.isArray(err)) return  Promise.reject(err);
+                else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+                else    return  Promise.reject(errInfo.userLoginParamUserNameError);
+            });
+        }
+    })
+        .then(function(obj){
         elemforgotPassword.emit("send",obj);
         res.ext.json([200,'success',{}]);
 
