@@ -258,20 +258,20 @@ function sendEmailforgotPwdMsg(lg,email){
 function sendEmail(lg,type,email,dReplaceArray,msgid,sendTime){
         return getTxtFromCode(lg,type,email_txt).then(function(txtobj){
             return  rq.util.txtStrReplacePromise(txtobj.content,dReplaceArray)
-                .then(function(str){
-                    txtobj.content=str;
+                .then(function(content){
+                    txtobj.content=content;
                     return  Promise.resolve({
                         sendFrom:cfgEmail.sendFrom,
                         data:txtobj,
                         msgid:msgid,
                         email:email,
-                        sendTime:sendTime
+                        sendTime:sendTime,
+                        content:content
                     });
                 });
         }).then(function(obj){
-            //console.log(obj)
           return  transporter.sendMail({
-             from: cfgEmail.fromEmailUser,to: obj.email,subject:obj.data.sign,text: obj.data.content, html: obj.data.content
+             from: cfgEmail.fromEmailUser,to: obj.email,subject:obj.data.sign,text: obj.content, html: obj.content
              }).then(function(res){
                     if(res.accepted.length>=1) return Promise.resolve(obj);
                     else return Promise.reject(obj);
