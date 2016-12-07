@@ -17,7 +17,7 @@ var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.haveOwnproperty(params, ['userId', 'shareContent.mode', 'shareContent.ids'])){
+    if(!req.ext.checkExistProperty(params, ['shareContent'])){
         return res.ext.json(errInfo.getShareUrl.paramsError);
     }
     if (typeof params.shareContent == 'string') {
@@ -31,53 +31,32 @@ exports.getShareUrl = function (req, res, next) {
     var fullUrl, secretKey;
     var shareModel = require('../mongodb/Model/shareModel.js');
     var shareContent = params.shareContent;
-    (function () {
-        switch (shareContent.mode){
-            case shareModeEnum.product:
-                key = shareModeEnum.product;
-                targetDataModel = require('../mongodb/Model/productModel.js');
-                break;
-            case shareModeEnum.userInfo:
-                key = shareModeEnum.userInfo;
-                targetDataModel = require('../mongodb/Model/userModel.js');
-                break;
-            case shareModeEnum.photo:
-                key = shareModeEnum.photo;
-                targetDataModel = require('../mongodb/Model/photoModel.js');
-                break;
-            case shareModeEnum.video:
-                key = shareModeEnum.video;
-                targetDataModel = require('../mongodb/Model/videoModel.js');
-                break;
-            default :
-                key = shareModeEnum.other;
-                break;
-        }
-        urlParams = querystring.stringify({
-            "userId": userId,
-            "key": key,
-            "ids": shareContent.ids
-        })
-        fullUrl = require('url').parse(path.join(config.serverIP, config.apiPort, 'share', urlParams)).path.replace("/" + config.apiPort, ":" + config.apiPort);
-        secretKey = util.shortUrlGenerate(fullUrl);
-    });
     var maxRetryCheck = 10;
     var checkCount = 0;
     var checkSecretKey = function(){
-        shareModel.countAsync({"secretKey":secretKey},function(e,n){
-            if(n >= 1 && checkCount < maxRetryCheck){
-                secretKey = util.shortUrlGenerate(fullUrl);
-                ++ checkCount;
-                checkSecretKey(secretKey);
-            }
-            if(checkCount >= maxRetryCheck){
-                throw new Error({status: statusCode.request.shareFail,msg: errMsg.shareFail});
-            }
-            if(e){
-                throw new Error({status: statusCode.system.mongoError,msg: errMsg.mongoError+'share'});
-            }
-        })
+        return Promise.resolve()
+            .then(function () {
+                return shareModel.countAsync({"secretKey":secretKey});
+            })
+            .then(function (n) {
+                if(n >= 1 && checkCount < maxRetryCheck){
+                    secretKey = util.shortUrlGenerate(fullUrl);
+                    ++ checkCount;
+                    checkSecretKey(secretKey);
+                }
+                if(checkCount >= maxRetryCheck){
+                    return Promise.reject(errInfo.getShareUrl.shareUrlError);
+                }
+            })
+            .catch(function (err) {
+                if(err.status){
+                    return Promise.reject(err);
+                }else {
+                    return Promise.reject(errInfo.getShareUrl.shareUrlError);
+                }
+            });
     }
+
     Promise.resolve()
         .then(function () {
             switch (shareContent.mode){
@@ -102,7 +81,7 @@ exports.getShareUrl = function (req, res, next) {
                     break;
             }
             urlParams = querystring.stringify({
-                "userId": userId,
+                "userId": params.token.userId,
                 "key": key,
                 "ids": shareContent.ids
             })
@@ -111,7 +90,7 @@ exports.getShareUrl = function (req, res, next) {
         })
         .then(function(){
             if (!targetDataModel) {
-                return Promise.reject(errInfo.getShareUrl.modelError);
+                return Promise.reject(errInfo.getShareUrl.paramsError);
             }else {
                 return checkSecretKey();
             }
@@ -126,7 +105,7 @@ exports.getShareUrl = function (req, res, next) {
         .then(function (targetData) {
             targetData = targetData || [];
             if (targetData.length != 0 && targetData.length != shareContent.ids.split(',').length) {
-                throw new Error({status: statusCode.user.incomplete, msg: errMsg.incomplete});
+                return Promise.reject(errInfo.getShareUrl.paramsError);
             }
             return shareModel.findOneAsync({"sharerId": params.userId, "shareContent.ids": shareContent.ids.split(",")});
         })
@@ -138,7 +117,7 @@ exports.getShareUrl = function (req, res, next) {
             }else {
                 shareData = new shareModel({
                     shareDomain: config.serverIP + ':' + config.apiPort,
-                    sharerId: userId,
+                    sharerId: params.userId,
                     shareUrl: fullUrl,
                     shareShortUrl: url.resolve(config.serverIP + ':' + config.apiPort, '/share/' + secretKey),
                     secretKey: secretKey,
@@ -171,18 +150,125 @@ exports.getShareUrl = function (req, res, next) {
 }
 
 //分享链接
-exports.share = function (req, res, next) {
+function share(req, res, params, next) {
+    var params = params || req.ext.params;
+    if(!req.ext.checkExistProperty(params, ['shareId', 'shareKey', 'shareContent'])){
+        return res.ext.json(errInfo.getShareUrl.paramsError);
+    }
+    var shareModel = require('../mongodb/Model/shareModel.js');
+    var TargetDataModel, refData, shareEntity, shareContent, idsArray;
     
+    Promise.resolve()
+        .then(function () {
+            return shareModel.findOneAsync({"$or": [{"_id": params.shareId}, {"secretKey": params.shareKey}]});
+        })
+        .then(function (data) {
+            if (!data) return Promise.reject(errInfo.share.notFind);
+            var shareModeEnum = enums.shareModeEnum;
+            shareEntity = data;
+            shareContent = data.shareContent;
+            switch (shareContent.mode) {
+                case shareModeEnum.product:
+                    TargetDataModel = require('../mongodb/Model/productModel.js');
+                    break;
+                case shareModeEnum.userInfo:
+                    TargetDataModel = require('../mongodb/Model/userModel.js');
+                    break;
+                case shareModeEnum.photo:
+                    TargetDataModel = require('../mongodb/Model/photoModel.js');
+                    break;
+                case shareModeEnum.video:
+                    TargetDataModel = require('../mongodb/Model/videoModel.js');
+                    break;
+                default :
+                    break;
+            }
+            if (!TargetDataModel) return Promise.reject(errInfo.share.paramsError);
+            idsArray = shareContent.ids;
+        })
+        .then(function () {
+            if (!shareEntity.shareSource) {
+
+                shareEntity.shareSource = {
+                    ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress,
+                    title: params.title || 'share',
+                    terminal: params.token.t || '',
+                    description: params.description || '',
+                    platform: params.platform || ''
+                };
+            }
+            shareEntity.shareCount++;
+            shareEntity.save();
+        })
+        .then(function () {
+            refData = {
+                mode: shareContent.mode,
+                data: []
+            };
+            var condition = {"_id": {"$in": idsArray}};
+            if (shareContent.mode == shareModeEnum.photo) {
+                condition.disabled = false;
+            }
+            return TargetDataModel.findAsync(condition)
+                .then(function (targets) {
+                    targets = targets || [];
+                    return Promise.each(targets, function (target) {
+                        console.log(target)
+                        if (!target) return Promise.reject(errInfo.share.notFindTargetData);
+                        var shareInfoList = target.shareInfo = target.shareInfo || [];
+                        var position = -1;
+                        for (var i = 0; i < shareInfoList.length; i++) {
+                            if (shareInfoList[i].channel == input.platform) {
+                                position = i;
+                            }
+                        }
+                        if (position == -1) {
+                            target.shareInfo.push({
+                                sourceId: shareEntity._id,
+                                sourceSecret: shareEntity.secretKey,
+                                channel: input.platform,
+                                count: 1
+                            });
+                        } else {
+                            target.shareInfo[position].count += 1;
+                        }
+                        refData.data.push(target);
+                        target.save();
+                    });
+                });
+        })
+        .then(function () {
+            var result = {};
+            if (params.getShareData) {
+                result = refData;
+            }
+            var resultObj = errInfo.success;
+            resultObj.result = result;
+            return res.ext.json(resultObj);
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.share.promiseError);
+            }
+        });
 }
+exports.share = function (req, res, next) {
+    share(req, res);
+};
 
 //分享图片
-exports.getShareInfo = function () {
-
+exports.getShareInfo = function (req, res, next) {
+    var params = req.ext.params;
+    params.getShareData = true;
+    share(req, res, params, next);
 }
 
 exports.addCodeToUser = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.haveOwnproperty(params, 'customerId')) {
+    if (!req.ext.checkExistProperty(params, 'customerId')) {
         return res.ext.json(errInfo.addCodeToUser.paramsError);
     }
     var customerId = params.customerId.trim() || '';
@@ -349,10 +435,7 @@ exports.addCodeToUser = function (req, res, next) {
 
 exports.updateUser = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.haveOwnproperty(params, 'userId')) {
-        return res.ext.json(errInfo.updateUser.paramsError);
-    }
-
+    var userId = params.token.userId;
     Promise.resolve()
         .then(function(){
             return getUpdateUserInfo(params);
@@ -365,13 +448,13 @@ exports.updateUser = function (req, res, next) {
             var isEmail = result[1];
             var isMobile = result[2];
             if (isEmail || isMobile) {
-                return userModel.findOneAsync({_id: params.userId.trim()})
+                return userModel.findOneAsync({_id: userId.trim()})
                     .then(function(user){
                         if (user) {
                             if (user.userName == user.email && isEmail) {
                                 return res.ext.json(errInfo.updateUser.denyUpdateRegister);
                             } else {
-                                var conditions = {_id: {$ne: params.userId.trim()}};
+                                var conditions = {_id: {$ne: userId.trim()}};
                                 if (isEmail) {
                                     conditions.email = updateInfo.email;
                                 }
@@ -387,7 +470,7 @@ exports.updateUser = function (req, res, next) {
                                                 return res.ext.json(errInfo.updateUser.existedMobile);
                                             }
                                         } else {
-                                            userModel.findByIdAndUpdateAsync(params.userId.trim(), updateInfo)
+                                            userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
                                                 .then(function (ur) {
                                                     if(ur){
                                                         return res.ext.json();
@@ -417,7 +500,7 @@ exports.updateUser = function (req, res, next) {
                     });
 
             } else {
-                userModel.findByIdAndUpdateAsync(params.userId.trim(), updateInfo)
+                userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
                     .then(function (ur) {
                         if(ur){
                             return res.ext.json();
@@ -492,9 +575,6 @@ function getCodeTypeByCode(code, cb) {
 
 function getUpdateUserInfo(params) {
     var updateInfo = {};
-    if (params.password && params.password.trim() != '') {
-        updateInfo.password = '888888';
-    }
     if (params.disabled == 1) {
         updateInfo.disabled = true;
     }
@@ -568,7 +648,7 @@ exports.contactUs = function (req, res, next) {
     var params = req.ext.params;
     var subject = 'contact us';
     var content = params.name + params.feedback;
-    if(!req.ext.haveOwnproperty(params, ['name', 'EmailAddress', 'parkName', 'feedback'])){
+    if(!req.ext.checkExistProperty(params, ['name', 'EmailAddress', 'parkName', 'feedback'])){
         return res.ext.json(errInfo.contactUs.paramsError);
     }
     Promise.resolve()
@@ -584,12 +664,12 @@ exports.contactUs = function (req, res, next) {
             contactMsg.subject=subject;
             contactMsg.content=content;
             contactMsg.parkName=params.parkName;
-            contactMsg.createdBy=params.userId || 'Guest';
+            contactMsg.createdBy=params.userId || params.token.userId || 'Guest';
             contactMsg.dataOfVisit=params.dataOfVisit || date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
             contactMsg.orderId=params.orderId || '';
             contactMsg.operatingSystem=params.operatingSystem || '';
             contactMsg.feedback=params.feedback;
-            contactMsg.code=params.token.lg;
+            contactMsg.code=params.token ? params.token.lg : 'zh-cn';
             contactMsg.sendFrom=params.EmailAddress;
             contactMsg.sendTo="PictureAir.com";
             return contactMsg.save();

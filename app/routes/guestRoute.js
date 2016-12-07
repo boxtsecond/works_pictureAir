@@ -15,20 +15,20 @@ router.post('/user/verifymobilecode',ctr.users.verifyMobileCode);
 router.post('/user/verifyemailcode',ctr.users.verifyEmailCode);
 router.post('/user/forgotpwd',ctr.users.resetPassword);
 
-router.all('/user/contactUs', ctr.userController.contactUs);
+router.get('/user/contactUs', ctr.userController.contactUs);
 
-router.all('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
+router.post('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
 
-router.all('/park/getAllLocations', ctr.parkController.getAllLocations);
-router.all('/park/getAllParks', ctr.parkController.getAllParks);
-router.all('/park/getAllParksVersion', ctr.parkController.getAllParksVersion);
-router.all('/park/getParksVersionBySiteId', ctr.parkController.getParksVersionBySiteId);
-router.all('/park/getParkBySiteId', ctr.parkController.getParkBySiteId);
-
-
+router.get('/park/getAllLocations', ctr.parkController.getAllLocations);
+router.get('/park/getAllParks', ctr.parkController.getAllParks);
+router.get('/park/getAllParksVersion', ctr.parkController.getAllParksVersion);
+router.get('/park/getParksVersionBySiteId', ctr.parkController.getParksVersionBySiteId);
+router.get('/park/getParkBySiteId', ctr.parkController.getParkBySiteId);
 
 
-router.all('/cache/carousel', ctr.cacheController.carousel);
+
+
+router.get('/cache/carousel', ctr.cacheController.carousel);
 
 
 //分享

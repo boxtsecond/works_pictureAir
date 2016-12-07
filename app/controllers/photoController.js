@@ -22,7 +22,7 @@ var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
 exports.getPhotosByConditions = function (req, res, next) {
     var params = req.ext.params;
     var photos = [];
-    if(!req.ext.haveOwnproperty(params, params.condition)){
+    if(!req.ext.checkExistProperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
     }
     var conditions = getCondition(params);
@@ -84,6 +84,7 @@ exports.getPhotosByConditions = function (req, res, next) {
         .then(function () {
             if(photos.length > 0){
                 var resultObj = errInfo.success;
+                resultObj.result = {};
                 resultObj.result.photos = photos;
                 return res.ext.json(resultObj);
             }else {
@@ -97,7 +98,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                 console.log(error);
                 return res.ext.json(errInfo.getPhotosByConditions.promiseError);
             }
-        })
+        });
 }
 
 function getCondition(params) {
@@ -181,7 +182,7 @@ function getOptions(params) {
 
 exports.removePhotosFromPP = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.haveOwnproperty(params, ['ids', 'pp'])) {
+    if (!req.ext.checkExistProperty(params, ['ids', 'pp'])) {
         res.ext.json(errInfo.removePhotosFromPP.paramsError);
     }
     var customerId = params.pp;
@@ -276,7 +277,7 @@ exports.removePhotosFromPP = function (req, res, next) {
                 });
                 return res.ext.json();
             }else {
-                return res.ext.json(result);;
+                return res.ext.json(errInfo.removePhotosFromPP.saveError);;
             }
         })
         .catch(function (err) {

@@ -10,16 +10,18 @@ var ctr=require("./ctr");
 router.post('/user/switchlg',ctr.users.switchLanguage);
 router.post('/user/switchlg',ctr.users.logout);
 
-router.all('/photo/removePhotosFromPP', ctr.photoController.removePhotosFromPP);
-router.all('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);
-router.all('/card/getCouponsByUserId', ctr.cardController.getCouponsByUserId);
-router.all('/card/removePPFromUser', ctr.cardController.removePPFromUser);
+router.post('/user/getShareUrl', ctr.userController.getShareUrl);
+router.post('/user/share', ctr.userController.share);
+router.post('/user/getShareInfo', ctr.userController.getShareInfo);
+router.get('/user/addCodeToUser', ctr.userController.addCodeToUser);
+router.post('/user/updateUser', ctr.userController.updateUser);
 
-router.all('/getShareUrl', ctr.userController.getShareUrl);
-router.all('/share', ctr.userController.share);
-router.all('/getShareInfo', ctr.userController.getShareInfo);
-router.all('/addCodeToUser', ctr.userController.addCodeToUser);
-router.all('/updateUser', ctr.userController.updateUser);
+router.get('/photo/removePhotosFromPP', ctr.photoController.removePhotosFromPP);
+router.get('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);
+router.get('/card/getCouponsByUserId', ctr.cardController.getCouponsByUserId);
+router.get('/card/removePPFromUser', ctr.cardController.removePPFromUser);
+
+
 //分享
 
 

@@ -211,6 +211,24 @@ function txtStrReplacePromise(drawTextStr,dReplaceArray){
         })
 };
 
+exports.checkExistProperty = function (data, propertyName) {
+    var propertyArray = [];
+    if(isstring(propertyName)){
+        propertyArray = propertyName.split(',');
+    }else if(isArray(propertyName)){
+        propertyArray = propertyName;
+    }else {
+        return false;
+    }
+
+    for(var item in propertyArray){
+        if(!data[propertyArray[item]] || data[propertyArray[item]] === null){
+            return false;
+        }
+    }
+    return true;
+}
+
 //txtStrReplacePromise("#d##date#%#date##date##date##date##date#aaaaa%date1%%date1%%date1%#d#%555%",[
 //    {name:'#d#',value:"ddddd"},
 //    //{name:'#date#',value:"6666"},

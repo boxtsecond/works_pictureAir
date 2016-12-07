@@ -152,6 +152,7 @@ module.exports.req=function(req,res){
     this.replaceAll=util.replaceAll;
     this.res=res;
     this.json=apiSend;
+    this.checkExistProperty=util.checkExistProperty;
     return this;
 }
 module.exports.res=function(req,res){

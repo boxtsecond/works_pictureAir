@@ -133,14 +133,14 @@ var errInfo={
     },
     "getShareUrl": {
         paramsError: {status: 4027, msg: "params is incomplete", desc: "missing userId or shareContent.mode or shareContent.ids"},
-        modelError: {status: 3010, msg: "system error", desc: "can't get db model"},
-        promiseError: {status: 3011, msg: "system error", desc: "promise error"}
+        shareUrlError: {status: 3010, msg: "system error", desc: "can't create share url db"},
+        promiseError: {status: 3011, msg: "system error", desc: "promise error"},
+
     },
     "removePhotosFromPP": {
         paramsError: {status: 4008, msg: "params is incomplete", desc: "missing ids or pp"},
         promiseError: {status: 3024, msg: "system error", desc: "promise error"},
-        saveError: {status: 3025, msg: "system error", desc: "save photo to db error"},
-
+        saveError: {status: 3025, msg: "system error", desc: "save photo to db error"}
     },
     "getAllParks": {
         notFind: {status: 4028, msg: "not find park", desc: "not find park from db"},
@@ -172,6 +172,12 @@ var errInfo={
     "contactUs": {
         paramsError: {status: 4034, msg: "params is incomplete", desc: "missing name or EmailAddress or parkName or feedback"},
         promiseError: {status: 3039, msg: "system error", desc: "promise error"}
+    },
+    "share": {
+        paramsError: {status: 4035, msg: "params is incomplete", desc: "missing shareId or shareKey or shareContent"},
+        notFind: {status: 4036, msg: "not find shareModel", desc: "not find shareModel from db"},
+        notFindTargetData: {status: 4037, msg: "not find TargetDataModel", desc: "not find TargetDataModel from db"},
+        promiseError: {status: 3040, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------

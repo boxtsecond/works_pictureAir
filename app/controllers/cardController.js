@@ -13,11 +13,12 @@ var pushMsgType = require('../tools/enums.js').pushMsgType;
 var pppController = require('./photoPassPlusController.js');
 var socketController = require('./socketController.js');
 var pubScribeList = require('../tools/socketApi.js').pubScribeList;
+var util = require('../lib/util/util.js');
 
 exports.getCouponsByUserId = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.haveOwnproperty(params, 'userId')){
-        res.ext.json(errInfo.getCouponsByUserId.paramsError);
+    if(!req.ext.checkExistProperty(params, 'userId')){
+        return res.ext.json(errInfo.getCouponsByUserId.paramsError);
     }
     Promise.resolve()
         .then(function () {
@@ -33,48 +34,46 @@ exports.getCouponsByUserId = function (req, res, next) {
 
 exports.getPPsByUserId = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.haveOwnproperty(params, ['userId'])){
-        res.ext.json(errInfo.getPPsByUserId.paramsError);
+    if(!req.ext.checkExistProperty(params, ['userId'])){
+        return res.ext.json(errInfo.getPPsByUserId.paramsError);
     }
     var userId = params.userId;
+    var PPList = [];
+    var emptyPPs = [];
+    var flag = false;
 
-    async.auto({
-        getPPList: function (callback) {
-            userModel.findOne({_id: userId}, {customerIds: 1, hiddenPPList: 1, _id: 0}, function (err, user) {
-                if (err) {
-                    log.error('getPPsByUserId', err);
-                    return callback(errInfo.getPPsByUserId.userError);
-                }
-                if (user && user.customerIds && user.customerIds.length > 0) {
-                    return callback(null, user.customerIds, user.hiddenPPList);
-                }
-                return callback(null, []);
+    Promise.resolve()
+        .then(function () {
+            return userModel.findOneAsync({_id: userId}, {customerIds: 1, hiddenPPList: 1, _id: 0})
+                .then(function (user) {
+                    if (user && user.customerIds && user.customerIds.length > 0) {
+                        return [user.customerIds, user.hiddenPPList];
+                    }else {
+                        return Promise.reject(errInfo.getPPsByUserId.userError);
+                    }
+                })
+                .catch(function (err) {
+                    return Promise.reject(errInfo.getPPsByUserId.userError);
+                });
             })
-        },
-        getPhotoCount: ['getPPList', function (callback, results) {
-            console.log('=================3');
-            var customerIds = results.getPPList[0];
-            var hiddenList = results.getPPList[1];
+        .then(function (result) {
+            var customerIds = result[0];
+            var hiddenList = result[1];
             if (hiddenList == null) {
                 hiddenList = [];
             }
             if (customerIds == null) {
                 customerIds = [];
             }
-
-            console.log('=================2',customerIds.length,'***********',hiddenList.length,userId);
-            photoModel.find({disabled: false, userIds: userId},
-                {customerIds: 1, shootOn: 1}, {sort: {shootOn: -1},limit:875}, function (err, list) {
-                    if (err) {
-                        log.error('getPPsByUserId', err);
-                        return callback(errInfo.getPPsByUserId.photoError);
-                    }
+            return photoModel.findAsync({disabled: false, userIds: userId},
+                {customerIds: 1, shootOn: 1}, {sort: {shootOn: -1},limit:875})
+                .then(function (list) {
                     var DateList = [];
                     var list2 = [];
                     var codeList = [];
                     //获取有图片数量的code-shootDate列表
                     for (var i = 0; i < list.length; i++) {
-                        var date = list[i].shootOn.customFormat('yyyy-MM-dd');
+                        var date = util.customFormat(list[i].shootOn, 'yyyy-MM-dd');
                         for (var j = 0; j < list[i].customerIds.length; j++) {
                             if (common.checkExistByArrayProperty('code', customerIds, list[i].customerIds[j].code)) {
                                 if (codeList.indexOf(list[i].customerIds[j].code) == -1) {
@@ -114,119 +113,116 @@ exports.getPPsByUserId = function (req, res, next) {
                     }
 
 
-                    var PPList = [];
                     var count = 0;
                     var isHidden = 0;
-                    var emptyPPs = [];
-                    async.each(list, function (item, callback) {
-                        console.log('=================4');
-                        pppModel.find({
+
+
+                    return Promise.each(list, function (item) {
+                        return pppModel.findAsync({
                             bindInfo: {$elemMatch: {customerId: item.code, bindDate: item.shootDate}},
-                            active: true
-                        }, function (err2, ppplist) {
-                            if (err2) {
-                                log.error('getPPsByUserId', err2);
-                                return callback(errInfo.getPPsByUserId.pppError);
-                            }
-                            var hiddenCondition = [
-                                {field: 'code', value: item.code}
-                            ];
-                            if (common.getObjByPropertiesFromArray(hiddenCondition, hiddenList) == null) {
-                                isHidden = 0;
-                            } else {
-                                isHidden = 1;
-                            }
-
-                            if (ppplist && ppplist.length > 0) {
-                                if (item.data == 0) {
-                                    emptyPPs.push({
-                                        customerId: item.code,
-                                        shootDate: item.shootDate,
-                                        photoCount: item.data,
-                                        isUpgrade: 1,
-                                        isHidden: isHidden,
-                                        shootOn: item.shootOn
-
-                                    });
+                            active: true})
+                            .then(function (ppplist) {
+                                var hiddenCondition = [
+                                    {field: 'code', value: item.code}
+                                ];
+                                if (common.getObjByPropertiesFromArray(hiddenCondition, hiddenList) == null) {
+                                    isHidden = 0;
                                 } else {
-                                    PPList.push({
-                                        customerId: item.code,
-                                        shootDate: item.shootDate,
-                                        photoCount: item.data,
-                                        isUpgrade: 1,
-                                        isHidden: isHidden,
-                                        shootOn: item.shootOn
-
-                                    });
+                                    isHidden = 1;
                                 }
 
-                            } else {
-                                if (item.data == 0) {
-                                    emptyPPs.push({
-                                        customerId: item.code,
-                                        shootDate: item.shootDate,
-                                        photoCount: item.data,
-                                        isUpgrade: 0,
-                                        isHidden: isHidden,
-                                        shootOn: item.shootOn
+                                if (ppplist && ppplist.length > 0) {
+                                    if (item.data == 0) {
+                                        emptyPPs.push({
+                                            customerId: item.code,
+                                            shootDate: item.shootDate,
+                                            photoCount: item.data,
+                                            isUpgrade: 1,
+                                            isHidden: isHidden,
+                                            shootOn: item.shootOn
 
-                                    });
+                                        });
+                                    } else {
+                                        PPList.push({
+                                            customerId: item.code,
+                                            shootDate: item.shootDate,
+                                            photoCount: item.data,
+                                            isUpgrade: 1,
+                                            isHidden: isHidden,
+                                            shootOn: item.shootOn
+
+                                        });
+                                    }
+
                                 } else {
-                                    PPList.push({
-                                        customerId: item.code,
-                                        shootDate: item.shootDate,
-                                        photoCount: item.data,
-                                        isUpgrade: 0,
-                                        isHidden: isHidden,
-                                        shootOn: item.shootOn
+                                    if (item.data == 0) {
+                                        emptyPPs.push({
+                                            customerId: item.code,
+                                            shootDate: item.shootDate,
+                                            photoCount: item.data,
+                                            isUpgrade: 0,
+                                            isHidden: isHidden,
+                                            shootOn: item.shootOn
 
-                                    });
+                                        });
+                                    } else {
+                                        PPList.push({
+                                            customerId: item.code,
+                                            shootDate: item.shootDate,
+                                            photoCount: item.data,
+                                            isUpgrade: 0,
+                                            isHidden: isHidden,
+                                            shootOn: item.shootOn
+
+                                        });
+                                    }
+
                                 }
-
-                            }
-                            count++;
-                            if (count == list.length) {
-                                return callback(1);
-                            }
-
-                        })
-                    }, function (err) {
-//                console.log(PPList);
-                        PPList = PPList.sort(function (a, b) {
-                            if (a.shootOn > b.shootOn) {
-                                return -1;
-                            }
-                            if (a.shootOn < b.shootOn) {
-                                return 1;
-                            }
-                            return 0;
-                        });
-                        PPList = PPList.concat(emptyPPs);
-                        if (err == 1) {
-                            return callback(null, PPList);
-                        }
-                        if (err) {
-                            return callback(err);
-                        }
-                        return callback(null, PPList);
+                                count++;
+                                if (count == list.length) {
+                                    flag = true;
+                                }
+                            })
+                            .catch(function (err) {
+                                console.log(err);
+                                return Promise.reject(errInfo.getPPsByUserId.pppError);
+                            })
                     })
+                })
+                .then(function () {
+                    PPList = PPList.sort(function (a, b) {
+                        if (a.shootOn > b.shootOn) {
+                            return -1;
+                        }
+                        if (a.shootOn < b.shootOn) {
+                            return 1;
+                        }
+                        return 0;
+                    });
+                    PPList = PPList.concat(emptyPPs);
+                })
+        })
+        .then(function () {
+            var resultObj = errInfo.success;
+            resultObj.result = {};
+            resultObj.result.PPList = PPList;
+            return res.ext.json(resultObj);
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.getPPsByUserId.pppError);
+            }
+        })
+        
 
-                });
-        }]
-
-
-    }, function (err, results) {
-        if (err) {
-            res.ext.json(err);
-        }
-
-        res.ext.json(errInfo.success);
-    })
 }
 
 exports.removePPFromUser = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.haveOwnproperty(params, ['customerId'])) {
+    if (!req.ext.checkExistProperty(params, ['customerId'])) {
         res.ext.json(errInfo.removePPFromUser.paramsError);
     }
     var customerId = params.customerId.trim() || '';
@@ -302,6 +298,7 @@ exports.removePPFromUser = function (req, res, next) {
 
 
 function getListByUserIdAndOType(oType, userId) {
+    var result = [];
     return pppModel.findAsync({userId: userId, oType: oType}, {
         _id: 1,
         PPPCode: 1,
@@ -319,10 +316,9 @@ function getListByUserIdAndOType(oType, userId) {
         effectiveOn: 1
     })
         .then(function (collection) {
-            if (collection) {
+            if (collection && collection.length > 0) {
                 var count = 0;
                 var countType = {type: false};
-                var data = [];
                 Promise.each(collection, function (ppp) {
                     ppp._doc.isExpired = false;
                     if (ppp.expiredOn && ppp.expiredOn < Date.now()) {
@@ -332,7 +328,7 @@ function getListByUserIdAndOType(oType, userId) {
                     if (ppp.bindOn) {
                         ppp._doc.isUsed = true;
                     }
-                    pppTypeModel.findOneAsync({typeCode: ppp.PPPType})
+                    return pppTypeModel.findOneAsync({typeCode: ppp.PPPType})
                         .then(function (pType) {
                             if (pType && pType.cardBg && pType.cardBg.url) {
                                 ppp._doc.cardBg = pType.cardBg.url;
@@ -345,15 +341,14 @@ function getListByUserIdAndOType(oType, userId) {
                             }
                             count++;
                             if (count == collection.length){
-                                data[0] = 1;
-                                data[1] = collection;
+                                result[0] = 1;
+                                result[1] = collection;
                             }
                         })
                         .catch(function (err) {
                             return Promise.reject(errInfo.getCouponsByUserId.pppTypeError);
                         });
                 })
-                return data;
             }else {
                 if (oType == codeType.coupon) {
                     var baklist = collection.sort(function (a, b) {
@@ -384,15 +379,17 @@ function getListByUserIdAndOType(oType, userId) {
                     list = list.concat(expiredList);
                     console.log('******************');
                     console.log(list);
-
-                    return [0, {result: {couponList: list}}];
+                    result[0] = 0;
+                    result[1] = {couponList: list};
                 } else {
-                    return [0, {result: {PPPList: collection}}];
+                    result[0] = 0;
+                    result[1] = {PPPList: collection};
                 }
             }
         })
-        .then(function (result) {
+        .then(function () {
             var resultObj = errInfo.success;
+            resultObj.result = {};
             if(result[0]){
                 if (oType == codeType.coupon) {
 //                            return response(res, errInfo.ok.code, '', {couponList: collection});
@@ -410,13 +407,13 @@ function getListByUserIdAndOType(oType, userId) {
                     var list = [];
                     for (var i = 0; i < baklist.length; i++) {
                         if (baklist[i]._doc.isExpired) {
-                            if ((baklist[i].expiredOn.customDateDiff('s', new Date()) / (24 * 60 * 60 )) < 30) {
+                            if ((util.customDateDiff('s', baklist[i].expiredOn, new Date()) / (24 * 60 * 60 )) < 30) {
                                 expiredList.push(baklist[i]);
                             }
                             continue;
                         }
                         if (baklist[i]._doc.isExpired == false && baklist[i]._doc.isUsed) {
-                            if ((baklist[i].bindOn.customDateDiff('s', new Date()) / (24 * 60 * 60 )) < 30) {
+                            if ((util.customDateDiff('s', baklist[i].expiredOn, new Date()) / (24 * 60 * 60 )) < 30) {
                                 usedList.push(baklist[i]);
                             }
                             continue;
@@ -433,8 +430,8 @@ function getListByUserIdAndOType(oType, userId) {
                 }
                 return resultObj;
             }else {
-                if(result[1].result){
-                    resultObj.result = result[1].result;
+                if(JSON.stringify(result[1]) !== '{}'){
+                    resultObj.result = result[1];
                     return resultObj;
                 }else {
                     return errInfo.getCouponsByUserId.countError;

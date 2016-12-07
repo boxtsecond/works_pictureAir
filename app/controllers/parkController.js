@@ -101,7 +101,6 @@ function getChildren(parentId,data,results){
 }
 
 exports.getAllParks = function (req, res, next) {
-    var resultObj = errInfo.success;
     var result = [];
     Promise.resolve()
         .then(function () {
@@ -119,6 +118,8 @@ exports.getAllParks = function (req, res, next) {
                 })
                 .then(function () {
                     if(result.length > 0){
+                        var resultObj = errInfo.success;
+                        resultObj.result = {};
                         resultObj.result.parks = result;
                         return Promise.reject(resultObj);
                     }
@@ -150,7 +151,7 @@ exports.getAllParks = function (req, res, next) {
                 var pushPark = new parkFilter(onePark);
                 return redisclient.hset(config.redis.parkName, onePark.siteId, JSON.stringify(pushPark))
                     .then(function () {
-                        return redisclient.hset(config.redis.parkVersionName, onePark.siteId, onePark.version)
+                        return redisclient.hset(config.redis.parkVersionName, onePark.siteId, onePark.modifiedOn)
                             .then(function () {
                                 result.push(pushPark);
                             })
@@ -166,7 +167,8 @@ exports.getAllParks = function (req, res, next) {
         .then(function () {
             if(result.length > 0){
                 var resultObj = errInfo.success;
-                resultObj.parks = result
+                resultObj.result = {};
+                resultObj.result.parks = result;
                 return res.ext.json(resultObj);
             }else {
                 return Promise.reject(errInfo.getAllParks.promiseError);
@@ -202,8 +204,8 @@ exports.getAllParksVersion = function (req, res, next) {
                 return parkModel.findAsync({})
                     .then(function (pks) {
                         return Promise.each(pks, function (pk) {
-                            park[pk.siteId] = pk.version;
-                            redisclient.hset(config.redis.parkVersionName, pk.siteId, pk.version);
+                            park[pk.siteId] = pk.modifiedOn;
+                            redisclient.hset(config.redis.parkVersionName, pk.siteId, pk.modifiedOn);
                         });
                     })
                     .catch(function (err) {
@@ -230,7 +232,7 @@ exports.getParksVersionBySiteId = function(req, res, next){
     var params = req.ext.params;
     var siteIdArr = [];
     var parksInfo = {};
-    if (!req.ext.haveOwnproperty(params, 'siteId')) {
+    if (!req.ext.checkExistProperty(params, 'siteId')) {
         return res.ext.json(errInfo.getParksVersionBySiteId.paramsError);
     }
     if(util.isstring(params.siteId)){
@@ -262,8 +264,8 @@ exports.getParksVersionBySiteId = function(req, res, next){
                 return parkModel.findAsync(condition)
                     .then(function (pks) {
                         return Promise.each(pks, function (pk) {
-                            parksInfo[pk.siteId] = pk.version;
-                            redisclient.hset(config.redis.parkVersionName, pk.siteId, pk.version);
+                            parksInfo[pk.siteId] = pk.modifiedOn;
+                            redisclient.hset(config.redis.parkVersionName, pk.siteId, pk.modifiedOn);
                         });
                     })
                     .catch(function (err) {
@@ -292,7 +294,7 @@ exports.getParkBySiteId = function (req, res, next) {
     var parksInfo = [];
     var siteIdArr = [];
     var resultObj = errInfo.success;
-    if (!req.ext.haveOwnproperty(params, 'siteId')) {
+    if (!req.ext.checkExistProperty(params, 'siteId')) {
         return res.ext.json(errInfo.getParkBySiteId.paramsError);
     }
     if(util.isstring(params.siteId)){

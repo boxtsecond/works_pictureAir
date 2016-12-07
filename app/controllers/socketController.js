@@ -195,7 +195,7 @@ exports.subscribeEvents = function (io, pub, sub) {
 
 exports.APNSConnect = function (req, res) {
     var params = req.ext.params;
-    if(!req.haveOwnproperty(params, ['userId'])) {
+    if(!req.ext.checkExistProperty(params, ['userId'])) {
         return res.ext.json(errInfo.socketController.APNSConnectError);
     }
     var userId = params.userId;
@@ -347,7 +347,7 @@ exports.APNSConnect = function (req, res) {
 //iphone使用
 exports.APNSDisconnect = function (req, res) {
     var params = req.ext.params;
-    if(!req.haveOwnproperty(params, ['userId'])) {
+    if(!req.ext.checkExistProperty(params, ['userId'])) {
         return res.ext.json(errInfo.socketController.APNSDisconnectError);
     }
     var userId = params.userId;
@@ -434,7 +434,7 @@ exports.APNSDisconnect = function (req, res) {
 
 exports.clearSocketData = function (req, res) {
     var params = req.ext.params;
-    if(!req.haveOwnproperty(params, ['userId'])) {
+    if(!req.ext.checkExistProperty(params, ['userId'])) {
         return res.ext.json(errInfo.socketController.clearSocketData);
     }
 
@@ -501,7 +501,7 @@ exports.clearSocketData = function (req, res) {
 
 exports.getSocketData=function(req,res){
     var params = req.ext.params(req, res);
-    if(!req.haveOwnproperty(params, ['userId'])) {
+    if(!req.ext.checkExistProperty(params, ['userId'])) {
         return res.ext.json(errInfo.socketController.getSocketData);
     }
     var userId = params.userId;
