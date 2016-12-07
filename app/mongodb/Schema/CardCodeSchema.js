@@ -22,7 +22,6 @@ var config= {
     oType:String,//大类：photoPassPlus，photoPass，coupon，eventPass
     capacity: {type: Number}, //容量，可绑定数量
     days:{type:Number}, //天数，可绑定的天数
-
     ownerId: {type: String},//购买者Id
     userId: {type: String, index: true},//使用者Id
     bindOn: {type: Date}, //绑定PP时间,激活时间,coupon的使用时间，
@@ -31,12 +30,9 @@ var config= {
     effectiveOn:{type:Date},//生效时间
     ownOn:{type:Date},//绑定到用户的时间
     soldOn: {type: Date},//卖出时间
-
     photoCount:{type:Number},//可升级的photo数，不限制数量为-1
     locationIds:{type:[String]},//可以使用的地点。
-
     productIds:[String],//可以适用的商品
-
     active: Boolean,//是否可用
     isSold: {type:Boolean,default:false},//是否已卖出
     isVirtual:{type:Boolean,default:true},//是否是虚拟卡

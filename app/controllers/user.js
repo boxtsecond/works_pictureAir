@@ -432,15 +432,15 @@ function sendSMS(req,res){
                     if(Number(smsobj.params.type)==1) {
                         //是否被禁用
                         var user=JSON.parse(access_token);
-                        if(user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                        if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
                         else
                         return Promise.resolve(smsobj);//忘记密码用户必须存在
                     }
                     else   return  Promise.reject(null);
                 }
             }).catch(function(err){
-                if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
-                 else if(req.ext.isArray(err)) return  Promise.reject(err);
+                if(req.ext.isArray(err)) return  Promise.reject(err);
+                else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
                  else    return  Promise.reject(errInfo.userParamUserNameExistError);
             });
         }).
@@ -554,6 +554,8 @@ function filterverifyMobileCode(req){
         }else return  resolve(result);
     });
 };
+
+// type 0  1
 function verifyMobileCode(req,res){
     filterverifyMobileCode(req).then(function (obj) {
         if(obj.isMobile) return obj;
@@ -561,9 +563,16 @@ function verifyMobileCode(req,res){
     }).then(function(obj){
         if(!req.ext.haveOwnproperty(obj.params,'vcode'))
             return Promise.reject(errInfo.userverifyMobileCodeParamVcodeParameterError);
-        else  return obj;
+        else if(!req.ext.haveOwnproperty(obj.params,'type'))
+            return Promise.reject(errInfo.userverifyMobileCodeParamTypeParameterError);
+        else  {
+            if([0,1].indexOf(Number(obj.params.type))>=0) {
+                return obj;
+            }
+            else  return reject(errInfo.userSendSMSParamTypeVierifyError);
+        }
     }).then(function (obj) {
-        return redisclient.get("validateCode:"+"1-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
+        return redisclient.get("validateCode:"+obj.params.type+"-"+req.ext.md5(obj.params.username.toString().toLocaleLowerCase())).then(function(code){
             if(!code&&code==""){
                 return Promise.reject(null);
             }else   {
@@ -855,11 +864,49 @@ function sendEmailForgotPwdMsg(req,res){
             else return  Promise.reject(errInfo.userSendemailValidateSendingCodeError);
         });
     }).then(function(obj){
+        var md5Useranme =req.ext.md5(obj.params.username.toString().toLocaleLowerCase());
+        return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
+            if(!access_token){
+                return { exist:false, obj:obj };
+            }else{
+                var user=JSON.parse(access_token);
+                if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                else   return {   exist:true, obj:obj  };
+            }
+        }).catch(function(err){
+            if(req.ext.isArray(err)) return  Promise.reject(err);
+            else  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+        });
+    }).
+    then(function(obj) {
+        if (obj.exist) return obj.obj;
+        else {
+            return userMode.findOne({email: obj.obj.params.username.toString().toLocaleLowerCase()}).then(function (user) {
+                if (user) {
+                    if (user.disabled)  return Promise.reject([430, 'userName is disabled', {disablereason: user.disablereason}]);
+                    else return obj.obj;
+                } else {
+                    return  Promise.reject(null);
+                }
+            }).catch(function(err){
+                if(req.ext.isArray(err)) return  Promise.reject(err);
+                else if(err)  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+                else    return  Promise.reject(errInfo.userLoginParamUserNameError);
+            });
+        }
+    }).then(function(obj){
+        return redisclient.setex("sendEmail:"+rq.util.md5(obj.params.username.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
+            0).then(function(err){
+            return  obj;
+        }).catch(function(err){
+            return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
+        });
+    })
+        .then(function(obj){
         elemforgotPassword.emit("send",obj);
         res.ext.json([200,'success',{}]);
 
     }).catch(function(err){
-        console.log(err)
         res.ext.json(err);
     });
 }
@@ -891,13 +938,9 @@ function switchLanguage(req,res){
             res.ext.json([200,'success',obj]);
         //
         }).catch(function(err){
-            console.log(err);
         res.ext.json(err);
     });
 }
-
-
-
 
 function logout(req,res){
     // 从redis里面删除用户信息
@@ -920,3 +963,5 @@ module.exports={
 //signin //登陆
 //signup 注册
 //signout //登出
+
+//updatepassw0rd
