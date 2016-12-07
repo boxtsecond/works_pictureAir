@@ -768,21 +768,24 @@ util.inherits(SendEmail, events.EventEmitter);
 var elemforgotPassword = new SendEmail();
 elemforgotPassword.addListener("send",function(nobj){
     Promise.resolve(nobj)
-        .then(function(obj){
-            return sendMsg.sendEmailforgotPwdMsg(obj.params.token.lg,obj.params.username,new Date())
+        .then(function(nobj){
+            var obj=nobj.obj;
+            return sendMsg.sendEmailforgotPwdMsg(obj.params.token.lg,obj.params.username,nobj.msgid)
                 .then(function(msg){
                     return Promise.resolve({
                         msg:msg,obj:obj
                     });
                 });
-        }).then(function(obj){
-            return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
-                obj.msg.msgid).then(function(err){
-                return  obj;
-            }).catch(function(err){
-                return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
-            });
-    }).then(function(obj){
+        })
+    //     .then(function(obj){
+    //         return redisclient.setex("sendEmail:"+rq.util.md5(obj.msg.email.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
+    //             obj.msg.msgid).then(function(err){
+    //             return  obj;
+    //         }).catch(function(err){
+    //             return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
+    //         });
+    // })
+        .then(function(obj){
         //存 mongodb
         var userMsg=new userMsgModel();
         userMsg.channelType="email";
@@ -895,9 +898,13 @@ function sendEmailForgotPwdMsg(req,res){
             });
         }
     }).then(function(obj){
+        var msgid=uuid.v1().replace(/-/g,'');
         return redisclient.setex("sendEmail:"+rq.util.md5(obj.params.username.toString().trim().toLocaleLowerCase()),configData.expireTime.ForgotPwdMsgExpireTime,
-            0).then(function(err){
-            return  obj;
+            msgid).then(function(err){
+            return  {
+                obj:obj,
+                msgid:msgid
+            };
         }).catch(function(err){
             return Promise.reject(errInfo.userEmailRedisSetValidateCodeError);
         });

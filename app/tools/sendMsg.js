@@ -247,8 +247,7 @@ function sendSMS(lg,type,phone,dReplaceArray,msgid,sendTime){
     });
 }
 
-function sendEmailforgotPwdMsg(lg,email){
-     var msgid=uuid.v1().replace(/-/g,'');
+function sendEmailforgotPwdMsg(lg,email,msgid){
     return sendEmail(lg,"forgotPwdMsg_test",email,
         [{name:"%validateCode%",value:msgid}],msgid,new Date()
     );
