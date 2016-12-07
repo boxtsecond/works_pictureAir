@@ -44,18 +44,23 @@ function authUser(req,res,next){
     if(token) {
         access_token.verifyAccess_token(token).then(function(toke){
             // 从redis中获取
-            //redisclient.get()
-            return  redisclient.get("access_token:"+toke.audience).then(function(user){
-                if(user) return toke;
-                // if(user.user.disabled) return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
-                else return Promise.reject(user);
+            return  redisclient.get("access_token:"+toke.audience).then(function(access_token){
+                if(access_token){
+                    var user=JSON.parse(access_token);
+                    if(user.user.disabled) return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
+                    else  return {
+                        toke:toke,
+                        userid:user.userid
+                    };
+                }
+                 else return Promise.reject(access_token);
             }).catch(function(err){
                 return Promise.reject(err);
-                // return res.ext.json({ status: 421, msg: 'unauthorized'});
             });
-        }).then(function(toke){
-            req.ext.params.token=toke;
-            req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
+        }).then(function(obj){
+            req.ext.params.token=obj.toke;
+            req.ext.params.userid=obj.userid;
+            req.ext.params.token.expire_in=Math.floor(obj.toke.exp-Math.floor(Date.now() / 1000));
             return next();
         }).catch(function(err){
             return res.ext.json({ status: 421, msg: 'unauthorized'});

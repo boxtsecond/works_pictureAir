@@ -33,7 +33,7 @@ function  filterUser(user){
 }
 function filterUserToredis(user,t,lg){
     this.userid=user._id;
-    this.t=t;
+    // this.t=t;
     // this.lgcode=lg;
     this.user=new filterUser(user);
 }
