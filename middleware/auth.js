@@ -33,6 +33,7 @@ function authGuest(req,res,next){
           req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
           return next();
       }).catch(function(err){
+          console.log(err);
           return res.ext.json({ status: 421, msg: 'unauthorized',result:{}});
       })
     }
@@ -44,6 +45,7 @@ function authUser(req,res,next){
     if(token) {
         access_token.verifyAccess_token(token).then(function(toke){
             // 从redis中获取
+            console.log(toke.audience)
             return  redisclient.get("access_token:"+toke.audience).then(function(access_token){
                 if(access_token){
                     var user=JSON.parse(access_token);
