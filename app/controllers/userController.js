@@ -592,7 +592,7 @@ function getUpdateUserInfo(params) {
     if (params.qq && params.qq.toString().trim() != '') {
         updateInfo.qq = params.qq.trim();
     }
-    if (params.birthday && params.birthday.toString().trim() != '') {
+    if (params.birthday && params.birthday.toString() != '') {
         if (new Date(params.birthday).toString() != "Invalid Date") {
             updateInfo.birthday = new Date(params.birthday.trim());
         } else {
