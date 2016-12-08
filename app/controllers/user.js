@@ -943,7 +943,7 @@ function switchLanguage(req,res){
         }
     })
     .then(function(obj){
-            res.ext.json([200,'success',obj]);
+            res.ext.json([200,'success',{expire_in:obj.expire_in,access_token:obj.access_token}]);
         //
         }).catch(function(err){
         res.ext.json(err);

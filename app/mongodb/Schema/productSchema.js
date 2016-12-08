@@ -102,7 +102,7 @@ var config = {
         entityType: {type: Number},//是否为实体：1为实物，0为非实物
         keyword: {type: String}, //关键词
         isPost: {type: Boolean},//是否邮寄
-        active: {type: Boolean},//商品状态,是否可用
+        active: {type: Boolean,default: false},//商品状态,是否可用
         deleted: {type: Boolean, default: false}//商品状态,是否可用
     },
     help: {
