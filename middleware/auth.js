@@ -33,7 +33,6 @@ function authGuest(req,res,next){
           req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
           return next();
       }).catch(function(err){
-          console.log(err);
           return res.ext.json({ status: 421, msg: 'unauthorized',result:{}});
       })
     }
