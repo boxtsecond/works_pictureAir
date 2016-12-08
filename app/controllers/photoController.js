@@ -193,7 +193,7 @@ exports.removePhotosFromPP = function (req, res, next) {
     } catch (e) {
         ids = params.ids;
     }
-    var userId = params.token.userId;
+    var userId = params.userId;
     var photoIds = [];
     photoModel.findAsync({'customerIds.code': customerId, _id: {$in: ids}})
         .then(function (list) {

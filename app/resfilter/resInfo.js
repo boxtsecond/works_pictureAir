@@ -12,7 +12,7 @@
 //40000  80000 prompt 用户输入错误(需要提示给用户) 对外的
 //50000  90000 system 服务器内部错误 （内部日志记录）
 var errInfo={
-    //"dbErrorMax": 3025,
+    //"dbErrorMax": 3045,
     //"userErrorMax": 4027,
     //-------------------normal 2x 6x -----------------
     "success": {status: 200, msg: "success", result:{}},
@@ -95,7 +95,7 @@ var errInfo={
         userError: {status: 3014, msg: "system error", desc: "get userModel from db error"},
         photoError: {status: 3015, msg: "system error", desc: "get photoModel from db error"},
         notFind: {status: 4034, msg: 'not find photo', desc: "not find photo from db"},
-        promiseError: {status: 3039, msg: "system error", desc: "promise error"}
+        promiseError: {status: 3045, msg: "system error", desc: "promise error"}
     },
     "carousel": {
         paramsError: {status: 4009, msg: "request error", desc: "can not find request"}

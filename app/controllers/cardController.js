@@ -19,7 +19,7 @@ exports.getCouponsByUserId = function (req, res, next) {
     var params = req.ext.params;
     Promise.resolve()
         .then(function () {
-            return getListByUserIdAndOType(codeType.coupon, params.token.userId);
+            return getListByUserIdAndOType(codeType.coupon, params.userId);
         })
         .then(function (result){
             return res.ext.json(result);
@@ -31,7 +31,7 @@ exports.getCouponsByUserId = function (req, res, next) {
 
 exports.getPPsByUserId = function (req, res, next) {
     var params = req.ext.params;
-    var userId = params.token.userId;
+    var userId = params.userId;
     var PPList = [];
     var emptyPPs = [];
     var flag = false;
@@ -216,7 +216,7 @@ exports.getPPsByUserId = function (req, res, next) {
 
 exports.removePPFromUser = function (req, res, next) {
     var params = req.ext.params;
-    var userId = params.token.userId;
+    var userId = params.userId;
     if (!req.ext.checkExistProperty(params, ['customerId'])) {
         res.ext.json(errInfo.removePPFromUser.paramsError);
     }
