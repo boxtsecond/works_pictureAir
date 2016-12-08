@@ -4,6 +4,7 @@
 var util = require("util");
 var events = require("events");
 var rq=require('../rq');
+var uuid=rq.uuid;
 var sendMsg=require("../tools/sendMsg");
 var errInfo=rq.resInfo.errInfo;
 var userMode=rq.userMode;
