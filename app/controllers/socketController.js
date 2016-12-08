@@ -195,7 +195,7 @@ exports.subscribeEvents = function (io, pub, sub) {
 
 exports.APNSConnect = function (req, res) {
     var params = req.ext.params;
-    var userId = params.token.userId;;
+    var userId = params.userId;;
 //    var iphoneToken = req.query.iphoneToken;
     var appName = 'photoPass';
     if (params.appName) {
@@ -344,7 +344,7 @@ exports.APNSConnect = function (req, res) {
 //iphone使用
 exports.APNSDisconnect = function (req, res) {
     var params = req.ext.params;
-    var userId = params.token.userId;
+    var userId = params.userId;
 //    var iphoneToken = req.query.iphoneToken;
     var tokenKey = params.iphoneToken || params.androidToken;
     var keyPrefix = apnsPrefix;
@@ -432,7 +432,7 @@ exports.clearSocketData = function (req, res) {
         return res.ext.json(errInfo.socketController.clearSocketData);
     }
 
-    var userId = params.token.userId;
+    var userId = params.userId;
     var appName = 'photoPass';
     if (params.appName) {
         appName = params.appName;
@@ -498,7 +498,7 @@ exports.getSocketData=function(req,res){
     if(!req.ext.checkExistProperty(params, ['userId'])) {
         return res.ext.json(errInfo.socketController.getSocketData);
     }
-    var userId = params.token.userId;
+    var userId = params.userId;
     var appName = 'photoPass';
     if (params.appName) {
         appName = params.appName;

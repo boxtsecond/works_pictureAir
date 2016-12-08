@@ -83,7 +83,7 @@ exports.getShareUrl = function (req, res, next) {
                     break;
             }
             urlParams = querystring.stringify({
-                "userId": params.token.userId,
+                "userId": params.userId,
                 "key": key,
                 "ids": shareContent.ids
             })
@@ -109,7 +109,7 @@ exports.getShareUrl = function (req, res, next) {
             if (targetData.length != 0 && targetData.length != shareContent.ids.split(',').length) {
                 return Promise.reject(errInfo.getShareUrl.paramsError);
             }
-            return shareModel.findOneAsync({"sharerId": params.token.userId, "shareContent.ids": shareContent.ids.split(",")});
+            return shareModel.findOneAsync({"sharerId": params.userId, "shareContent.ids": shareContent.ids.split(",")});
         })
         .then(function (shareData) {
             var info = {};
@@ -119,7 +119,7 @@ exports.getShareUrl = function (req, res, next) {
             }else {
                 shareData = new shareModel({
                     shareDomain: config.serverIP + ':' + config.apiPort,
-                    sharerId: params.token.userId,
+                    sharerId: params.userId,
                     shareUrl: fullUrl,
                     shareShortUrl: url.resolve(config.serverIP + ':' + config.apiPort, '/share/' + secretKey),
                     secretKey: secretKey,
@@ -276,7 +276,7 @@ exports.addCodeToUser = function (req, res, next) {
     var customerId = params.customerId.trim() || '';
     customerId = customerId.toUpperCase().replace(/-/g, "");
 //    customerId=customerId.replace('http://140.206.125.194:3001/downloadApp.html?','');
-    var userId = params.token.userId;
+    var userId = params.userId;
     //判断customerId是否有效
     var cType = getCodeTypeByCode(customerId);
     if (cType != enums.codeType.photoPass && cType != enums.codeType.eventPass) {
@@ -437,7 +437,7 @@ exports.addCodeToUser = function (req, res, next) {
 
 exports.updateUser = function (req, res, next) {
     var params = req.ext.params;
-    var userId = params.token.userId;
+    var userId = params.userId;
     Promise.resolve()
         .then(function(){
             return getUpdateUserInfo(params);
@@ -463,7 +463,7 @@ exports.updateUser = function (req, res, next) {
                                 if (isMobile) {
                                     conditions.mobile = updateInfo.mobile;
                                 }
-                                userModel.findOneAsync(conditions)
+                                return userModel.findOneAsync(conditions)
                                     .then(function (user) {
                                         if (user) {
                                             if (isEmail) {
@@ -472,7 +472,7 @@ exports.updateUser = function (req, res, next) {
                                                 return res.ext.json(errInfo.updateUser.existedMobile);
                                             }
                                         } else {
-                                            userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
+                                            return userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
                                                 .then(function (ur) {
                                                     if(ur){
                                                         return res.ext.json();
@@ -502,7 +502,7 @@ exports.updateUser = function (req, res, next) {
                     });
 
             } else {
-                userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
+                return userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
                     .then(function (ur) {
                         if(ur){
                             return res.ext.json();
@@ -666,8 +666,8 @@ exports.contactUs = function (req, res, next) {
             contactMsg.subject=subject;
             contactMsg.content=content;
             contactMsg.parkName=params.parkName;
-            contactMsg.createdBy=params.userId || params.token.userId || 'Guest';
-            contactMsg.dataOfVisit=params.dataOfVisit || date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+            contactMsg.createdBy=params.userId || 'Guest';
+            contactMsg.dataOfVisit=new Date(contactMsg.dataOfVisit).toString() != "Invalid Date" ? contactMsg.dataOfVisit : new Date();
             contactMsg.orderId=params.orderId || '';
             contactMsg.operatingSystem=params.operatingSystem || '';
             contactMsg.feedback=params.feedback;
@@ -691,13 +691,12 @@ exports.modifyUserPwd = function (req, res, next) {
         return res.ext.json(errInfo.modifyUserPwd.paramsError);
     }
     if(params.oldPwd == params.newPwd){
-        return res.ext.json(errInfo.modifyUserPwd)
+        return res.ext.json(errInfo.modifyUserPwd);
     }
     Promise.resolve()
         .then(function () {
             //修改Mongo中的信息
-            console.log(params)
-            return userModel.findOneAsync({"_id": params.token.userId})
+            return userModel.findByIdAsync(params.userId)
                 .then(function (user) {
                     if(!user){
                         return Promise.reject(errInfo.modifyUserPwd.notFind);
@@ -705,23 +704,30 @@ exports.modifyUserPwd = function (req, res, next) {
                         if(params.oldPwd.length !== 32 || params.newPwd.length !== 32 || user.password !== params.oldPwd){
                             return Promise.reject(errInfo.modifyUserPwd.oldPwdError);
                         }else {
-                            return userModel.updateAsync({"_id": params.token.userId}, {"password": params.newPwd})
+                            return userModel.updateAsync({"_id": params.userId}, {"password": params.newPwd})
                                 .then(function () {
                                     return user;
                                 })
                                 .catch(function (err) {
+                                    console.log(err);
                                     return Promise.reject(errInfo.modifyUserPwd.userError);
                                 });
                         }
                     }
                 })
                 .catch(function (err) {
-                    return Promise.reject(errInfo.modifyUserPwd.userError);
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        console.log(err);
+                        return Promise.reject(errInfo.modifyUserPwd.userError);
+                    }
                 })
         })
         .then(function (user) {
             //修改redis中的信息
             var audience = params.token.audience;
+            console.log(audience)
             return redisclient.set("access_token:"+audience, filterUserToredis(user))
                 .catch(function (err) {
                     return Promise.reject(errInfo.modifyUserPwd.redisError);
