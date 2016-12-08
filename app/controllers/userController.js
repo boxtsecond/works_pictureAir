@@ -583,24 +583,24 @@ function getUpdateUserInfo(params) {
     if (params.disabled == 0) {
         updateInfo.disabled = false;
     }
-    if (params.name && params.name.trim() != '') {
+    if (params.name && params.name.toString().trim() != '') {
         updateInfo.name = params.name.trim();
     }
-    if (params.country && params.country.trim() != '') {
+    if (params.country && params.country.toString().trim() != '') {
         updateInfo.country = params.country.trim();
     }
-    if (params.qq && params.qq.trim() != '') {
+    if (params.qq && params.qq.toString().trim() != '') {
         updateInfo.qq = params.qq.trim();
     }
-    if (params.birthday && params.birthday.trim() != '') {
-        if (new Date(params.birthday.trim()).toString() != "Invalid Date") {
+    if (params.birthday && params.birthday.toString().trim() != '') {
+        if (new Date(params.birthday.toString().trim()).toString() != "Invalid Date") {
             updateInfo.birthday = new Date(params.birthday.trim());
         } else {
             return errInfo.updateUser.birthdayError;
         }
     }
-    if (params.gender && params.gender.trim() != '') {
-        if (params.gender.trim() == 'male' || params.gender.trim() == 'female') {
+    if (params.gender && params.gender.toString().trim() != '') {
+        if (params.gender.toString().trim() == 'male' || params.gender.toString().trim() == 'female') {
             updateInfo.gender = params.gender.trim();
         } else {
             return errInfo.updateUser.genderError;
@@ -693,6 +693,20 @@ exports.modifyUserPwd = function (req, res, next) {
     }
     Promise.resolve()
         .then(function () {
+            //修改Mongo中的信息
+            return userModel.findOneAsync({"_id": params.token.userId})
+                .then(function (user) {
+                    if(!user){
+                        return Promise.reject(errInfo.modifyUserPwd.notFind);
+                    }else {
+                        return userModel.updateAsync({"password": params.newPwd});
+                    }
+                })
+                .catch(function (err) {
+                    return Promise.reject(errInfo.modifyUserPwd.userError);
+                })
+        })
+        .then(function () {
             //修改redis中的信息
             return redisclient.get("access_token:"+audience)
                 .then(function (data) {
@@ -710,24 +724,7 @@ exports.modifyUserPwd = function (req, res, next) {
                     return Promise.reject(errInfo.modifyUserPwd.redisError);
                 })
         })
-        .then(function (data) {
-            //修改Mongo中的信息
-            return userModel.findOneAsync({"_id": params.token.userId})
-                .then(function (user) {
-                    if(!user){
-                        return Promise.reject(errInfo.modifyUserPwd.notFind);
-                    }else {
-                        return userModel.updateAsync({"password": params.newPwd});
-                    }
-                })
-                .catch(function (err) {
-                    if(err.status){
-                        return Promise.reject(err);
-                    }else {
-                        return Promise.reject(errInfo.modifyUserPwd.userError);
-                    }
-                })
-        })
+
         .then(function () {
             return res.ext.json();
         })
