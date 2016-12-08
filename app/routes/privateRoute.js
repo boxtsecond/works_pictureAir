@@ -8,7 +8,6 @@ var express = require('express');
 var router = express.Router();
 var ctr=require("./ctr");
 router.post('/user/switchlg',ctr.users.switchLanguage);
-router.post('/user/switchlg',ctr.users.logout);
 
 router.post('/user/getShareUrl', ctr.userController.getShareUrl);
 router.post('/user/share', ctr.userController.share);
