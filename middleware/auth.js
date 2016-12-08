@@ -60,7 +60,7 @@ function authUser(req,res,next){
             });
         }).then(function(obj){
             req.ext.params.token=obj.toke;
-            req.ext.params.userid=obj.userid;
+            req.ext.params.userId=obj.userid;
             req.ext.params.token.expire_in=Math.floor(obj.toke.exp-Math.floor(Date.now() / 1000));
             return next();
         }).catch(function(err){
