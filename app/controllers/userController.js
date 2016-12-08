@@ -593,7 +593,7 @@ function getUpdateUserInfo(params) {
         updateInfo.qq = params.qq.trim();
     }
     if (params.birthday && params.birthday.toString().trim() != '') {
-        if (new Date(params.birthday.toString().trim()).toString() != "Invalid Date") {
+        if (new Date(params.birthday).toString() != "Invalid Date") {
             updateInfo.birthday = new Date(params.birthday.trim());
         } else {
             return errInfo.updateUser.birthdayError;
@@ -699,6 +699,7 @@ exports.modifyUserPwd = function (req, res, next) {
                     if(!user){
                         return Promise.reject(errInfo.modifyUserPwd.notFind);
                     }else {
+
                         return userModel.updateAsync({"password": params.newPwd});
                     }
                 })
