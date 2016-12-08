@@ -22,7 +22,5 @@ router.get('/card/getCouponsByUserId', ctr.cardController.getCouponsByUserId);
 router.get('/card/removePPFromUser', ctr.cardController.removePPFromUser);
 
 
-//分享
-
 
 module.exports = router;

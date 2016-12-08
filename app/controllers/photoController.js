@@ -3,6 +3,7 @@
  */
 var errInfo = require('../resfilter/resInfo.js').errInfo;
 var photoModel = require('../mongodb/Model/photoModel');
+var parkModel = require('../mongodb/Model/parkModel');
 var userModel = require('../mongodb/Model/userModel');
 var common = require('../tools/common.js');
 var async = require('async');
@@ -14,92 +15,6 @@ var request = require('request');
 var utilFun = require('../lib/util/util.js');
 var enums = require('../tools/enums.js');
 var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
-
-/* Bo 查询图片
- * @param {condition type: Array} 查询条件
- * must have [locationId, userId]
- * */
-exports.getPhotosByConditions = function (req, res, next) {
-    var params = req.ext.params;
-    var photos = [];
-    if(!req.ext.checkExistProperty(params, params.condition)){
-        return res.ext.json(errInfo.getPhotosByConditions.paramsError);
-    }
-    var conditions = getCondition(params);
-    var options = getOptions(params);
-    var fields = {
-        presetId: 1,
-        customerIds: 1,
-        photoCode: 1,
-        userIds: 1,
-        // name: 1,
-        shootOn: 1,
-        extractOn: 1,
-        description: 1,
-        downloadCount: 1,
-        visitedCount: 1,
-        shareInfo: 1,
-        editCount: 1,
-        likeCount: 1,
-        orderHistory: 1,
-        comments: 1,
-        //  albumId: 1,
-        //  tagBy: 1,
-        originalInfo: 1,
-        thumbnailTypes: 1,
-        thumbnail: 1,
-        //GPS: 1,
-        locationId: 1,
-        parentId: 1,
-        disabled: 1,
-        //rawFileName: 1,
-        isFree: 1,
-        isVIP: 1,
-        targetPoint: 1,
-        allowDownload: 1,
-        // engineInfo: 1,
-        // tokenBy: 1,
-        siteId: 1,
-        createdBy: 1,
-        // modifiedBy: 1,
-        // createdOn: 1,
-        modifiedOn: 1,
-        mobileEditActive: 1,
-        mimeType: 1,
-        bundleWithPPP: 1,
-        adInfo: 1
-    }
-
-    photoModel.findAsync(conditions, fields, options)
-        .then(function (list) {
-            if (list && list.length > 0) {
-                return Promise.each(list, function (pto) {
-                    var pushPhoto = new filterPhoto(pto);
-                    photos.push(pushPhoto);
-                })
-            }else {
-                return Promise.reject(errInfo.getPhotosByConditions.notFind);
-            }
-        })
-        .then(function () {
-            if(photos.length > 0){
-                var resultObj = errInfo.success;
-                resultObj.result = {};
-                resultObj.result.photos = photos;
-                return res.ext.json(resultObj);
-            }else {
-                return res.ext.json(errInfo.getPhotosByConditions.notFind);
-            }
-        })
-        .catch(function (error) {
-            if(error.status){
-                return res.ext.json(error);
-            }else {
-                console.log(error);
-                return res.ext.json(errInfo.getPhotosByConditions.promiseError);
-            }
-        });
-}
 
 function getCondition(params) {
     var condition = {};
@@ -135,8 +50,8 @@ function getCondition(params) {
             case/^shootDate$/.test(i):
                 if(cdt.length == 10){
                     condition['shootOn'] = {
-                      '$gte': new Date(cdt + ' 00:00:00'),
-                      '$lt': new Date(cdt + ' 23:59:59')
+                        '$gte': new Date(cdt + ' 00:00:00'),
+                        '$lt': new Date(cdt + ' 23:59:59')
                     };
                 }
                 break;
@@ -178,6 +93,103 @@ function getOptions(params) {
         options.limit = parseInt(params.limit);
     }
     return options;
+}
+
+function findPhotos(conditions, fields, options) {
+    var photos = [];
+    return photoModel.findAsync(conditions, fields, options)
+        .then(function (list) {
+            if (list && list.length > 0) {
+                return Promise.each(list, function (pto) {
+                    return parkModel.findOneAsync({siteId: pto.siteId})
+                        .then(function (park) {
+                            var pushPhoto = new filterPhoto(pto);
+                            pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                            pushPhoto.avatarUrl = park.avatarUrl;
+                            pushPhoto.pageUrl = park.pageUrl;
+                            photos.push(pushPhoto);
+                        });
+                })
+            }else {
+                return errInfo.findPhotos.notFind;
+            }
+        })
+        .then(function () {
+            if(photos.length > 0){
+                return photos;
+            }else {
+                return errInfo.findPhotos.notFind;
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+            return errInfo.findPhotos.photoError;
+        });
+}
+
+/* Bo 查询图片
+ * @param {condition type: Array} 查询条件
+ * must have [locationId, userId]
+ * */
+exports.getPhotosByConditions = function (req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, params.condition)){
+        return res.ext.json(errInfo.getPhotosByConditions.paramsError);
+    }
+    var conditions = getCondition(params);
+    var options = getOptions(params);
+    var fields = {
+        presetId: 1,
+        customerIds: 1,
+        photoCode: 1,
+        userIds: 1,
+        shootOn: 1,
+        extractOn: 1,
+        description: 1,
+        downloadCount: 1,
+        visitedCount: 1,
+        shareInfo: 1,
+        editCount: 1,
+        likeCount: 1,
+        orderHistory: 1,
+        comments: 1,
+        originalInfo: 1,
+        thumbnailTypes: 1,
+        thumbnail: 1,
+        locationId: 1,
+        parentId: 1,
+        disabled: 1,
+        isFree: 1,
+        isVIP: 1,
+        targetPoint: 1,
+        allowDownload: 1,
+        siteId: 1,
+        createdBy: 1,
+        modifiedOn: 1,
+        mobileEditActive: 1,
+        mimeType: 1,
+        bundleWithPPP: 1,
+        adInfo: 1
+    }
+
+    Promise.resolve()
+        .then(function () {
+            return findPhotos(conditions, fields, options);
+        })
+        .then(function (photos) {
+            if(photos.status){
+                return res.ext.json(photos);
+            }else {
+                var resultObj = errInfo.success;
+                resultObj.result = {};
+                resultObj.result.photos = photos;
+                return res.ext.json(resultObj);
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+            return res.ext.json(errInfo.getPhotosByCondition.promiseError);
+        });
 }
 
 exports.removePhotosFromPP = function (req, res, next) {

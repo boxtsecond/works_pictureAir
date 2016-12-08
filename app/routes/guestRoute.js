@@ -19,13 +19,14 @@ router.get('/user/contactUs', ctr.userController.contactUs);
 
 router.post('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
 
+
 router.get('/park/getAllLocations', ctr.parkController.getAllLocations);
 router.get('/park/getAllParks', ctr.parkController.getAllParks);
 router.get('/park/getAllParksVersion', ctr.parkController.getAllParksVersion);
 router.get('/park/getParksVersionBySiteId', ctr.parkController.getParksVersionBySiteId);
 router.get('/park/getParkBySiteId', ctr.parkController.getParkBySiteId);
 
-
+router.get('/card/checkCodeAvailable', ctr.cardController.checkCodeAvailable);
 
 
 router.get('/cache/carousel', ctr.cacheController.carousel);
