@@ -183,6 +183,7 @@ var errInfo={
     "modifyUserPwd": {
         paramsError: {status: 4038, msg: "params is incomplete", desc: "missing oldPwd or newPwd"},
         oldPwdError: {status: 4039, msg: "oldPwd is not correct", desc: "oldPwd is not correct"},
+        newPwdError: {status: 4040, msg: "newPwd is not correct", desc: "oldPwd and newPwd are the same"},
         redisError: {status: 3041, msg: "system error", desc: "get or set user cache in redis error"},
         notFind: {status: 3042, msg: "system error", desc: "not find user in mongo"},
         userError: {status: 3043, msg: "system error", desc: "get or update userModel error"},

@@ -687,45 +687,46 @@ exports.contactUs = function (req, res, next) {
 
 exports.modifyUserPwd = function (req, res, next) {
     var params = req.ext.params;
-    var audience = params.token.audience;
-    if(!req.ext.checkExistProperty(params, ['oldPwd', 'newPwd']) || params.oldPwd == params.newPwd){
+    if(!req.ext.checkExistProperty(params, ['oldPwd', 'newPwd'])){
         return res.ext.json(errInfo.modifyUserPwd.paramsError);
+    }
+    if(params.oldPwd == params.newPwd){
+        return res.ext.json(errInfo.modifyUserPwd)
     }
     Promise.resolve()
         .then(function () {
             //修改Mongo中的信息
+            console.log(params)
             return userModel.findOneAsync({"_id": params.token.userId})
                 .then(function (user) {
                     if(!user){
                         return Promise.reject(errInfo.modifyUserPwd.notFind);
                     }else {
-
-                        return userModel.updateAsync({"password": params.newPwd});
+                        if(params.oldPwd.length !== 32 || params.newPwd.length !== 32 || user.password !== params.oldPwd){
+                            return Promise.reject(errInfo.modifyUserPwd.oldPwdError);
+                        }else {
+                            return userModel.updateAsync({"_id": params.token.userId}, {"password": params.newPwd})
+                                .then(function () {
+                                    return user;
+                                })
+                                .catch(function (err) {
+                                    return Promise.reject(errInfo.modifyUserPwd.userError);
+                                });
+                        }
                     }
                 })
                 .catch(function (err) {
                     return Promise.reject(errInfo.modifyUserPwd.userError);
                 })
         })
-        .then(function () {
+        .then(function (user) {
             //修改redis中的信息
-            return redisclient.get("access_token:"+audience)
-                .then(function (data) {
-                    if(params.oldPwd.length !== 32 || data.user.password !== params.oldPwd){
-                        return Promise.reject(errInfo.modifyUserPwd.oldPwdError);
-                    }else {
-                        data.user.password = params.newPwd;
-                        return data;
-                    }
-                })
-                .then(function (data) {
-                    return redisclient.set("access_token:"+audience, data);
-                })
+            var audience = params.token.audience;
+            return redisclient.set("access_token:"+audience, filterUserToredis(user))
                 .catch(function (err) {
                     return Promise.reject(errInfo.modifyUserPwd.redisError);
                 })
         })
-
         .then(function () {
             return res.ext.json();
         })
@@ -733,6 +734,7 @@ exports.modifyUserPwd = function (req, res, next) {
             if(error.status){
                 return res.ext.json(error);
             }else {
+                console.log(error);
                 return res.ext.json(errInfo.modifyUserPwd.promiseError);
             }
         })

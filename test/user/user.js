@@ -67,20 +67,20 @@ describe('/auth/getAccessToken', function() {
     //        });
     // });
 
-    // it('should login', function(done) {
-    //     request.post('/g/user/login')
-    //         .send({
-    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
-    //             username: '8618321538399',
-    //             password: md5("123456")
-    //         })
-    //         .expect(200, function(err1, res1) {
-    //             console.log(res1.body)
-    //             should.not.exist(err1);
-    //             done();
-    //             // res.text.should.containEql('用户名或密码不能为空');
-    //         });
-    // });
+    it('should login', function(done) {
+        request.post('/g/user/login')
+            .send({
+                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
+                username: '8618321538399',
+                password: md5("123456")
+            })
+            .expect(200, function(err1, res1) {
+                console.log(res1.body)
+                should.not.exist(err1);
+                done();
+                // res.text.should.containEql('用户名或密码不能为空');
+            });
+    });
 
     //it('should sendsms forgotpwd', function(done) {
     //    request.post('/user/sendsms')
@@ -166,18 +166,18 @@ describe('/auth/getAccessToken', function() {
     //         });
     // });
 
-    it('should login', function(done) {
-        request.post('/g/user/sendemailpwd')
-            .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODEwMTcxNzUsImV4cCI6MTQ4MTYyMTk3NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZTYyM2YxZjBiYjk3MTFlNmJmYWJlMzFmMGM3OGFhODYiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.FVfppNwtbekdEPDkLKz4QmQnETBeDwaIROThQ8hMPYgNx7mQ8AkTRfez5I-598hfLQ-EyYnkLGuMcnew8bh5bkTrgXoLKStyGIdWNvoV5csAXwXDOwODTETxLu5sJdg3OhSjVHspAT_K-9kPS3lEwS-7G8bs5ilrO16HKlGUsvdSjhsuzq6D1EZlpYCXkbfI_ne_bj1SqqZhOakZlYBMZXVokzf33-U7XKRJ4SkkLKfw861BdOQ46CnzUlkjObe3L1imx2dipbC6XCyL8ibLy9MD9Nruw5qWJ-Mk9gNzPINISRS5JA2lse8JztwRj4Hizef0rkH4-F1vRCJy5SXYXw',
-                username: 'meteor.liu@pictureworks.biz'
-            })
-            .expect(200, function(err1, res1) {
-                console.log(res1.body)
-                done();
-                // res.text.should.containEql('用户名或密码不能为空');
-            });
-    });
+    // it('should login', function(done) {
+    //     request.post('/g/user/sendemailpwd')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODEwMTcxNzUsImV4cCI6MTQ4MTYyMTk3NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZTYyM2YxZjBiYjk3MTFlNmJmYWJlMzFmMGM3OGFhODYiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.FVfppNwtbekdEPDkLKz4QmQnETBeDwaIROThQ8hMPYgNx7mQ8AkTRfez5I-598hfLQ-EyYnkLGuMcnew8bh5bkTrgXoLKStyGIdWNvoV5csAXwXDOwODTETxLu5sJdg3OhSjVHspAT_K-9kPS3lEwS-7G8bs5ilrO16HKlGUsvdSjhsuzq6D1EZlpYCXkbfI_ne_bj1SqqZhOakZlYBMZXVokzf33-U7XKRJ4SkkLKfw861BdOQ46CnzUlkjObe3L1imx2dipbC6XCyL8ibLy9MD9Nruw5qWJ-Mk9gNzPINISRS5JA2lse8JztwRj4Hizef0rkH4-F1vRCJy5SXYXw',
+    //             username: 'meteor.liu@pictureworks.biz'
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
 
     //            password: md5("123456")
 });
