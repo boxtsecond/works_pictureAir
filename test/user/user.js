@@ -67,20 +67,19 @@ describe('/auth/getAccessToken', function() {
     //        });
     // });
 
-    it('should login', function(done) {
-        request.post('/g/user/login')
-            .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
-                username: '8618321538399',
-                password: md5("123456")
-            })
-            .expect(200, function(err1, res1) {
-                console.log(res1.body)
-                should.not.exist(err1);
-                done();
-                // res.text.should.containEql('用户名或密码不能为空');
-            });
-    });
+    // it('should login', function(done) {
+    //     request.post('/g/user/login')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODExNzM4MTgsImV4cCI6MTQ4MTc3ODYxOCwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiOWM3M2VhNjBiZDA0MTFlNjg3YmY1YmYwZDZmZTAxYmMiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.ZDIRBNVu77GYrfhYbx6pjW_NpedWWNTflT-WJjoZy3LeWfCoAZ2JN30Hh7TbqvYj4MJVQj2VaDTYZnFT2YO-7Ir4hl2StrED5BmwwnV-pjBcSRW5FK59KHrBlfzN5GHT2_nFt7v7oaY1cQIFlM7Yqr__Oq4lmh97QdhrVf8igBomAVdwsviB5v_Q2nTZTD5Y5egQu_3j7xx78r2hACCJlvNGn4-DwlKeG7ksHPGxXXJR1sWw7vSScQf3Fd2V4j50Y_bB4XmBaAVGKgpaRitX1_sNM3FmZTQhwwMKexj2qt-sUVMdvH4AQCp0gcobIvFx6pe0y3S7eAtEPiGrww1Ddw',username: '8618321538399',
+    //             password: md5("123456")
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             should.not.exist(err1);
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
 
     //it('should sendsms forgotpwd', function(done) {
     //    request.post('/user/sendsms')
