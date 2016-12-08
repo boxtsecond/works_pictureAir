@@ -268,6 +268,7 @@ exports.getShareInfo = function (req, res, next) {
     share(req, res, params, next);
 }
 
+//扫卡绑定
 exports.addCodeToUser = function (req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, 'customerId')) {
@@ -435,6 +436,7 @@ exports.addCodeToUser = function (req, res, next) {
     });
 }
 
+//修改用户信息
 exports.updateUser = function (req, res, next) {
     var params = req.ext.params;
     var userId = params.userId;
@@ -646,6 +648,7 @@ function getUpdateUserInfo(params) {
     return [updateInfo, isEmail, isMobile];
 }
 
+//联系我们
 exports.contactUs = function (req, res, next) {
     var params = req.ext.params;
     var subject = 'contact us';
@@ -685,6 +688,7 @@ exports.contactUs = function (req, res, next) {
         })
 }
 
+//修改用户密码
 exports.modifyUserPwd = function (req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, ['oldPwd', 'newPwd'])){

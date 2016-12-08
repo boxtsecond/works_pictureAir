@@ -90,12 +90,10 @@ var errInfo={
         APIError: {status: 3012, msg: "system error", desc: "getAllLocations API error"},
         parkError: {status: 3013, msg: "system error", desc: "get parkModel from db error"}
     },
-    "getPhotosByConditions": {
-        paramsError: {status: 4007, msg: "params is incomplete", desc: "missing condition"},
-        userError: {status: 3014, msg: "system error", desc: "get userModel from db error"},
-        photoError: {status: 3015, msg: "system error", desc: "get photoModel from db error"},
+    "findPhotos": {
         notFind: {status: 4034, msg: 'not find photo', desc: "not find photo from db"},
-        promiseError: {status: 3045, msg: "system error", desc: "promise error"}
+        promiseError: {status: 3045, msg: "system error", desc: "promise error"},
+        photoError: {status: 3015, msg: "system error", desc: "get photoModel from db error"}
     },
     "carousel": {
         paramsError: {status: 4009, msg: "request error", desc: "can not find request"}
@@ -188,6 +186,12 @@ var errInfo={
         notFind: {status: 3042, msg: "system error", desc: "not find user in mongo"},
         userError: {status: 3043, msg: "system error", desc: "get or update userModel error"},
         promiseError: {status: 3044, msg: "system error", desc: "promise error"}
+    },
+    "":{status: 3046},
+
+    "getPhotosByConditions": {
+        paramsError: {status: 4007, msg: "params is incomplete", desc: "missing condition"},
+        promiseError: {status: 3014, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------

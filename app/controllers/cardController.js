@@ -15,6 +15,157 @@ var socketController = require('./socketController.js');
 var pubScribeList = require('../tools/socketApi.js').pubScribeList;
 var util = require('../lib/util/util.js');
 
+function getListByUserIdAndOType(oType, userId) {
+    var result = [];
+    return pppModel.findAsync({userId: userId, oType: oType}, {
+        _id: 1,
+        PPPCode: 1,
+        capacity: 1,
+        days: 1,
+        bindInfo: 1,
+        PPList: 1,
+        bindOn: 1,
+        expiredOn: 1,
+        ownOn: 1,
+        PPPType: 1,
+        photoCount: 1,
+        locationIds: 1,
+        productIds: 1,
+        effectiveOn: 1
+    })
+        .then(function (collection) {
+            if (collection && collection.length > 0) {
+                var count = 0;
+                var countType = {type: false};
+                Promise.each(collection, function (ppp) {
+                    ppp._doc.isExpired = false;
+                    if (ppp.expiredOn && ppp.expiredOn < Date.now()) {
+                        ppp._doc.isExpired = true;
+                    }
+                    ppp._doc.isUsed = false;
+                    if (ppp.bindOn) {
+                        ppp._doc.isUsed = true;
+                    }
+                    return pppTypeModel.findOneAsync({typeCode: ppp.PPPType})
+                        .then(function (pType) {
+                            if (pType && pType.cardBg && pType.cardBg.url) {
+                                ppp._doc.cardBg = pType.cardBg.url;
+                            }
+                            if (pType && pType.codeName) {
+                                ppp._doc.codeName = pType.codeName;
+                            }
+                            if (pType && pType.codeDesc) {
+                                ppp._doc.codeDesc = pType.codeDesc;
+                            }
+                            count++;
+                            if (count == collection.length){
+                                result[0] = 1;
+                                result[1] = collection;
+                            }
+                        })
+                        .catch(function (err) {
+                            return Promise.reject(errInfo.getCouponsByUserId.pppTypeError);
+                        });
+                })
+            }else {
+                if (oType == codeType.coupon) {
+                    var baklist = collection.sort(function (a, b) {
+                        if (a.ownOn > b.ownOn) {
+                            return 1;
+                        }
+                        if (a.ownOn < b.ownOn) {
+                            return -1;
+                        }
+                        return 0;
+                    })
+                    var usedList = [];
+                    var expiredList = [];
+                    var list = [];
+                    for (var i = 0; i < baklist.length; i++) {
+                        if (baklist[i]._doc.isExpired && baklist[i].bindOn == null) {
+                            expiredList.push(baklist[i]);
+                            continue;
+                        }
+                        if (baklist[i]._doc.isExpired == false && baklist[i].bindOn != null) {
+                            usedList.push(baklist[i]);
+                            continue;
+                        }
+                        list.push(baklist[i]);
+
+                    }
+                    list = list.concat(usedList);
+                    list = list.concat(expiredList);
+                    console.log('******************');
+                    console.log(list);
+                    result[0] = 0;
+                    result[1] = {couponList: list};
+                } else {
+                    result[0] = 0;
+                    result[1] = {PPPList: collection};
+                }
+            }
+        })
+        .then(function () {
+            var resultObj = errInfo.success;
+            resultObj.result = {};
+            if(result[0]){
+                if (oType == codeType.coupon) {
+//                            return response(res, errInfo.ok.code, '', {couponList: collection});
+                    var baklist = (result[1]).sort(function (a, b) {
+                        if (a.ownOn > b.ownOn) {
+                            return -1;
+                        }
+                        if (a.ownOn < b.ownOn) {
+                            return 1;
+                        }
+                        return 0;
+                    })
+                    var usedList = [];
+                    var expiredList = [];
+                    var list = [];
+                    for (var i = 0; i < baklist.length; i++) {
+                        if (baklist[i]._doc.isExpired) {
+                            if ((util.customDateDiff('s', baklist[i].expiredOn, new Date()) / (24 * 60 * 60 )) < 30) {
+                                expiredList.push(baklist[i]);
+                            }
+                            continue;
+                        }
+                        if (baklist[i]._doc.isExpired == false && baklist[i]._doc.isUsed) {
+                            if ((util.customDateDiff('s', baklist[i].expiredOn, new Date()) / (24 * 60 * 60 )) < 30) {
+                                usedList.push(baklist[i]);
+                            }
+                            continue;
+                        }
+                        list.push(baklist[i]);
+
+                    }
+                    list = list.concat(usedList);
+                    list = list.concat(expiredList);
+
+                    resultObj.result = {couponList: list};
+                } else {
+                    resultObj.result = {PPPList: result[1]};
+                }
+                return resultObj;
+            }else {
+                if(JSON.stringify(result[1]) !== '{}'){
+                    resultObj.result = result[1];
+                    return resultObj;
+                }else {
+                    return errInfo.getCouponsByUserId.countError;
+                }
+            }
+        })
+        .catch(function (error) {
+            if(error.status){
+                return error;
+            }else {
+                console.log(error);
+                return errInfo.getCouponsByUserId.pppError;
+            }
+        });
+}
+
 exports.getCouponsByUserId = function (req, res, next) {
     var params = req.ext.params;
     Promise.resolve()
@@ -290,154 +441,6 @@ exports.removePPFromUser = function (req, res, next) {
         });
 }
 
+exports.checkCodeAvailable = function (req, res, next) {
 
-function getListByUserIdAndOType(oType, userId) {
-    var result = [];
-    return pppModel.findAsync({userId: userId, oType: oType}, {
-        _id: 1,
-        PPPCode: 1,
-        capacity: 1,
-        days: 1,
-        bindInfo: 1,
-        PPList: 1,
-        bindOn: 1,
-        expiredOn: 1,
-        ownOn: 1,
-        PPPType: 1,
-        photoCount: 1,
-        locationIds: 1,
-        productIds: 1,
-        effectiveOn: 1
-    })
-        .then(function (collection) {
-            if (collection && collection.length > 0) {
-                var count = 0;
-                var countType = {type: false};
-                Promise.each(collection, function (ppp) {
-                    ppp._doc.isExpired = false;
-                    if (ppp.expiredOn && ppp.expiredOn < Date.now()) {
-                        ppp._doc.isExpired = true;
-                    }
-                    ppp._doc.isUsed = false;
-                    if (ppp.bindOn) {
-                        ppp._doc.isUsed = true;
-                    }
-                    return pppTypeModel.findOneAsync({typeCode: ppp.PPPType})
-                        .then(function (pType) {
-                            if (pType && pType.cardBg && pType.cardBg.url) {
-                                ppp._doc.cardBg = pType.cardBg.url;
-                            }
-                            if (pType && pType.codeName) {
-                                ppp._doc.codeName = pType.codeName;
-                            }
-                            if (pType && pType.codeDesc) {
-                                ppp._doc.codeDesc = pType.codeDesc;
-                            }
-                            count++;
-                            if (count == collection.length){
-                                result[0] = 1;
-                                result[1] = collection;
-                            }
-                        })
-                        .catch(function (err) {
-                            return Promise.reject(errInfo.getCouponsByUserId.pppTypeError);
-                        });
-                })
-            }else {
-                if (oType == codeType.coupon) {
-                    var baklist = collection.sort(function (a, b) {
-                        if (a.ownOn > b.ownOn) {
-                            return 1;
-                        }
-                        if (a.ownOn < b.ownOn) {
-                            return -1;
-                        }
-                        return 0;
-                    })
-                    var usedList = [];
-                    var expiredList = [];
-                    var list = [];
-                    for (var i = 0; i < baklist.length; i++) {
-                        if (baklist[i]._doc.isExpired && baklist[i].bindOn == null) {
-                            expiredList.push(baklist[i]);
-                            continue;
-                        }
-                        if (baklist[i]._doc.isExpired == false && baklist[i].bindOn != null) {
-                            usedList.push(baklist[i]);
-                            continue;
-                        }
-                        list.push(baklist[i]);
-
-                    }
-                    list = list.concat(usedList);
-                    list = list.concat(expiredList);
-                    console.log('******************');
-                    console.log(list);
-                    result[0] = 0;
-                    result[1] = {couponList: list};
-                } else {
-                    result[0] = 0;
-                    result[1] = {PPPList: collection};
-                }
-            }
-        })
-        .then(function () {
-            var resultObj = errInfo.success;
-            resultObj.result = {};
-            if(result[0]){
-                if (oType == codeType.coupon) {
-//                            return response(res, errInfo.ok.code, '', {couponList: collection});
-                    var baklist = (result[1]).sort(function (a, b) {
-                        if (a.ownOn > b.ownOn) {
-                            return -1;
-                        }
-                        if (a.ownOn < b.ownOn) {
-                            return 1;
-                        }
-                        return 0;
-                    })
-                    var usedList = [];
-                    var expiredList = [];
-                    var list = [];
-                    for (var i = 0; i < baklist.length; i++) {
-                        if (baklist[i]._doc.isExpired) {
-                            if ((util.customDateDiff('s', baklist[i].expiredOn, new Date()) / (24 * 60 * 60 )) < 30) {
-                                expiredList.push(baklist[i]);
-                            }
-                            continue;
-                        }
-                        if (baklist[i]._doc.isExpired == false && baklist[i]._doc.isUsed) {
-                            if ((util.customDateDiff('s', baklist[i].expiredOn, new Date()) / (24 * 60 * 60 )) < 30) {
-                                usedList.push(baklist[i]);
-                            }
-                            continue;
-                        }
-                        list.push(baklist[i]);
-
-                    }
-                    list = list.concat(usedList);
-                    list = list.concat(expiredList);
-
-                    resultObj.result = {couponList: list};
-                } else {
-                    resultObj.result = {PPPList: result[1]};
-                }
-                return resultObj;
-            }else {
-                if(JSON.stringify(result[1]) !== '{}'){
-                    resultObj.result = result[1];
-                    return resultObj;
-                }else {
-                    return errInfo.getCouponsByUserId.countError;
-                }
-            }
-        })
-        .catch(function (error) {
-            if(error.status){
-                return error;
-            }else {
-                console.log(error);
-                return errInfo.getCouponsByUserId.pppError;
-            }
-        });
 }
