@@ -22,7 +22,8 @@ function validatePPType(pppCode) {
 function validatePP(pppCode) {
     return validatePPType(pppCode).then(function (code) {
        return  carCodeModel.findOne({PPPCode:code}).then(function (obj) {
-           if((obj.expiredOn-new Date()>0)){
+           if(!obj) return null;
+           else if((obj.expiredOn-new Date()>0)){
                return obj;
            }else return null;
        })
@@ -30,10 +31,22 @@ function validatePP(pppCode) {
         return null;
     })
 }
+
+
+function  activePPP(pppCode) {
+    return validatePPType(pppCode).then(function (code) {
+        return  carCodeModel.findOne({PPPCode:code}).then(function (obj) {
+            if((obj.expiredOn-new Date()>0)){
+                return obj;
+            }else return null;
+        })
+    }).catch(function (pppCode) {
+        return null;
+    })}
 // //
-validatePP("BPSG63289HMWHD7A").then(function (pppCode) {
-    console.log(pppCode)
-});
+// validatePP("BPSG63289HMWHD7A").then(function (pppCode) {
+//     console.log(pppCode)
+// });
 //
 // function replaceAll(str,s1,s2){
 //     return str.replace(new RegExp(s1,"gm"),s2);
