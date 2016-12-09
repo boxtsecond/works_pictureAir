@@ -268,7 +268,7 @@ exports.getShareInfo = function (req, res, next) {
     share(req, res, params, next);
 }
 
-//扫卡绑定
+//绑定
 exports.addCodeToUser = function (req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, 'customerId')) {

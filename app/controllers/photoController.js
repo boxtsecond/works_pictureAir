@@ -5,6 +5,7 @@ var errInfo = require('../resfilter/resInfo.js').errInfo;
 var photoModel = require('../mongodb/Model/photoModel');
 var parkModel = require('../mongodb/Model/parkModel');
 var userModel = require('../mongodb/Model/userModel');
+var cardCodeModel=require("../mongodb/Model/cardCodeModel");
 var common = require('../tools/common.js');
 var async = require('async');
 var socketController = require('../controllers/socketController.js');
@@ -101,14 +102,27 @@ function findPhotos(conditions, fields, options) {
         .then(function (list) {
             if (list && list.length > 0) {
                 return Promise.each(list, function (pto) {
-                    return parkModel.findOneAsync({siteId: pto.siteId})
-                        .then(function (park) {
-                            var pushPhoto = new filterPhoto(pto);
-                            pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                            pushPhoto.avatarUrl = park.avatarUrl;
-                            pushPhoto.pageUrl = park.pageUrl;
-                            photos.push(pushPhoto);
-                        });
+                    var pushPhoto = new filterPhoto(pto);
+                    //判断 isPaid
+                    return Promise.each(pto.customerIds, function (pp) {
+                        return cardCodeModel.findAsync({PPPCode: pp.code})
+                            .then(function (card) {
+                                if(card && card.length > 0){
+                                    pushPhoto.isPaid = true;
+                                }
+                            })
+                            .then(function () {
+                                return parkModel.findOneAsync({siteId: pto.siteId})
+                                    .then(function (park) {
+                                        //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
+                                        pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                                        pushPhoto.avatarUrl = park.avatarUrl;
+                                        pushPhoto.pageUrl = park.pageUrl;
+                                        photos.push(pushPhoto);
+                                    })
+                            })
+                    })
+
                 })
             }else {
                 return errInfo.findPhotos.notFind;
@@ -188,7 +202,7 @@ exports.getPhotosByConditions = function (req, res, next) {
         })
         .catch(function (error) {
             console.log(error);
-            return res.ext.json(errInfo.getPhotosByCondition.promiseError);
+            return res.ext.json(errInfo.getPhotosByConditions.promiseError);
         });
 }
 
