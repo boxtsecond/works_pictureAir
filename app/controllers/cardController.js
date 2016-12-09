@@ -166,6 +166,7 @@ function getListByUserIdAndOType(oType, userId) {
         });
 }
 
+//优惠券
 exports.getCouponsByUserId = function (req, res, next) {
     var params = req.ext.params;
     Promise.resolve()
@@ -180,6 +181,7 @@ exports.getCouponsByUserId = function (req, res, next) {
         });
 }
 
+//查询用户所拥有的卡
 exports.getPPsByUserId = function (req, res, next) {
     var params = req.ext.params;
     var userId = params.userId;
@@ -365,6 +367,7 @@ exports.getPPsByUserId = function (req, res, next) {
 
 }
 
+//解绑卡
 exports.removePPFromUser = function (req, res, next) {
     var params = req.ext.params;
     var userId = params.userId;
@@ -441,6 +444,3 @@ exports.removePPFromUser = function (req, res, next) {
         });
 }
 
-exports.checkCodeAvailable = function (req, res, next) {
-
-}

@@ -26,9 +26,6 @@ router.get('/park/getAllParksVersion', ctr.parkController.getAllParksVersion);
 router.get('/park/getParksVersionBySiteId', ctr.parkController.getParksVersionBySiteId);
 router.get('/park/getParkBySiteId', ctr.parkController.getParkBySiteId);
 
-router.get('/card/checkCodeAvailable', ctr.cardController.checkCodeAvailable);
-
-
 router.get('/cache/carousel', ctr.cacheController.carousel);
 
 
