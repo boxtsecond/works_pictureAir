@@ -23,7 +23,7 @@ function validatePP(pppCode) {
     return validatePPType(pppCode).then(function (code) {
        return  carCodeModel.findOne({PPPCode:code}).then(function (obj) {
            if(!obj) return null;
-           else if((obj.expiredOn-new Date()>0)){
+           else if(!obj.active||(obj.expiredOn-new Date()>0)){
                return obj;
            }else return null;
        })
