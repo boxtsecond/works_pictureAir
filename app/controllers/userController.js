@@ -602,8 +602,8 @@ function getUpdateUserInfo(params) {
         }
     }
     if (params.gender && params.gender.toString().trim() != '') {
-        if (params.gender.toString().trim() == 'male' || params.gender.toString().trim() == 'female') {
-            updateInfo.gender = params.gender.trim();
+        if (params.gender == -1 || params.gender == 0 || params.gender == 1) {
+            updateInfo.gender = params.gender;
         } else {
             return errInfo.updateUser.genderError;
         }

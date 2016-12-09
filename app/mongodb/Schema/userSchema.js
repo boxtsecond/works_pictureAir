@@ -15,7 +15,7 @@ var config= {
     //uuid:{type: String, index: true},//用户手机的UUID
     //用户信息
     name: {type: String}, //姓名
-    gender: {type: String}, //性别
+    gender: {type: Number}, //性别 -1 未知 0 女 1 男
     country: {type: String,default:''}, //国家
     qq: {type: String}, //国家
     birthday: {type: Date}, //出生日期
