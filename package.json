@@ -6,32 +6,37 @@
   "scripts": {
     "test": "cd ./test && mocha",
     "start": "pm2 start package.json",
-    "stop":"pm2 stop package.json"
+    "stop": "pm2 stop package.json"
   },
   "author": "",
   "license": "ISC",
   "config": {
-    "days_interval" : 7,
-    "max_size" : 5242880
+    "days_interval": 7,
+    "max_size": 5242880
   },
-  "apps" : [{
-    "name"        : "pictureAirAPI",
-    "script"             : "./index.js",
-    "watch"       : false,
-    "ignore_watch":["node_modules","logs"],
-    "env": {
-      "NODE_ENV": "development"
-    },
-    "env_production" : {
-      "NODE_ENV": "production"
-    },
-    "instances"  : 4,
-    "exec_mode"  : "cluster",
-    "merge_logs"         : true,
-    "log_date_format":"YYYY-MM-DD HH:mm Z",
-    "source_map_support": true,
-    "max_memory_restart" : "2G"
-  }],
+  "apps": [
+    {
+      "name": "pictureAirAPI",
+      "script": "./index.js",
+      "watch": false,
+      "ignore_watch": [
+        "node_modules",
+        "logs"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "env_production": {
+        "NODE_ENV": "production"
+      },
+      "instances": 4,
+      "exec_mode": "cluster",
+      "merge_logs": true,
+      "log_date_format": "YYYY-MM-DD HH:mm Z",
+      "source_map_support": true,
+      "max_memory_restart": "2G"
+    }
+  ],
   "dependencies": {
     "apns": "^0.1.0",
     "async": "^2.1.2",
@@ -54,6 +59,7 @@
     "mongoose": "^4.4.12",
     "morgan": "^1.7.0",
     "multer": "^1.2.0",
+    "node-cache": "^4.1.0",
     "nodemailer": "^2.6.4",
     "request": "^2.78.0",
     "uuid": "^3.0.0"
