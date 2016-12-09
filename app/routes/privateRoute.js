@@ -16,7 +16,10 @@ router.get('/user/addCodeToUser', ctr.userController.addCodeToUser);
 router.post('/user/updateUser', ctr.userController.updateUser);
 router.post('/user/modifyUserPwd', ctr.userController.modifyUserPwd);
 
+router.post('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
 router.get('/photo/removePhotosFromPP', ctr.photoController.removePhotosFromPP);
+
+
 router.get('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);
 router.get('/card/getCouponsByUserId', ctr.cardController.getCouponsByUserId);
 router.get('/card/removePPFromUser', ctr.cardController.removePPFromUser);
