@@ -17,3 +17,7 @@ myCache.set( "myKey", obj, function( err, success ){
         })
     }
 });
+
+
+// http://www.cnblogs.com/jkll/p/4550080.html
+// http://nosqldb.org/p/563ef59be13823525b000003

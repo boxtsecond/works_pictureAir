@@ -40,3 +40,27 @@ var client=new Redis(redisport,redishost,residoption);
 //});
 
 exports.redis=client;
+
+
+
+//set get  hset hget hmset hget hgetall
+
+// client.hset("roban:demo:hset","today","fine",function(err,response){
+//     console.log(err,response);
+// });
+
+// db.collection.find({description: /August [0-9]+, 1969/}).maxTimeMS(50)
+
+
+// client.hmset("roban:demo:hset","lastday","notgood","nextday","willbefine",function(err,response){
+//     console.log(err,response);
+// });
+//
+//
+// client.hget("roban:demo:hset","today",function(err,response){
+//     console.log(err,response);
+// });
+
+client.hgetall("roban:demo:hset",function(err,response){
+    console.log(err,response);
+});
