@@ -15,7 +15,7 @@ var common = require('../tools/common.js');
 var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
 var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 var redisclient=require('../rq').redisclient;
-var activeCard = require('../tools/cardTools.js').activeCard;
+var cardTools = require('../tools/cardTools.js');
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -270,12 +270,12 @@ exports.getShareInfo = function (req, res, next) {
     share(req, res, params, next);
 }
 
-
-//绑定
-exports.addCodeToUser = function (req, res, next) {
+//激活（购买）卡
+//SN 验证码        customerId 被激活卡的卡号      cardId 激活卡的卡号
+exports.activeCodeToUser = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.checkExistProperty(params, 'customerId')) {
-        return res.ext.json(errInfo.addCodeToUser.paramsError);
+    if (!req.ext.checkExistProperty(params, ['customerId', 'userId', 'SN', 'cardId'])) {
+        return res.ext.json(errInfo.activeCodeToUser.paramsError);
     }
     var customerId = params.customerId;
     customerId = customerId.toUpperCase().replace(/-/g, "");
@@ -285,26 +285,32 @@ exports.addCodeToUser = function (req, res, next) {
     userModel.findByIdAsync(userId)
         .then(function (user) {
             if (!user) {
-                return Promise.reject(errInfo.addCodeToUser.notFind);
+                return Promise.reject(errInfo.activeCodeToUser.notFind);
             } else {
                 //修改卡状态(激活)
-                return activeCard(customerId);
+                return cardTools.activeCard(params.cardId, params.SN);
             }
         })
         .then(function (cType) {
             if (cType.status) {
                 return res.ext.json(cType);
+            } else if(cType == null){
+                return res.ext.json(errInfo.activeCodeToUser.invalidCard);
             } else {
                 //修改用户信息
                 cardType = cType
                 return userModel.findByIdAndUpdateAsync(userId, {
                     $addToSet: {
                         customerIds: {
-                            code: customerId,
+                            code: params.cardId,
                             cType: cType
                         }
                     }
-                });
+                })
+                    .catch(function (err) {
+                        console.log(err);
+                        return Promise.reject(errInfo.activeCodeToUser.userUpdateError);
+                    })
             }
         })
         .then(function () {
@@ -312,12 +318,9 @@ exports.addCodeToUser = function (req, res, next) {
             return photoModel.findAsync({'customerIds.code': customerId})
                 .then(function (list) {
                     if (list && list.length > 0) {
-                        return Promise.each(function (photo) {
+                        return Promise.each(list, function (photo) {
                             var userIds = [];
                             var newOrderHistory = {};
-                            if (!photo || photo.length < 0) {
-                                return Promise.reject(errInfo.addCodeToUser.notFind);
-                            }
 
                             //更改 photo.customerIds
                             if (photo.customerIds && photo.customerIds.length > 0) {
@@ -341,26 +344,49 @@ exports.addCodeToUser = function (req, res, next) {
                             //更改 photo.orderHistory
                             if (photo.orderHistory && photo.orderHistory.length > 0) {
                                 return Promise.each(photo.orderHistory, function (odh) {
-                                    if (odh.customerId == customerId && odh.productId) {
+                                    // tips: && odh.productId
+                                    if (odh.prepaidId !== params.cardId) {
                                         if (!odh.userId) {
                                             odh.userId = userId;
                                         } else {
-                                            newOrderHistory.push({ //购买信息
-                                                customerId: odh.customerId,  //pp或ep的code
+                                            newOrderHistory = { //购买信息
+                                                customerId: odh.customerId,  //被激活卡 code
                                                 productId: odh.productId,  //对应产品Id（照片，杯子，钥匙扣）
-                                                prepaidId: '',  //pp+的code
+                                                prepaidId: params.cardId,  //激活卡 code
                                                 userId: userId,  //用户Id
                                                 createdOn: Date.now()  //创建时间
-                                            });
+                                            };
                                         }
+                                    } else {
+                                        return Promise.reject(errInfo.activeCodeToUser.repeatBound);
                                     }
                                 });
                             }
-                        })
+                            var orderHistoryArray = photo.orderHistory.push(newOrderHistory);
+                            photo.orderHistory = orderHistoryArray;
+                            photo.modifiedOn = Date.now();
+                            photo.save();
+                        });
                     }
                 })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        return Promise.reject(errInfo.activeCodeToUser.photoSaveError);
+                    }
+                });
         })
-
+        .then(function () {
+            return res.ext.json();
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                return res.ext.json(errInfo.activeCodeToUser.promiseError);
+            }
+        });
 }
 
 //修改用户信息
@@ -673,6 +699,102 @@ exports.modifyUserPwd = function (req, res, next) {
             }else {
                 console.log(error);
                 return res.ext.json(errInfo.modifyUserPwd.promiseError);
+            }
+        })
+}
+
+//绑定卡（白卡）
+exports.addCodeToUser = function (req, res, next) {
+    var params = req.ext.params;
+    if (!req.ext.checkExistProperty(params, ['customerId', 'userId'])) {
+        return res.ext.json(errInfo.addCodeToUser.paramsError);
+    }
+    var customerId = params.customerId;
+    customerId = customerId.toUpperCase().replace(/-/g, "");
+    var userId = params.userId;
+
+    //验证绑定卡是否有效
+    cardTools.validatePPType(customerId)
+        .then(function (code) {
+            if(!code){
+                return Promise.reject(errInfo.addCodeToUser.invalidCode);
+            }
+        })
+        .then(function () {
+            //绑定到用户
+            return userModel.findByIdAsync(userId)
+                .then(function (user) {
+                    if(user){
+                        if(user.customerIds && user.customerIds.length > 0){
+                            return Promise.each(user.customerIds, function (cst) {
+                                if(cst.code == customerId){
+                                    return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                }
+                            });
+                        }
+                    }else {
+                        return Promise.reject(errInfo.addCodeToUser.notFind);
+                    }
+                })
+                .then(function () {
+                    var updateObj = {$push: {}};
+                    var newCustomerIds = {
+                        code: customerId,
+                        cType: params.cType ? params.cType : 'photoPass',
+                    };
+                    updateObj.$push.customerIds = newCustomerIds
+                    updateObj.modifiedOn = Date.now();
+                    return userModel.findByIdAndUpdateAsync(userId, updateObj);
+                })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        console.log(err);
+                        return Promise.reject(errInfo.addCodeToUser.userError);
+                    }
+                })
+        })
+        .then(function () {
+            //修改照片信息
+            return photoModel.findAsync({'customerIds.code': customerId})
+                .then(function (photoList) {
+                    if(photoList && photoList.length > 0){
+                        return Promise.each(photoList, function (photo) {
+                            var userIds = [];
+                            if (photo.customerIds && photo.customerIds.length > 0) {
+                                return Promise.each(photo.customerIds, function (pt) {
+                                    pt.userIds ? userIds = pt.userIds : userIds = [];
+                                    if (pt.code == customerId) {
+                                        userIds.push(userId);
+                                    }
+                                });
+                            } else {
+                                userIds.push(userId);
+                                photo.customerIds = [
+                                    {
+                                        code: customerId,
+                                        cType: params.cType ? params.cType : 'photoPass',
+                                        userIds: userIds
+                                    }
+                                ]
+                            }
+
+                            photo.modifiedOn = Date.now();
+                            photo.save();
+                        })
+                    }
+                })
+        })
+        .then(function () {
+            return res.ext.json();
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.addCodeToUser.promiseError);
             }
         })
 }

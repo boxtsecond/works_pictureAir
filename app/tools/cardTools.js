@@ -32,22 +32,31 @@ function validatePP(pppCode) {
     })
 }
 
-function  activeCard(pppCode) {
+//激活（购买）卡
+function  activeCard(pppCode, SN) {
     var cardType = '';
     Promise.resolve()
         .then(function () {
             // 验证
-            return validatePP(pppCode);
+            return validatePP(pppCode)
+                .then(function (card) {
+                    if(card.SN !== SN){
+                        return null;
+                    }else {
+                        return card;
+                    }
+                })
         })
         .then(function (obj) {
             if(!obj){
                 return null;
             }else {
                 // 修改 active=true   obj.expiredOn= new Date()+expiredDay
-                obj.active = true;
-                obj.expiredOn= new Date() + obj.expiredDay;
-                cardType = obj.PPPType
-                return carCodeModel.updateAsync({PPPCode:pppCode}, obj);
+                var updateObj = {};
+                updateObj.active = true;
+                updateObj.expiredOn= new Date() + obj.expiredDay;
+                cardType = obj.PPPType;
+                return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
             }
         })
         .then(function () {
