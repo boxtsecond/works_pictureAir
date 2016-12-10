@@ -99,8 +99,8 @@ var errInfo={
         paramsError: {status: 4009, msg: "request error", desc: "can not find request"}
     },
     "activeCodeToUser": {
-        paramsError: {status: 4010, msg: "params is incomplete", desc: "missing customerId"},
-        promiseError: {status:4011 ,msg: 'system error',desc:'promise error'},
+        paramsError: {status: 4010, msg: "params is incomplete", desc: "missing customerId or SN or cardId"},
+        invalidCard: {status:4011 ,msg: 'cardId is invalid',desc:'cardId is invalid'},
         repeatBound: {status:4013 , msg:'repeat binding',desc:'you have bounded this card already!'},
         userError: {status: 3016, msg: "system error", desc: "get userModel from db error"},
         userUpdateError: {status: 3017, msg: 'system error', desc: 'update user to userModel error'},

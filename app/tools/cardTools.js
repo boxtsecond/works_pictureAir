@@ -33,12 +33,19 @@ function validatePP(pppCode) {
 }
 
 //激活（购买）卡
-function  activeCard(pppCode) {
+function  activeCard(pppCode, SN) {
     var cardType = '';
     Promise.resolve()
         .then(function () {
             // 验证
-            return validatePP(pppCode);
+            return validatePP(pppCode)
+                .then(function (card) {
+                    if(card.SN !== SN){
+                        return null;
+                    }else {
+                        return card;
+                    }
+                })
         })
         .then(function (obj) {
             if(!obj){

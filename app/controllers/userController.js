@@ -288,12 +288,14 @@ exports.activeCodeToUser = function (req, res, next) {
                 return Promise.reject(errInfo.activeCodeToUser.notFind);
             } else {
                 //修改卡状态(激活)
-                return cardTools.activeCard(params.cardId);
+                return cardTools.activeCard(params.cardId, params.SN);
             }
         })
         .then(function (cType) {
             if (cType.status) {
                 return res.ext.json(cType);
+            } else if(cType == null){
+                return res.ext.json(errInfo.activeCodeToUser.invalidCard);
             } else {
                 //修改用户信息
                 cardType = cType
