@@ -7,6 +7,7 @@ var auth=require('../rq').auth;
 module.exports=function(app){
     //app.use('/',require('./index'));
     app.use('/auth',require('./auth'));
+    app.use('/sync',require('./sync'));
     //Guest
     app.use('/g',auth.authGuest,require('./guestRoute'));
     app.use('/p',auth.authUser,require('./privateRoute'));

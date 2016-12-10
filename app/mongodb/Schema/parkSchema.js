@@ -5,7 +5,7 @@ var options={};
 var config=
 {
     siteInfo:[],
-    "siteId" : {type: String, index: true},   //乐园
+    siteId : {type: String, index: true},   //乐园
     country: {type: String, index: true},   //国家
     province: String,   //省
     city: String,   //城市

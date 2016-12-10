@@ -16,6 +16,7 @@ var mongoose = require('mongoose');
 var ObjectId=mongoose.Schema.Types.ObjectId;
 var options={};
 var config= {
+    siteId : {type: String, index: true},
     PPPCode: {type: String, index: true,unique: true},  //pp+卡号
     SN:{type:String,index:true},//对应的序列号
     PPPType:String,//OneDayPass photoPassPlus的类型

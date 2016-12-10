@@ -28,8 +28,10 @@ function filterSyncFileDataParams(req){
         }
     });
 };
-function  syncFileData() {
+// /sync/syncToCloud
+function  syncFileData(req,res) {
 
+    console.log(req.ext.params)
 }
 
 function syncFile() {
