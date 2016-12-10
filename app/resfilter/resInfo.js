@@ -187,7 +187,10 @@ var errInfo={
         userError: {status: 3043, msg: "system error", desc: "get or update userModel error"},
         promiseError: {status: 3044, msg: "system error", desc: "promise error"}
     },
-    "":{status: 3046},
+    "activePPP":{
+        PPTypeError: {status: 4041, msg: "PPType error", desc: "PPType error"},
+        promiseError: {status: 3046, msg: "system error", desc: "promise error"}
+    },
 
     "getPhotosByConditions": {
         paramsError: {status: 4007, msg: "params is incomplete", desc: "missing condition"},

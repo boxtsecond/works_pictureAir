@@ -13,7 +13,6 @@ var pushMsgType = require('../tools/enums.js').pushMsgType;
 var pubScribeList = require('../tools/socketApi.js').pubScribeList;
 var config = require('../../config/config.js').config;
 var request = require('request');
-var utilFun = require('../lib/util/util.js');
 var enums = require('../tools/enums.js');
 var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
 

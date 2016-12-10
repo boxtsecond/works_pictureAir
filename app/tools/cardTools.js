@@ -32,11 +32,32 @@ function validatePP(pppCode) {
     })
 }
 
+function  activeCard(pppCode) {
+    var cardType = '';
+    Promise.resolve()
+        .then(function () {
+            // 验证
+            return validatePP(pppCode);
+        })
+        .then(function (obj) {
+            if(!obj){
+                return null;
+            }else {
+                // 修改 active=true   obj.expiredOn= new Date()+expiredDay
+                obj.active = true;
+                obj.expiredOn= new Date() + obj.expiredDay;
+                cardType = obj.PPPType
+                return carCodeModel.updateAsync({PPPCode:pppCode}, obj);
+            }
+        })
+        .then(function () {
+            return cardType;
+        })
+        .catch(function (error) {
+            console.log(error);
+            return null;
+        })
 
-function  activePPP(pppCode) {
-    // 验证
-   // validatePP
-    // 修改 active=true   obj.expiredOn= new Date()+expiredDay
 }
 // /sync/syncToCloud',
 // '/sync/syncFile',
@@ -53,5 +74,6 @@ function  activePPP(pppCode) {
 // console.log(replaceAll(,"-",""))
 module.exports={
     validatePPType:validatePPType,
-    validatePP:validatePP
+    validatePP:validatePP,
+    activeCard: activeCard
 };

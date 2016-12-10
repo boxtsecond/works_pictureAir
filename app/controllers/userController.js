@@ -9,12 +9,13 @@ var Promise = require('bluebird');
 var enums = require('../tools/enums.js');
 var userModel = require('../mongodb/Model/userModel.js');
 var contactModel = require('../mongodb/Model/contactModel.js');
-var userModel = require('../mongodb/Model/userModel.js');
+var photoModel = require('../mongodb/Model/photoModel.js');
 var async = require('async');
 var common = require('../tools/common.js');
 var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
 var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 var redisclient=require('../rq').redisclient;
+var activeCard = require('../tools/cardTools.js').activeCard;
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -139,6 +140,7 @@ exports.getShareUrl = function (req, res, next) {
         })
         .then(function (result) {
             var resultObj = errInfo.success;
+            resultObj.result = {};
             resultObj.result = result;
             return res.ext.json(resultObj);
         })
@@ -268,172 +270,97 @@ exports.getShareInfo = function (req, res, next) {
     share(req, res, params, next);
 }
 
+
 //绑定
 exports.addCodeToUser = function (req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, 'customerId')) {
         return res.ext.json(errInfo.addCodeToUser.paramsError);
     }
-    var customerId = params.customerId.trim() || '';
+    var customerId = params.customerId;
     customerId = customerId.toUpperCase().replace(/-/g, "");
-//    customerId=customerId.replace('http://140.206.125.194:3001/downloadApp.html?','');
     var userId = params.userId;
-    //判断customerId是否有效
-    var cType = getCodeTypeByCode(customerId);
-    if (cType != enums.codeType.photoPass && cType != enums.codeType.eventPass) {
-        return res.ext.json(errInfo.addCodeToUser.invalidPP);
-    }
-    //如果codeType是PP，需要判断当前PP是否已经绑定到用户，已经绑定则不能再绑定
-    async.auto({
-        userExist: function (callback) {
-            userModel.findById(userId, function (err, usr) {
-                if (err) {
-                    // log.error('addCodeToUser', err);
-                    return callback(errInfo.addCodeToUser.userError);
-                }
-                if (usr) {
-                    return callback(null, usr);
-                } else {
-                    return callback(errInfo.addCodeToUser.notFind);
-                }
-            })
-        },
-        hasBound: ['userExist', function (results, callback) {
-            userModel.findOne({'customerIds.code': customerId, _id: userId}, {
-                _id: 1,
-                hiddenPPList: 1
-            }, function (err, user) {
-                if (err) {
-                    // log.error('addCodeToUser', err);
-                    return callback(errInfo.addCodeToUser.userError);
-                }
-                if (user) {
-                    //恢复隐藏的PP
-                    var pb = common.getArrayProperty('code', user.hiddenPPList, customerId);
-                    if (pb == null) {
-                        return callback(errInfo.PPRepeatBound);
-                    } else {
-                        userModel.update({_id: userId}, {$pull: {hiddenPPList: pb}}, function (err) {
-                            if (err) {
-                                // log.error('addCodeToUser', err);
-                                return callback(errInfo.addCodeToUser.userUpdateError);
-                            }
-                            return callback(errInfo.success);
-                        })
-                    }
-                }
-                return callback(null, true);
-            })
-        }],
-        updateUser: ['hasBound', function (results, callback) {
-            userModel.findByIdAndUpdate(userId, {
-                $addToSet: {
-                    customerIds: {
-                        code: customerId,
-                        cType: cType
-                    }
-                }
-            }, function (err) {
-                if (err) {
-                    // log.error('addCodeToUser', err);
-                    return callback(errInfo.addCodeToUser.userUpdateError);
-                }
-                return callback(null, true);
-            })
-        }],
-        addExceptPPPOrderHistory: ['updateUser', function (results , callback) {
-            photoModel.find({'customerIds.code': customerId}, {}, function (err, list) {
-                if (err) {
-                    log.error('bindPPsToUser', err);
-                    return callback(errInfo.addCodeToUser.photoError);
-                }
-                if (list && list.length > 0) {
-                    var count = 0;
-                    async.each(list, function (p) {
-                        var orderHistory = [];
-                        //将用户Id写入到卡号对应的userIds中
-                        if (p.customerIds && p.customerIds.length > 0) {
-                            for (var i = 0; i < p.customerIds.length; i++) {
-                                if (p.customerIds[i].code == customerId) {
-                                    if (!p.customerIds[i].userIds) {
-                                        p.customerIds[i].userIds = [];
-                                    }
-                                    if (p.customerIds[i].userIds.indexOf(userId) == -1) {
-                                        p.customerIds[i].userIds.push(userId);
-                                    }
-                                }
-                            }
-                        } else {
-                            p.customerIds = [
-                                {
-                                    code: customerId,
-                                    cType: cType,
-                                    userIds: [userId]
-                                }
-                            ]
+    var cardType;
+
+    userModel.findByIdAsync(userId)
+        .then(function (user) {
+            if (!user) {
+                return Promise.reject(errInfo.addCodeToUser.notFind);
+            } else {
+                //修改卡状态(激活)
+                return activeCard(customerId);
+            }
+        })
+        .then(function (cType) {
+            if (cType.status) {
+                return res.ext.json(cType);
+            } else {
+                //修改用户信息
+                cardType = cType
+                return userModel.findByIdAndUpdateAsync(userId, {
+                    $addToSet: {
+                        customerIds: {
+                            code: customerId,
+                            cType: cType
                         }
-                        if (p.userIds.indexOf(userId) == -1) {
-                            p.userIds.push(userId);
-                        }
-                        if (p.orderHistory && p.orderHistory.length > 0) {
-                            for (var i = 0; i < p.orderHistory.length; i++) {
-                                if (p.orderHistory[i].customerId == customerId && p.orderHistory[i].productId && p.orderHistory[i].productId.length > 0) {
-                                    if (!p.orderHistory[i].userId) {
-                                        p.orderHistory[i].userId = userId;
-                                    } else {
+                    }
+                });
+            }
+        })
+        .then(function () {
+            //修改照片信息
+            return photoModel.findAsync({'customerIds.code': customerId})
+                .then(function (list) {
+                    if (list && list.length > 0) {
+                        return Promise.each(function (photo) {
+                            var userIds = [];
+                            var newOrderHistory = {};
+                            if (!photo || photo.length < 0) {
+                                return Promise.reject(errInfo.addCodeToUser.notFind);
+                            }
 
-                                        if (common.getObjByPropertiesFromArray([{
-                                                field: "customerId",
-                                                value: p.orderHistory[i].customerId
-                                            },
-                                                {field: "userId", value: userId},
-                                                {field: "productId", value: p.orderHistory[i].productId}
-                                            ], orderHistory) == null) {
-                                            orderHistory.push({ //购买信息
+                            //更改 photo.customerIds
+                            if (photo.customerIds && photo.customerIds.length > 0) {
+                                return Promise.each(photo.customerIds, function (pt) {
+                                    pt.userIds ? userIds = pt.userIds : userIds = [];
+                                    if (pt.code == customerId) {
+                                        userIds.push(userId);
+                                    }
+                                });
+                            } else {
+                                userIds.push(userId);
+                                photo.customerIds = [
+                                    {
+                                        code: customerId,
+                                        cType: cardType,
+                                        userIds: userIds
+                                    }
+                                ]
+                            }
 
-                                                customerId: p.orderHistory[i].customerId,  //pp或ep的code
-
-                                                productId: p.orderHistory[i].productId,  //对应产品Id（照片，杯子，钥匙扣）
-
+                            //更改 photo.orderHistory
+                            if (photo.orderHistory && photo.orderHistory.length > 0) {
+                                return Promise.each(photo.orderHistory, function (odh) {
+                                    if (odh.customerId == customerId && odh.productId) {
+                                        if (!odh.userId) {
+                                            odh.userId = userId;
+                                        } else {
+                                            newOrderHistory.push({ //购买信息
+                                                customerId: odh.customerId,  //pp或ep的code
+                                                productId: odh.productId,  //对应产品Id（照片，杯子，钥匙扣）
                                                 prepaidId: '',  //pp+的code
-
                                                 userId: userId,  //用户Id
-
                                                 createdOn: Date.now()  //创建时间
-
-                                            })
+                                            });
                                         }
-
                                     }
-                                }
-                            }
-                        }
-
-                        p.orderHistory = p.orderHistory.concat(orderHistory);
-                        p.modifiedOn = Date.now();
-                        p.save(function (err) {
-                            if (err) {
-                                log.error('addCodeToUser', err);
-                                return callback(errInfo.addCodeToUser.photoSaveError);
-                            }
-                            count++;
-                            if (count == list.length) {
-                                return callback(null, true);
+                                });
                             }
                         })
-                    })
-                } else {
-                    return callback(null);
-                }
-            })
+                    }
+                })
+        })
 
-        }]
-    }, function (err, results) {
-        if (err) {
-            return res.ext.json(err);
-        }
-        return res.ext.json();
-    });
 }
 
 //修改用户信息
