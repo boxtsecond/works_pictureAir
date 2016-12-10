@@ -61,6 +61,6 @@ exports.redis=client;
 //     console.log(err,response);
 // });
 
-client.hgetall("roban:demo:hset",function(err,response){
-    console.log(err,response);
-});
+// client.hgetall("roban:demo:hset",function(err,response){
+//     console.log(err,response);
+// });
