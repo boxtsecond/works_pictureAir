@@ -9,7 +9,6 @@ exports.filterPhoto = function(photo) {
     this.photoCode=photo.photoCode;if(!this.photoCode)this.photoCode="";
     this.name=photo.name; if(!this.name)this.name="";
     this.locationId=photo.locationId; if(!this.locationId)this.locationId="";
-    this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail={};
     this.shootOn=util.customFormat(photo.shootOn, 'yyyy-MM-dd hh:mm:ss');if(!this.shootOn)this.shootOn="";
     this.shootDate=util.customFormat(photo.shootOn, 'yyyy-MM-dd');if(!this.shootDate)this.shootDate="";
     this.isFree=photo.isFree;if(!this.isFree)this.isFree="";
@@ -18,7 +17,6 @@ exports.filterPhoto = function(photo) {
     this.extractOn=photo.extractOn;if(!this.extractOn)this.extractOn="";
     this.userIds=photo.userIds;if(!this.userIds)this.userIds="";
     this.presetId=photo.presetId;if(!this.presetId)this.presetId="";
-    this.originalInfo=photo.originalInfo;if(!this.originalInfo)this.originalInfo={};
     this.targetPoint=photo.targetPoint;if(!this.targetPoint)this.targetPoint="";
     this.downloadCount=photo.downloadCount;if(!this.downloadCount)this.downloadCount=0;
     this.customerIds=photo.customerIds;if(!this.customerIds)this.customerIds=[];
@@ -35,4 +33,23 @@ exports.filterPhoto = function(photo) {
     this.allowDownload=photo.allowDownload;if(!this.allowDownload)this.allowDownload=false;
     this.editCount=photo.editCount;if(!this.editCount)this.editCount=0;
     this.isPaid=photo.isPaid;if(!this.isPaid)this.isPaid=false;
+
+    this.thumbnail = {};
+    for(var i in photo.thumbnail){
+        this.thumbnail[i] = {};
+        for(var j in photo.thumbnail[i]){
+            if(j != 'path'){
+                this.thumbnail[i][j] = photo.thumbnail[i][j];
+            }
+        }
+    }
+    //this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail={};
+
+    this.originalInfo ={};
+    for(var k in photo._doc.originalInfo){
+        if(k != 'path'){
+            this.originalInfo[k] = photo.originalInfo[k];
+        }
+    }
+    //this.originalInfo=photo.originalInfo;if(!this.originalInfo)this.originalInfo={};
 }
