@@ -2,7 +2,7 @@
  * Created by meteor on 16/11/24.
  */
 
-
+var util = require('../lib/util/util.js');
 
 function  filterUser(user){
     this.name=user.name; if(!this.name)this.name="";
@@ -45,7 +45,7 @@ function  filterUserRes(user){
     this.email=user.email;
     this.country=user.country;
     this.gender=user.gender;
-    this.birthday=user.birthday;
+    this.birthday=util.customFormat(user.birthday, 'yyyy-MM-dd');
     this.address=user.address;
     this.coverHeaderImage=user.coverHeaderImage;
     this.favoriteLocationIds=user.favoriteLocationIds;
