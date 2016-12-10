@@ -109,7 +109,10 @@ function  syncFileData(req,res) {
     });
 }
 function syncFile(req,res) {
-  // console.log(req.ext.params)
+  // console.log(req.ext.params.length);
+  //   console.log(req.ext.params.relativePath)
+  //   console.log(req.ext.params.oLength)
+    // console.log(req.ext.params.O)
 }
 
 function syncData() {
