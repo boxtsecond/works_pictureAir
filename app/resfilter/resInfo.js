@@ -101,11 +101,11 @@ var errInfo={
     "activeCodeToUser": {
         paramsError: {status: 4010, msg: "params is incomplete", desc: "missing customerId or SN or cardId"},
         invalidCard: {status:4011 ,msg: 'cardId is invalid',desc:'cardId is invalid'},
-        repeatBound: {status:4013 , msg:'repeat binding',desc:'you have bounded this card already!'},
+        repeatBound: {status:4012 , msg:'repeat binding',desc:'you have bounded this card already!'},
         userError: {status: 3016, msg: "system error", desc: "get userModel from db error"},
         userUpdateError: {status: 3017, msg: 'system error', desc: 'update user to userModel error'},
         notFind: {status: 3018, msg: 'not find user', desc: "not find user from db"},
-        photoSaveError: {status: 3019, msg: "system error", desc: "save photo to photoModel error"},
+        photoSaveError: {status: 3019, msg: "system error", desc: "save photo to photoModel error"}
     },
     "updateUser": {
         paramsError: {status: 4014, msg: "params is incomplete", desc: "missing userId"},
@@ -190,7 +190,7 @@ var errInfo={
         promiseError: {status: 3014, msg: "system error", desc: "promise error"}
     },
     "addCodeToUser": {
-        paramsError: {status: 4012, msg: "params is incomplete", desc: "missing customerId"},
+        paramsError: {status: 4013, msg: "params is incomplete", desc: "missing customerId"},
         invalidCode: {status: 4041, msg: "customerId is invalid", desc: "customerId is invalid"},
         repeatBound: {status: 4042, msg:'repeat binding',desc:'you have bounded this card already!'},
         notFind: {status: 3046, msg: "system error", desc: "not find user form db"},
