@@ -98,14 +98,13 @@ var errInfo={
     "carousel": {
         paramsError: {status: 4009, msg: "request error", desc: "can not find request"}
     },
-    "addCodeToUser": {
+    "activeCodeToUser": {
         paramsError: {status: 4010, msg: "params is incomplete", desc: "missing customerId"},
-        invalidPP: {status:4011 ,msg: 'PhotoPass is error',desc:'the PhotoPass is invalid'},
-        notFind: {status: 4012, msg: 'not find user', desc: "not find user from db"},
-        PPRepeatBound: {status:4013 , msg:'repeat binding',desc:'you have bounded this PhotoPass!'},
+        promiseError: {status:4011 ,msg: 'system error',desc:'promise error'},
+        repeatBound: {status:4013 , msg:'repeat binding',desc:'you have bounded this card already!'},
         userError: {status: 3016, msg: "system error", desc: "get userModel from db error"},
         userUpdateError: {status: 3017, msg: 'system error', desc: 'update user to userModel error'},
-        photoError: {status: 3018, msg: "system error", desc: "get photoModel from db error"},
+        notFind: {status: 3018, msg: 'not find user', desc: "not find user from db"},
         photoSaveError: {status: 3019, msg: "system error", desc: "save photo to photoModel error"},
     },
     "updateUser": {
@@ -121,7 +120,6 @@ var errInfo={
         userError: {status: 3020,msg: "system error", desc: "get userModel from db error"},
         promiseError: {status: 3021, msg: "system error", desc: "promise error"}
     },
-
     "socketController": {
         redisSetError: {status: 3022, msg: "system error", desc: "set token to redis error"},
         redisGetError: {status: 3023, msg: "system error", desc: "get token from redis error"},
@@ -187,14 +185,17 @@ var errInfo={
         userError: {status: 3043, msg: "system error", desc: "get or update userModel error"},
         promiseError: {status: 3044, msg: "system error", desc: "promise error"}
     },
-    "activePPP":{
-        PPTypeError: {status: 4041, msg: "PPType error", desc: "PPType error"},
-        promiseError: {status: 3046, msg: "system error", desc: "promise error"}
-    },
-
     "getPhotosByConditions": {
         paramsError: {status: 4007, msg: "params is incomplete", desc: "missing condition"},
         promiseError: {status: 3014, msg: "system error", desc: "promise error"}
+    },
+    "addCodeToUser": {
+        paramsError: {status: 4012, msg: "params is incomplete", desc: "missing customerId"},
+        invalidCode: {status: 4041, msg: "customerId is invalid", desc: "customerId is invalid"},
+        repeatBound: {status: 4042, msg:'repeat binding',desc:'you have bounded this card already!'},
+        notFind: {status: 3046, msg: "system error", desc: "not find user form db"},
+        userError: {status: 3047, msg: "system error", desc: "get userModel from db error"},
+        promiseError: {status: 3047, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------

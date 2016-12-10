@@ -13,6 +13,7 @@ router.post('/user/getShareUrl', ctr.userController.getShareUrl);
 router.post('/user/share', ctr.userController.share);
 router.post('/user/getShareInfo', ctr.userController.getShareInfo);
 router.get('/user/addCodeToUser', ctr.userController.addCodeToUser);
+router.post('/user/activeCodeToUser', ctr.userController.activeCodeToUser);
 router.post('/user/updateUser', ctr.userController.updateUser);
 router.post('/user/modifyUserPwd', ctr.userController.modifyUserPwd);
 
