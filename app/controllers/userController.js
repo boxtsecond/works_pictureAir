@@ -15,7 +15,7 @@ var async = require('async');
 var common = require('../tools/common.js');
 var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
 var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
-var redisclient=require('../rq').redisclient;
+var redisclient=require('../redis/redis').redis;
 var cardTools = require('../tools/cardTools.js');
 var verifyreg=require('../rq.js').verifyreg;
 
@@ -425,15 +425,17 @@ exports.updateUser = function (req, res, next) {
         })
         .then(function(result){
             if(result.status){
-                return res.ext.json(result);
+                return Promise.reject(result);
             }
             var updateInfo = result;
-            return userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
+            return userModel.findByIdAndUpdateAsync(userId, updateInfo)
                 .then(function (ur) {
                     if(!ur){
                         return Promise.reject(errInfo.updateUser.notFind);
                     }else {
-                        return ur;
+                        var user = new filterUserToredis(ur);
+                        var md5Useranme =req.ext.md5(userName);
+                        return redisclient.set("access_token:"+md5Useranme, JSON.stringify(user));
                     }
                 })
                 .catch(function(err){
@@ -441,10 +443,8 @@ exports.updateUser = function (req, res, next) {
                     return Promise.reject(errInfo.updateUser.userError);
                 });
         })
-        .then(function (user) {
-            var ur = new filterUserToredis(user);
-            var md5Useranme =req.ext.md5(userName);
-            return redisclient.set("access_token:"+md5Useranme, JSON.stringify(ur));
+        .then(function () {
+            return res.ext.json();
         })
         .catch(function (error) {
             console.log(error);
