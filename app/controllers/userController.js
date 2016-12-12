@@ -16,6 +16,7 @@ var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
 var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 var redisclient=require('../rq').redisclient;
 var cardTools = require('../tools/cardTools.js');
+var userFilter = require('../controllers/user.js');
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -393,83 +394,38 @@ exports.activeCodeToUser = function (req, res, next) {
 exports.updateUser = function (req, res, next) {
     var params = req.ext.params;
     var userId = params.userId;
-    Promise.resolve()
-        .then(function(){
+    userFilter.filterParams(req)
+        .then(function(pms){
+            if(pms.isEmail){
+                params.isEmail = true;
+            }
+            if(pms.isMobile){
+                params.isMobile = true;
+            }
             return getUpdateUserInfo(params);
         })
         .then(function(result){
             if(result.status){
                 return res.ext.json(result);
             }
-            var updateInfo = result[0];
-            var isEmail = result[1];
-            var isMobile = result[2];
-            if (isEmail || isMobile) {
-                return userModel.findOneAsync({_id: userId.trim()})
-                    .then(function(user){
-                        if (user) {
-                            if (user.userName == user.email && isEmail) {
-                                return res.ext.json(errInfo.updateUser.denyUpdateRegister);
-                            } else {
-                                var conditions = {_id: {$ne: userId.trim()}};
-                                if (isEmail) {
-                                    conditions.email = updateInfo.email;
-                                }
-                                if (isMobile) {
-                                    conditions.mobile = updateInfo.mobile;
-                                }
-                                return userModel.findOneAsync(conditions)
-                                    .then(function (user) {
-                                        if (user) {
-                                            if (isEmail) {
-                                                return res.ext.json(errInfo.updateUser.existedEmail);
-                                            } else if (isMobile) {
-                                                return res.ext.json(errInfo.updateUser.existedMobile);
-                                            }
-                                        } else {
-                                            return userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
-                                                .then(function (ur) {
-                                                    if(ur){
-                                                        return res.ext.json();
-                                                    }else {
-                                                        return res.ext.json(errInfo.updateUser.notFind);
-                                                    }
-                                                })
-                                                .catch(function(err){
-                                                    console.log('findByIdAndUpdate', err);
-                                                    return res.ext.json(errInfo.updateUser.userError);
-                                                })
-                                        }
-                                    })
-                                    .catch(function(err){
-                                        console.log('findOne1', err);
-                                        return res.ext.json(errInfo.updateUser.userError);
-                                    });
-                            }
-
-                        } else {
-                            return res.ext.json(errInfo.updateUser.notFind);
-                        }
+            var updateInfo = result;
+            return userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
+                .then(function (ur) {
+                    if(!ur){
+                        return Promise.reject(errInfo.updateUser.notFind);
+                    }else {
+                        return ur;
+                    }
                 })
-                    .catch(function(err){
-                        console.log('findOne2', err);
-                        return res.ext.json(errInfo.updateUser.userError);
-                    });
-
-            } else {
-                return userModel.findByIdAndUpdateAsync(userId.trim(), updateInfo)
-                    .then(function (ur) {
-                        if(ur){
-                            return res.ext.json();
-                        }else {
-                            return res.ext.json(errInfo.updateUser.notFind);
-                        }
-                    })
-                    .catch(function(err){
-                        console.log('findByIdAndUpdate', err);
-                        return res.ext.json(errInfo.updateUser.userError);
-                    });
-            }
+                .catch(function(err){
+                    console.log(err);
+                    return Promise.reject(errInfo.updateUser.userError);
+                });
+        })
+        .then(function (user) {
+            var ur = filterUserToredis(user);
+            var md5Useranme =req.ext.md5(user.username);
+            return redisclient.set("access_token:"+md5Useranme, ur);
         })
         .catch(function (error) {
             console.log(error);
@@ -581,24 +537,20 @@ function getUpdateUserInfo(params) {
     if (params.systemMessagePush) {
         updateInfo.systemMessagePush = params.systemMessagePush;
     }
-    var isEmail = false;
-    if (params.email && params.email.trim() != '') {
+    if (params.email && params.email.trim() != '' && params.isMobile) {
 
         var regEmail = /^\s*\w+(?:\.{0,1}[\w-]+)*@[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*\.[a-zA-Z]+\s*$/;
         if (!regEmail.exec(params.email.trim())) {
-            return errInfo.updateUser.genderError;
+            return errInfo.updateUser.emailError;
         }
-        isEmail = true;
         updateInfo.email = params.email.trim();
         updateInfo.email = updateInfo.email.toLowerCase();
     }
-    var isMobile = false;
-    if (params.mobile && params.mobile.trim() != '') {
-        isMobile = true;
+    if (params.mobile && params.mobile.trim() != '' && params.isEmail) {
         updateInfo.mobile = params.mobile.trim();
     }
 
-    return [updateInfo, isEmail, isMobile];
+    return updateInfo;
 }
 
 //联系我们
@@ -710,7 +662,7 @@ exports.addCodeToUser = function (req, res, next) {
         return res.ext.json(errInfo.addCodeToUser.paramsError);
     }
     var customerId = params.customerId;
-    customerId = customerId.toUpperCase().replace(/-/g, "");
+    //customerId = customerId.toUpperCase().replace(/-/g, "");
     var userId = params.userId;
 
     //验证绑定卡是否有效
@@ -760,14 +712,34 @@ exports.addCodeToUser = function (req, res, next) {
             return photoModel.findAsync({'customerIds.code': customerId})
                 .then(function (photoList) {
                     if(photoList && photoList.length > 0){
-                        return Promise.each(photoList, function (photo) {
+                        return Promise.mapSeries(photoList, function (photo) {
                             var userIds = [];
                             if (photo.customerIds && photo.customerIds.length > 0) {
                                 return Promise.each(photo.customerIds, function (pt) {
-                                    pt.userIds ? userIds = pt.userIds : userIds = [];
+                                    pt.userIds.length>0 ? userIds = pt.userIds : userIds = [];
                                     if (pt.code == customerId) {
-                                        userIds.push(userId);
+                                        var flag = false;
+                                        Promise.each(pt.userIds, function (us) {
+                                            if(us === userId){
+                                                flag = true;
+                                            }
+                                        })
+                                        if(!flag){
+                                            userIds.push(userId);
+                                        }
                                     }
+                                    photo.customerIds = [
+                                        {
+                                            code: customerId,
+                                            cType: params.cType ? params.cType : 'photoPass',
+                                            userIds: userIds
+                                        }
+                                    ];
+                                    var uds = photo.userIds;
+                                    uds.push(userId);
+                                    photo.userIds = uds;
+                                    photo.modifiedOn = Date.now();
+                                    photo.save();
                                 });
                             } else {
                                 userIds.push(userId);
@@ -777,13 +749,19 @@ exports.addCodeToUser = function (req, res, next) {
                                         cType: params.cType ? params.cType : 'photoPass',
                                         userIds: userIds
                                     }
-                                ]
+                                ];
+                                var uds = photo.userIds;
+                                uds.push(userId);
+                                photo.userIds = uds;
+                                photo.modifiedOn = Date.now();
+                                photo.save();
                             }
-
-                            photo.modifiedOn = Date.now();
-                            photo.save();
                         })
                     }
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(err);
                 })
         })
         .then(function () {
