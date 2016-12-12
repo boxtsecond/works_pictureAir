@@ -158,9 +158,7 @@ function login(req,res){
                             else if(user.password==""||user.password!=req.ext.md5(obj.userobj.params.password))
                                 return  Promise.reject(0);
                             else return Promise.resolve({
-                                user: new resfilter_user.filterUserToredis(user,
-                                    obj.userobj.params.token.t, obj.userobj.params.token.lg
-                                ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                                user: new resfilter_user.filterUserToredis(user), userobj: obj.userobj, md5Useranme: obj.md5Useranme
                               });
                         } else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
@@ -177,9 +175,7 @@ function login(req,res){
                              else if(user.password==""||user.password!=req.ext.md5(obj.userobj.params.password))
                                  return  Promise.reject(0);
                              else  return Promise.resolve({
-                                 user: new resfilter_user.filterUserToredis(user,
-                                     obj.userobj.params.token.t, obj.userobj.params.token.lg
-                                 ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                                 user: new resfilter_user.filterUserToredis(user), userobj: obj.userobj, md5Useranme: obj.md5Useranme
                              });
                          }else return  Promise.resolve({ user:null,  userobj:obj.userobj,md5Useranme:obj.md5Useranme});
                     }).catch(function (err) {
@@ -342,8 +338,7 @@ function register(req,res){
     ) .then(function(userobj){
             //access_token  存入redis
             //var resOBj=new resfilter_user.filterUser(userobj[1]);
-            var redis_user_obj=new resfilter_user.filterUserToredis(userobj[1],
-                userobj[0].params.token.t,userobj[0].params.token.lg);
+            var redis_user_obj=new resfilter_user.filterUserToredis(userobj[1]);
             //var access_tokenData={
             //    //access_token:userobj[3],
             //    //appid
@@ -678,9 +673,7 @@ function resetPassword(req,res){
                     if(user) {
                         if (user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
                         else return Promise.resolve({
-                                user: new resfilter_user.filterUserToredis(user,
-                                    obj.userobj.params.token.t, obj.userobj.params.token.lg
-                                ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                                user: new resfilter_user.filterUserToredis(user), userobj: obj.userobj, md5Useranme: obj.md5Useranme
                             });
                     } else return  Promise.reject(-1);
                 }).catch(function (err) {
@@ -694,9 +687,7 @@ function resetPassword(req,res){
                         if (user.disabled)
                             return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
                         else  return Promise.resolve({
-                                user: new resfilter_user.filterUserToredis(user,
-                                    obj.userobj.params.token.t, obj.userobj.params.token.lg
-                                ), userobj: obj.userobj, md5Useranme: obj.md5Useranme
+                                user: new resfilter_user.filterUserToredis(user), userobj: obj.userobj, md5Useranme: obj.md5Useranme
                             });
                     }else return  Promise.reject(-1);
                 }).catch(function (err) {
@@ -951,9 +942,39 @@ function switchLanguage(req,res){
 }
 
 function logout(req,res){
-    // 从redis里面删除用户信息
+    // 从redis里面删除用户信息 多账户登陆不行
 }
 
+//查询user
+function getuser(req,res) {
+    Promise.resolve(req.ext.params).then(function(obj){
+        return redisclient.get("access_token:"+obj.token.audience).then(function(access_token){
+            if(access_token){
+                var user=JSON.parse(access_token);
+                if(user.user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.user.disablereason}]);
+                else  return  Promise.reject([200,'success',new resfilter_user.filterUserRes(user.user)]);
+            }else  return obj;
+        }).catch(function(err){
+            if(req.ext.isArray(err)) return  Promise.reject(err);
+            else  return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
+        });
+    }).then(function (obj) {
+        return  userMode.findOne({ _id: obj.userId}).then(function (user) {
+            if(user) {
+                if (user.disabled)  return Promise.reject([430,'userName is disabled',{disablereason:user.disablereason}]);
+                else return new resfilter_user.filterUserRes(user);
+            } else return  Promise.reject(null);
+        }).catch(function (err) {
+            if(req.ext.isArray(err)) return  Promise.reject(err);
+            if(err) return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
+            else return  Promise.reject(errInfo.usergetuserNotFind);
+        });
+    }).then(function (obj) {
+        res.ext.json([200,'success',obj]);
+    }).catch(function (err) {
+        res.ext.json(err);
+    });
+}
 
 
 
@@ -965,6 +986,7 @@ module.exports={
     switchLanguage:switchLanguage,
     resetPassword:resetPassword,
     logout:logout,
+    getuser:getuser,
     verifyMobileCode:verifyMobileCode,
     verifyEmailCode:verifyEmailCode
 };

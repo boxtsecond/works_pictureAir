@@ -63,6 +63,7 @@ var errInfo={
     "userverifyEmailCodeParamVcodeParameterError":{status: 443, msg:"param not valid",desc:"verifyEmail vcode  is required"},
     "userverifyEmailCodeVcodeExpireParameterError":{status: 444, msg:"code expire",desc:"expire vcode"},
     "userverifyMobileCodeParamTypeParameterError":{status: 445, msg:"param not valid",desc:"verifyMobileCode type  is required"},
+    "usergetuserNotFind":{status: 446, msg:"not find user",desc:"not find user"},
 
 
     "getCouponsByUserId":{

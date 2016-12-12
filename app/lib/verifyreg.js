@@ -20,6 +20,7 @@ function verifyDateStr(str) {
     return  /(\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2})|(\d{2}-\d{2}\d{2}:\d{2}:\d{2})|(\d{2}:\d{2}:\d{2})/.test(str);
 }
 
+// console.log(verifyDateStr("2016-2-26 00:00:00"))
 //console.log(isMobile("09875445673"))
 //console.log(isEmail("peter.dong@pictureworks.biz"))
 module.exports={

@@ -67,20 +67,20 @@ describe('/auth/getAccessToken', function() {
     //        });
     // });
 
-    it('should login', function(done) {
-        request.post('/g/user/login')
-            .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MTc1NDksImV4cCI6MTQ4MjEyMjM0OSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZWMzZDYxMjBjMDI0MTFlNmEwMTIzMWJjMGI5ZGRlNmUiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.pFQLSjzyqMmxDnlYGbM7-xx65tShwjYahfYAnLoQE854eCQcwWEX6X9tYswTE61F6wK5Ybh6B2BoAM4xGNsarrsZ2cXGlWRPl6CLHm-_cRDl1eKGp04eGPxjqvLBIEoeNHaU9KLETdg-bnE1jH1LlyJpmHm1kkeuwqFv_imeaOeBiTxjXnpu16OVdkOqnXe__VhdVkVuuadGBQ5HQ3XOZjQRgS7Fkpo8joay54NqfUXYRiDSG-2y75s_aL6kGrQBWyrKpN8hZytstbSRtYWvUknjNasUt6VxcGYJucrlkGKyrSRMYI5sYcOSOWnP1U-5TxrcINUbNSn8O5iIm7jADg',
-                username: '8618321538399',
-                password: md5("123456")
-            })
-            .expect(200, function(err1, res1) {
-                console.log(res1.body)
-                should.not.exist(err1);
-                done();
-                // res.text.should.containEql('用户名或密码不能为空');
-            });
-    });
+    // it('should login', function(done) {
+    //     request.post('/g/user/login')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MTc1NDksImV4cCI6MTQ4MjEyMjM0OSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZWMzZDYxMjBjMDI0MTFlNmEwMTIzMWJjMGI5ZGRlNmUiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.pFQLSjzyqMmxDnlYGbM7-xx65tShwjYahfYAnLoQE854eCQcwWEX6X9tYswTE61F6wK5Ybh6B2BoAM4xGNsarrsZ2cXGlWRPl6CLHm-_cRDl1eKGp04eGPxjqvLBIEoeNHaU9KLETdg-bnE1jH1LlyJpmHm1kkeuwqFv_imeaOeBiTxjXnpu16OVdkOqnXe__VhdVkVuuadGBQ5HQ3XOZjQRgS7Fkpo8joay54NqfUXYRiDSG-2y75s_aL6kGrQBWyrKpN8hZytstbSRtYWvUknjNasUt6VxcGYJucrlkGKyrSRMYI5sYcOSOWnP1U-5TxrcINUbNSn8O5iIm7jADg',
+    //             username: '8618321538399',
+    //             password: md5("123456")
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             should.not.exist(err1);
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
 
     // it('should sendsms forgotpwd', function(done) {
     //    request.post('/g/user/sendsms')
@@ -180,4 +180,19 @@ describe('/auth/getAccessToken', function() {
     // });
 
     //            password: md5("123456")
+
+    it('should login', function(done) {
+        request.post('/p/user/getuser')
+            .send({
+                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MjMzOTYsImV4cCI6MTQ4MjEyODE5NiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiM2RlOTM2NzU4NGE2MTQ3ZTY3ZWRlMjdjNWJjOTI1NWYiLCJ0IjoxLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwibGciOiJ6aC1DTiJ9.awi_rIohTU6iqFSNDSgZA2OJiMB49D6yuEuFItoFk0nx3kzhAS-5-k6dAN-6g2861Q44cNKE7dpIdIQ6Xr4RvSdyMjvqcOf3NlmTum5d1FoEYTsffPbvI41WVvw7v9dA8Ipq1TnOrtBCD9_IKw3toztQ89n0aIAGvaRdEQqQLoeo1BEV4vm6IM8veIB23NW4MO2aKAXWzSsmyI1kZSKfh_qqW_NCMncCnTjr1lTzMJyAyZ20YeGIGzQgVfb2u9LeqYR9LUPIwSa55eToT_D-54O1XDTL3j3GLoQb5e0hGpQu8wz52VT0OtXaNW23mC00E3Q0L48tAVk7LEzGIi56Kg'
+                // ,username: '8618321538399',
+                // password: md5("123456")
+            })
+            .expect(200, function(err1, res1) {
+                console.log(res1.body)
+                should.not.exist(err1);
+                done();
+                // res.text.should.containEql('用户名或密码不能为空');
+            });
+    });
 });

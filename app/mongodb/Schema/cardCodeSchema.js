@@ -17,8 +17,8 @@ var ObjectId=mongoose.Schema.Types.ObjectId;
 var options={};
 var config= {
     siteIds : {type:[String]},
-    PPPCode: {type: String, index: true,unique: true},  //pp+卡号
-    SN:{type:String,index:true},//对应的序列号
+    PPPCode: {type: String, index: true,unique: true,required:true},  //pp+卡号
+    SN:{type:String,index:true,required:true},//对应的序列号
     PPPType:String,//OneDayPass photoPassPlus的类型
     oType:String,//大类：Gift photoPassPlus，photoPass，coupon，eventPass
     capacity: {type: Number,default:-1}, //容量，可绑定数量

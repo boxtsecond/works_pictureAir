@@ -34,7 +34,7 @@ function  filterUser(user){
     //this.cart={};
     //console.log(this);
 }
-function filterUserToredis(user,t,lg){
+function filterUserToredis(user){
     this.userid=user._id;
     // this.t=t;
     // this.lgcode=lg;
