@@ -432,16 +432,20 @@ exports.updateUser = function (req, res, next) {
                 .then(function (ur) {
                     if(!ur){
                         return Promise.reject(errInfo.updateUser.notFind);
-                    }else {
-                        var user = new filterUserToredis(ur);
-                        var md5Useranme =req.ext.md5(userName);
-                        return redisclient.set("access_token:"+md5Useranme, JSON.stringify(user));
                     }
                 })
                 .catch(function(err){
                     console.log(err);
                     return Promise.reject(errInfo.updateUser.userError);
                 });
+        })
+        .then(function () {
+            return userModel.findByIdAsync(userId)
+                .then(function (ur) {
+                    var user = new filterUserToredis(ur);
+                    var md5Useranme =req.ext.md5(userName);
+                    return redisclient.set("access_token:"+md5Useranme, JSON.stringify(user));
+                })
         })
         .then(function () {
             return res.ext.json();
