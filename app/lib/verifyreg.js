@@ -15,6 +15,10 @@ function verifyPassword(str){
     //return /^[\@A-Za-z0-9\!\#\$\%\^\&\*\.\~]{6,22}$/.test(str);
     //可以全数字  可以全字母  可以全特殊字符(~!@#$%^&*.) 三种的组合  可以是任意两种的组合  长度6-22
 }
+// "yyyy-MM-dd hh:mm:ss"
+function verifyDateStr(str) {
+    return  /(\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2})|(\d{2}-\d{2}\d{2}:\d{2}:\d{2})|(\d{2}:\d{2}:\d{2})/.test(str);
+}
 
 //console.log(isMobile("09875445673"))
 //console.log(isEmail("peter.dong@pictureworks.biz"))
@@ -22,5 +26,6 @@ module.exports={
     verifyuserName:verifyuserName,
     isMobile:isMobile,
     isEmail:isEmail,
-    verifyPassword:verifyPassword
+    verifyPassword:verifyPassword,
+    verifyDateStr:verifyDateStr
 }

@@ -14,8 +14,8 @@ var config= {
     lgcode:{type: String, index: true},//用户使用的语言码
     //uuid:{type: String, index: true},//用户手机的UUID
     //用户信息
-    name: {type: String}, //姓名
-    gender: {type: Number}, //性别 -1 未知 0 女 1 男
+    name: {type: String,default:''}, //姓名
+    gender: {type: Number,default: -1}, //性别 -1 未知 0 女 1 男
     country: {type: String,default:''}, //国家
     qq: {type: String}, //国家
     birthday: {type: Date}, //出生日期

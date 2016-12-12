@@ -158,6 +158,26 @@ function formatDate(date,fmt) {
             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
     return fmt;
 }
+function convertDateToStr(dt) {
+    return formatDate(dt,"yyyy-MM-dd hh:mm:ss");
+}
+function convertDateToStrYYMMDD(dt) {
+    return formatDate(dt,"yyyy-MM-dd");
+}
+function convertStrToDate(str) {
+    var dstr=str.split(" ");
+    var yy=dstr[0].split("-");
+    var hh=dstr[1].split(":");
+    return new Date(Number(yy[0]),Number(yy[1]-1),Number(yy[2]),Number(hh[0]),Number(hh[1])
+        ,Number(hh[2]));
+    // console.log(formatDate(new Date(Number(yy[0]),Number(yy[1]-1),Number(yy[2]),Number(hh[0]),Number(hh[1])
+    //     ,Number(hh[2]))
+    //     ,"yyyy-MM-dd hh:mm:ss"));
+    // var hh=str.split(" ");
+}
+
+// console.log(formatDate(new Date(),"yyyy-MM-dd hh:mm:ss"))
+// console.log(convertStrToDate("2016-12-12 10:03:35"))
 function txtStrReplace(drawTextStr,dReplaceArray){
     //console.log("drawTextStrReplace",drawTextStr,dReplaceArray);
     //var drawTextStr="";
@@ -259,4 +279,8 @@ module.exports.txtStrReplacePromise=txtStrReplacePromise;
 module.exports.Padstr=Padstr;
 module.exports.getBeforeNumberSecondDate=getBeforeNumberSecondDate;
 module.exports.getNextNumberSecondDate=getNextNumberSecondDate;
+
+module.exports.convertDateToStr=convertDateToStr;
+module.exports.convertDateToStrYYMMDD=convertDateToStrYYMMDD;
+module.exports.convertStrToDate=convertStrToDate;
 
