@@ -28,7 +28,9 @@ function  filterUser(user){
     this.disabled=user.disabled;
     this.disablereason=user.disablereason;
     this.lgcode=user.lgcode;if(!this.lgcode)this.lgcode="en-US";
-    this.customerIds = user.customerIds;if(!this.customerIds)this.customerIds=[];
+    this.customerIds = user.customerIds;if(!this.customerIds)this.customerIds=[];//pp
+    this.coupons = user.coupons;if(!this.coupons)this.coupons=[]; //
+    this.pppCodes=user.pppCodes;if(!this.pppCodes)this.pppCodes=[];
     //this.cart={};
     //console.log(this);
 }
@@ -60,6 +62,8 @@ function  filterUserRes(user){
     this.disablereason=user.disablereason;
     this.lgcode=user.lgcode;
     this.customerIds = user.customerIds;
+    this.coupons=user.coupons;
+    this.pppCodes=user.pppCodes;
     //this.cart={};
     //console.log(this);
 }
