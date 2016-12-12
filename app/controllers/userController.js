@@ -840,49 +840,32 @@ exports.addCodeToUser = function (req, res, next) {
                             return Promise.mapSeries(photoList, function (photo) {
                                 var userIds = [];
                                 if (photo.orderHistory && photo.orderHistory.length > 0) {
-                                    return Promise.each(photo.orderHistory, function (pt) {
+                                    Promise.each(photo.orderHistory, function (pt) {
                                         if(pt.userId == userId){
-                                            return Promise.reject();
+                                            return Promise.reject(errInfo.addCodeToUser.repeatBound);
                                         }
-
-
-                                        pt.userIds == userId ? userIds = pt.userIds : userIds = [];
-                                        if (pt.code == customerId) {
-                                            var flag = false;
-                                            Promise.each(pt.userIds, function (us) {
-                                                if(us === userId){
-                                                    flag = true;
-                                                }
-                                            })
-                                            if(!flag){
-                                                userIds.push(userId);
-                                            }
-                                        }
-                                        photo.customerIds = [
-                                            {
-                                                code: customerId,
-                                                cType: params.cType ? params.cType : 'photoPass',
-                                                userIds: userIds
-                                            }
-                                        ];
-                                        var uds = photo.userIds;
-                                        uds.push(userId);
-                                        photo.userIds = uds;
-                                        photo.modifiedOn = Date.now();
-                                        photo.save();
                                     });
-                                } else {
-                                    userIds.push(userId);
-                                    photo.customerIds = [
+
+                                    photo.modifiedOn = Date.now();
+                                    photo.orderHistory = [
                                         {
-                                            code: customerId,
-                                            cType: params.cType ? params.cType : 'photoPass',
-                                            userIds: userIds
+                                            prepaidId: customerId,
+                                            productId: params.productId ? params.productId : 'photo',
+                                            userIds: userId,
+                                            createdOn: Date.now()
                                         }
                                     ];
-                                    var uds = photo.userIds;
-                                    uds.push(userId);
-                                    photo.userIds = uds;
+                                    photo.save();
+                                } else {
+                                    photo.orderHistory = [
+                                        {
+                                            prepaidId: customerId,
+                                            productId: params.productId ? params.productId : 'photo',
+                                            userIds: userId,
+                                            createdOn: Date.now()
+                                        }
+                                    ];
+                                    photo.userIds = userId;
                                     photo.modifiedOn = Date.now();
                                     photo.save();
                                 }
@@ -892,7 +875,12 @@ exports.addCodeToUser = function (req, res, next) {
                 })
                 .catch(function (err) {
                     console.log(err);
-                    return Promise.reject(err);
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        console.log(err);
+                        return Promise.reject(errInfo.addCodeToUser.promiseError);
+                    }
                 })
         })
         .then(function () {
@@ -907,112 +895,3 @@ exports.addCodeToUser = function (req, res, next) {
             }
         })
 }
-
-//验证绑定卡是否有效
-// cardTools.validatePPType(customerId)
-//     .then(function (code) {
-//
-//     })
-//     .then(function () {
-//         //绑定到用户
-//         return userModel.findByIdAsync(userId)
-//             .then(function (user) {
-//                 if(user){
-//                     if(user.customerIds && user.customerIds.length > 0){
-//                         return Promise.each(user.customerIds, function (cst) {
-//                             if(cst.code == customerId){
-//                                 return Promise.reject(errInfo.addCodeToUser.repeatBound);
-//                             }
-//                         });
-//                     }
-//                 }else {
-//                     return Promise.reject(errInfo.addCodeToUser.notFind);
-//                 }
-//             })
-//             .then(function () {
-//                 var updateObj = {$push: {}};
-//                 var newCustomerIds = {
-//                     code: customerId,
-//                     cType: params.cType ? params.cType : 'photoPass',
-//                 };
-//                 updateObj.$push.customerIds = newCustomerIds
-//                 updateObj.modifiedOn = Date.now();
-//                 return userModel.findByIdAndUpdateAsync(userId, updateObj);
-//             })
-//             .catch(function (err) {
-//                 if(err.status){
-//                     return Promise.reject(err);
-//                 }else {
-//                     console.log(err);
-//                     return Promise.reject(errInfo.addCodeToUser.userError);
-//                 }
-//             })
-//     })
-//     .then(function () {
-//         //修改照片信息
-//         return photoModel.findAsync({'customerIds.code': customerId})
-//             .then(function (photoList) {
-//                 if(photoList && photoList.length > 0){
-//                     return Promise.mapSeries(photoList, function (photo) {
-//                         var userIds = [];
-//                         if (photo.customerIds && photo.customerIds.length > 0) {
-//                             return Promise.each(photo.customerIds, function (pt) {
-//                                 pt.userIds.length>0 ? userIds = pt.userIds : userIds = [];
-//                                 if (pt.code == customerId) {
-//                                     var flag = false;
-//                                     Promise.each(pt.userIds, function (us) {
-//                                         if(us === userId){
-//                                             flag = true;
-//                                         }
-//                                     })
-//                                     if(!flag){
-//                                         userIds.push(userId);
-//                                     }
-//                                 }
-//                                 photo.customerIds = [
-//                                     {
-//                                         code: customerId,
-//                                         cType: params.cType ? params.cType : 'photoPass',
-//                                         userIds: userIds
-//                                     }
-//                                 ];
-//                                 var uds = photo.userIds;
-//                                 uds.push(userId);
-//                                 photo.userIds = uds;
-//                                 photo.modifiedOn = Date.now();
-//                                 photo.save();
-//                             });
-//                         } else {
-//                             userIds.push(userId);
-//                             photo.customerIds = [
-//                                 {
-//                                     code: customerId,
-//                                     cType: params.cType ? params.cType : 'photoPass',
-//                                     userIds: userIds
-//                                 }
-//                             ];
-//                             var uds = photo.userIds;
-//                             uds.push(userId);
-//                             photo.userIds = uds;
-//                             photo.modifiedOn = Date.now();
-//                             photo.save();
-//                         }
-//                     })
-//                 }
-//             })
-//             .catch(function (err) {
-//                 console.log(err);
-//                 return Promise.reject(err);
-//             })
-//     })
-//     .then(function () {
-//         return res.ext.json();
-//     })
-//     .catch(function (error) {
-//         if(error.status){
-//             return res.ext.json(error);
-//         }else {
-//             console.log(error);
-//             return res.ext.json(errInfo.addCodeToUser.promiseError);
-//         }
-//     })
