@@ -10,6 +10,7 @@ var Promise = require('bluebird');
 var enums = require('../tools/enums.js');
 var userModel = require('../mongodb/Model/userModel.js');
 var contactModel = require('../mongodb/Model/contactModel.js');
+var cardCodeModel = require('../mongodb/Model/cardCodeModel.js');
 var photoModel = require('../mongodb/Model/photoModel.js');
 var async = require('async');
 var common = require('../tools/common.js');
@@ -18,6 +19,7 @@ var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 var redisclient=require('../redis/redis').redis;
 var cardTools = require('../tools/cardTools.js');
 var verifyreg=require('../rq.js').verifyreg;
+var filterCard = require('../resfilter/card.js');
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -295,9 +297,9 @@ exports.activeCodeToUser = function (req, res, next) {
         })
         .then(function (cType) {
             if (cType.status) {
-                return res.ext.json(cType);
+                return Promise.reject(cType);
             } else if(cType == null){
-                return res.ext.json(errInfo.activeCodeToUser.invalidCard);
+                return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             } else {
                 //修改用户信息
                 cardType = cType
@@ -689,79 +691,137 @@ exports.modifyUserPwd = function (req, res, next) {
         })
 }
 
-//绑定卡（白卡）
+//绑定卡
 exports.addCodeToUser = function (req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, ['customerId', 'userId'])) {
         return res.ext.json(errInfo.addCodeToUser.paramsError);
     }
     var customerId = params.customerId;
-    //customerId = customerId.toUpperCase().replace(/-/g, "");
     var userId = params.userId;
-
-    //验证绑定卡是否有效
-    cardTools.validatePPType(customerId)
-        .then(function (code) {
-            if(!code){
-                return Promise.reject(errInfo.addCodeToUser.invalidCode);
+    var cType = 'ppCard';
+    var findPhotoObj = {};
+    cardCodeModel.findOneAsync({PPPCode:customerId})
+        .then(function (card) {
+            //绑定付费卡
+            if(card && card.length > 0){
+                cType = 'pppCard';
+                return card;
+            }else {
+                //验证白卡是否有效
+                return cardTools.validatePPType(customerId)
+                    .then(function (code) {
+                        if(!code){
+                            return Promise.reject(errInfo.addCodeToUser.invalidCode);
+                        }else {
+                            cType = 'ppCard';
+                        }
+                    })
+            }
+        })
+        .then(function (card) {
+            if(cType === 'ppCard'){
+                //绑定到用户
+                findPhotoObj = {'customerIds.code': customerId};
+                return userModel.findByIdAsync(userId)
+                    .then(function (user) {
+                        if(user){
+                            if(user.customerIds && user.customerIds.length > 0){
+                                return Promise.each(user.customerIds, function (cst) {
+                                    if(cst.code == customerId){
+                                        return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                    }
+                                });
+                            }
+                        }else {
+                            return Promise.reject(errInfo.addCodeToUser.notFind);
+                        }
+                    })
+                    .then(function () {
+                        var updateObj = {$push: {}};
+                        var newCustomerIds = {
+                            code: customerId
+                        };
+                        updateObj.$push.customerIds = newCustomerIds
+                        updateObj.modifiedOn = Date.now();
+                        return userModel.findByIdAndUpdateAsync(userId, updateObj);
+                    })
+                    .catch(function (err) {
+                        if(err.status){
+                            return Promise.reject(err);
+                        }else {
+                            console.log(err);
+                            return Promise.reject(errInfo.addCodeToUser.userError);
+                        }
+                    })
+            }else {
+                findPhotoObj = {'pppCodes.code': customerId};
+                var cardInfo = filterCard.filterPPPCardToUserDB(card);
+                return userModel.findByIdAsync(userId)
+                    .then(function (user) {
+                        if(user){
+                            if(user.pppCodes && user.pppCodes.length > 0){
+                                return Promise.each(user.pppCodes, function (code) {
+                                    if(customerId == code){
+                                        return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                    }
+                                })
+                            }
+                        }else {
+                            return Promise.reject(errInfo.addCodeToUser.notFind);
+                        }
+                    })
+                    .then(function () {
+                        var updateObj = {$push: {PPPCodes: cardInfo}};
+                        updateObj.modifiedOn = Date.now();
+                        return userModel.findByIdAndUpdateAsync(userId, updateObj);
+                    })
+                    .catch(function (err) {
+                        if(err.status){
+                            return Promise.reject(err);
+                        }else {
+                            return Promise.reject(errInfo.addCodeToUser.userError);
+                        }
+                    })
             }
         })
         .then(function () {
-            //绑定到用户
-            return userModel.findByIdAsync(userId)
-                .then(function (user) {
-                    if(user){
-                        if(user.customerIds && user.customerIds.length > 0){
-                            return Promise.each(user.customerIds, function (cst) {
-                                if(cst.code == customerId){
-                                    return Promise.reject(errInfo.addCodeToUser.repeatBound);
-                                }
-                            });
-                        }
-                    }else {
-                        return Promise.reject(errInfo.addCodeToUser.notFind);
-                    }
-                })
-                .then(function () {
-                    var updateObj = {$push: {}};
-                    var newCustomerIds = {
-                        code: customerId,
-                        cType: params.cType ? params.cType : 'photoPass',
-                    };
-                    updateObj.$push.customerIds = newCustomerIds
-                    updateObj.modifiedOn = Date.now();
-                    return userModel.findByIdAndUpdateAsync(userId, updateObj);
-                })
-                .catch(function (err) {
-                    if(err.status){
-                        return Promise.reject(err);
-                    }else {
-                        console.log(err);
-                        return Promise.reject(errInfo.addCodeToUser.userError);
-                    }
-                })
-        })
-        .then(function () {
             //修改照片信息
-            return photoModel.findAsync({'customerIds.code': customerId})
+            return photoModel.findAsync(findPhotoObj)
                 .then(function (photoList) {
                     if(photoList && photoList.length > 0){
-                        return Promise.mapSeries(photoList, function (photo) {
-                            var userIds = [];
-                            if (photo.customerIds && photo.customerIds.length > 0) {
-                                return Promise.each(photo.customerIds, function (pt) {
-                                    pt.userIds.length>0 ? userIds = pt.userIds : userIds = [];
-                                    if (pt.code == customerId) {
-                                        var flag = false;
-                                        Promise.each(pt.userIds, function (us) {
-                                            if(us === userId){
-                                                flag = true;
+                        if(cType == 'ppCard'){
+                            return Promise.mapSeries(photoList, function (photo) {
+                                var userIds = [];
+                                if (photo.customerIds && photo.customerIds.length > 0) {
+                                    return Promise.each(photo.customerIds, function (pt) {
+                                        pt.userIds.length>0 ? userIds = pt.userIds : userIds = [];
+                                        if (pt.code == customerId) {
+                                            var flag = false;
+                                            Promise.each(pt.userIds, function (us) {
+                                                if(us === userId){
+                                                    flag = true;
+                                                }
+                                            })
+                                            if(!flag){
+                                                userIds.push(userId);
                                             }
-                                        })
-                                        if(!flag){
-                                            userIds.push(userId);
                                         }
-                                    }
+                                        photo.customerIds = [
+                                            {
+                                                code: customerId,
+                                                cType: params.cType ? params.cType : 'photoPass',
+                                                userIds: userIds
+                                            }
+                                        ];
+                                        var uds = photo.userIds;
+                                        uds.push(userId);
+                                        photo.userIds = uds;
+                                        photo.modifiedOn = Date.now();
+                                        photo.save();
+                                    });
+                                } else {
+                                    userIds.push(userId);
                                     photo.customerIds = [
                                         {
                                             code: customerId,
@@ -774,23 +834,60 @@ exports.addCodeToUser = function (req, res, next) {
                                     photo.userIds = uds;
                                     photo.modifiedOn = Date.now();
                                     photo.save();
-                                });
-                            } else {
-                                userIds.push(userId);
-                                photo.customerIds = [
-                                    {
-                                        code: customerId,
-                                        cType: params.cType ? params.cType : 'photoPass',
-                                        userIds: userIds
-                                    }
-                                ];
-                                var uds = photo.userIds;
-                                uds.push(userId);
-                                photo.userIds = uds;
-                                photo.modifiedOn = Date.now();
-                                photo.save();
-                            }
-                        })
+                                }
+                            })
+                        }else if(cType == 'pppCard'){
+                            return Promise.mapSeries(photoList, function (photo) {
+                                var userIds = [];
+                                if (photo.orderHistory && photo.orderHistory.length > 0) {
+                                    return Promise.each(photo.orderHistory, function (pt) {
+                                        if(pt.userId == userId){
+                                            return Promise.reject();
+                                        }
+
+
+                                        pt.userIds == userId ? userIds = pt.userIds : userIds = [];
+                                        if (pt.code == customerId) {
+                                            var flag = false;
+                                            Promise.each(pt.userIds, function (us) {
+                                                if(us === userId){
+                                                    flag = true;
+                                                }
+                                            })
+                                            if(!flag){
+                                                userIds.push(userId);
+                                            }
+                                        }
+                                        photo.customerIds = [
+                                            {
+                                                code: customerId,
+                                                cType: params.cType ? params.cType : 'photoPass',
+                                                userIds: userIds
+                                            }
+                                        ];
+                                        var uds = photo.userIds;
+                                        uds.push(userId);
+                                        photo.userIds = uds;
+                                        photo.modifiedOn = Date.now();
+                                        photo.save();
+                                    });
+                                } else {
+                                    userIds.push(userId);
+                                    photo.customerIds = [
+                                        {
+                                            code: customerId,
+                                            cType: params.cType ? params.cType : 'photoPass',
+                                            userIds: userIds
+                                        }
+                                    ];
+                                    var uds = photo.userIds;
+                                    uds.push(userId);
+                                    photo.userIds = uds;
+                                    photo.modifiedOn = Date.now();
+                                    photo.save();
+                                }
+                            })
+                        }
                     }
                 })
                 .catch(function (err) {
@@ -810,3 +907,112 @@ exports.addCodeToUser = function (req, res, next) {
             }
         })
 }
+
+//验证绑定卡是否有效
+cardTools.validatePPType(customerId)
+    .then(function (code) {
+
+    })
+    .then(function () {
+        //绑定到用户
+        return userModel.findByIdAsync(userId)
+            .then(function (user) {
+                if(user){
+                    if(user.customerIds && user.customerIds.length > 0){
+                        return Promise.each(user.customerIds, function (cst) {
+                            if(cst.code == customerId){
+                                return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                            }
+                        });
+                    }
+                }else {
+                    return Promise.reject(errInfo.addCodeToUser.notFind);
+                }
+            })
+            .then(function () {
+                var updateObj = {$push: {}};
+                var newCustomerIds = {
+                    code: customerId,
+                    cType: params.cType ? params.cType : 'photoPass',
+                };
+                updateObj.$push.customerIds = newCustomerIds
+                updateObj.modifiedOn = Date.now();
+                return userModel.findByIdAndUpdateAsync(userId, updateObj);
+            })
+            .catch(function (err) {
+                if(err.status){
+                    return Promise.reject(err);
+                }else {
+                    console.log(err);
+                    return Promise.reject(errInfo.addCodeToUser.userError);
+                }
+            })
+    })
+    .then(function () {
+        //修改照片信息
+        return photoModel.findAsync({'customerIds.code': customerId})
+            .then(function (photoList) {
+                if(photoList && photoList.length > 0){
+                    return Promise.mapSeries(photoList, function (photo) {
+                        var userIds = [];
+                        if (photo.customerIds && photo.customerIds.length > 0) {
+                            return Promise.each(photo.customerIds, function (pt) {
+                                pt.userIds.length>0 ? userIds = pt.userIds : userIds = [];
+                                if (pt.code == customerId) {
+                                    var flag = false;
+                                    Promise.each(pt.userIds, function (us) {
+                                        if(us === userId){
+                                            flag = true;
+                                        }
+                                    })
+                                    if(!flag){
+                                        userIds.push(userId);
+                                    }
+                                }
+                                photo.customerIds = [
+                                    {
+                                        code: customerId,
+                                        cType: params.cType ? params.cType : 'photoPass',
+                                        userIds: userIds
+                                    }
+                                ];
+                                var uds = photo.userIds;
+                                uds.push(userId);
+                                photo.userIds = uds;
+                                photo.modifiedOn = Date.now();
+                                photo.save();
+                            });
+                        } else {
+                            userIds.push(userId);
+                            photo.customerIds = [
+                                {
+                                    code: customerId,
+                                    cType: params.cType ? params.cType : 'photoPass',
+                                    userIds: userIds
+                                }
+                            ];
+                            var uds = photo.userIds;
+                            uds.push(userId);
+                            photo.userIds = uds;
+                            photo.modifiedOn = Date.now();
+                            photo.save();
+                        }
+                    })
+                }
+            })
+            .catch(function (err) {
+                console.log(err);
+                return Promise.reject(err);
+            })
+    })
+    .then(function () {
+        return res.ext.json();
+    })
+    .catch(function (error) {
+        if(error.status){
+            return res.ext.json(error);
+        }else {
+            console.log(error);
+            return res.ext.json(errInfo.addCodeToUser.promiseError);
+        }
+    })

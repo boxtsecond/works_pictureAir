@@ -35,7 +35,7 @@ var config={
         mongoose.Schema(
             {
                 code: String,  //pp或ep的code
-                cType: String, //标示类型为pp还是ep
+                //cType: String, //标示类型为pp还是ep
                 userIds:{type: [String], index: true,default:[]} //用户Id列表
             },{_id:false})
     ],
