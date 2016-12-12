@@ -39,8 +39,15 @@ function convertStrToDate(str) {
     //     ,"yyyy-MM-dd hh:mm:ss"));
     // var hh=str.split(" ");
 }
-
+function haveOwnproperty(data,propertyname){
+  var result=false;
+    for(var itemdata in data) {
+        if(itemdata===propertyname) if(data[itemdata]!==null) result=true;
+    }
+    return result;
+};
 module.exports = {
+    haveOwnproperty:haveOwnproperty,
     formatDate:formatDate,
     convertDateToStr:convertDateToStr,
     convertDateToStrYYMMDD:convertDateToStrYYMMDD,
