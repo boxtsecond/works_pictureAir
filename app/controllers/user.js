@@ -966,8 +966,7 @@ module.exports={
     resetPassword:resetPassword,
     logout:logout,
     verifyMobileCode:verifyMobileCode,
-    verifyEmailCode:verifyEmailCode,
-    filterParams:filterParams
+    verifyEmailCode:verifyEmailCode
 };
 //signin //登陆
 //signup 注册

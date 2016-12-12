@@ -2,7 +2,7 @@
  * Created by meteor on 16/11/24.
  */
 
-var util = require('../lib/util/util.js');
+var util = require('../rq.js').util;
 
 function  filterUser(user){
     this.name=user.name; if(!this.name)this.name="";
@@ -28,6 +28,7 @@ function  filterUser(user){
     this.disabled=user.disabled;
     this.disablereason=user.disablereason;
     this.lgcode=user.lgcode;if(!this.lgcode)this.lgcode="en-US";
+    this.customerIds = user.customerIds;if(!this.customerIds)this.customerIds=[];
     //this.cart={};
     //console.log(this);
 }
@@ -45,7 +46,7 @@ function  filterUserRes(user){
     this.email=user.email;
     this.country=user.country;
     this.gender=user.gender;
-    this.birthday=util.customFormat(user.birthday, 'yyyy-MM-dd');
+    this.birthday=util.convertDateToStr(user.birthday);
     this.address=user.address;
     this.coverHeaderImage=user.coverHeaderImage;
     this.favoriteLocationIds=user.favoriteLocationIds;
@@ -58,6 +59,7 @@ function  filterUserRes(user){
     this.disabled=user.disabled;
     this.disablereason=user.disablereason;
     this.lgcode=user.lgcode;
+    this.customerIds = user.customerIds;
     //this.cart={};
     //console.log(this);
 }

@@ -5,6 +5,7 @@ var errInfo = require('../resfilter/resInfo.js').errInfo;
 var shareModeEnum = require('../tools/enums.js').shareModeEnum;
 var config = require('../../config/config.js').config;
 var util = require('../lib/util/util.js');
+var rq = require('../rq.js');
 var Promise = require('bluebird');
 var enums = require('../tools/enums.js');
 var userModel = require('../mongodb/Model/userModel.js');
@@ -16,7 +17,7 @@ var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
 var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 var redisclient=require('../rq').redisclient;
 var cardTools = require('../tools/cardTools.js');
-var userFilter = require('../controllers/user.js');
+var verifyreg=require('../rq.js').verifyreg;
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -393,8 +394,26 @@ exports.activeCodeToUser = function (req, res, next) {
 //修改用户信息
 exports.updateUser = function (req, res, next) {
     var params = req.ext.params;
+    if (!req.ext.checkExistProperty(params, ['userName', 'userId'])) {
+        return res.ext.json(errInfo.updateUser.paramsError);
+    }
     var userId = params.userId;
-    userFilter.filterParams(req)
+    var userName = params.userName;
+
+    Promise.resolve()
+        .then(function () {
+            var result={
+                isEmail:false,
+                isMobile:false
+            };
+            if(verifyreg.isEmail(userName.trim().toLowerCase())){
+                result.isEmail=true; return result;
+            }
+            else if(verifyreg.isMobile(userName.trim().toLowerCase())) {
+                result.isMobile = true;
+                return result;
+            }
+        })
         .then(function(pms){
             if(pms.isEmail){
                 params.isEmail = true;
@@ -423,13 +442,17 @@ exports.updateUser = function (req, res, next) {
                 });
         })
         .then(function (user) {
-            var ur = filterUserToredis(user);
-            var md5Useranme =req.ext.md5(user.username);
-            return redisclient.set("access_token:"+md5Useranme, ur);
+            var ur = new filterUserToredis(user);
+            var md5Useranme =req.ext.md5(userName);
+            return redisclient.set("access_token:"+md5Useranme, JSON.stringify(ur));
         })
         .catch(function (error) {
             console.log(error);
-            return res.ext.json(errInfo.updateUser.promiseError);
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                return res.ext.json(errInfo.updateUser.promiseError);
+            }
         });
 }
 
@@ -504,8 +527,8 @@ function getUpdateUserInfo(params) {
         updateInfo.qq = params.qq.trim();
     }
     if (params.birthday && params.birthday.toString() != '') {
-        if (new Date(params.birthday).toString() != "Invalid Date") {
-            updateInfo.birthday = new Date(params.birthday.trim());
+        if (rq.verifyreg.verifyDateStr(params.birthday)) {
+            updateInfo.birthday = rq.util.convertStrToDate(params.birthday);
         } else {
             return errInfo.updateUser.birthdayError;
         }
@@ -537,17 +560,24 @@ function getUpdateUserInfo(params) {
     if (params.systemMessagePush) {
         updateInfo.systemMessagePush = params.systemMessagePush;
     }
-    if (params.email && params.email.trim() != '' && params.isMobile) {
-
-        var regEmail = /^\s*\w+(?:\.{0,1}[\w-]+)*@[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*\.[a-zA-Z]+\s*$/;
-        if (!regEmail.exec(params.email.trim())) {
-            return errInfo.updateUser.emailError;
+    if (params.email && params.email.trim() != '') {
+        if(params.isMobile){
+            var regEmail = /^\s*\w+(?:\.{0,1}[\w-]+)*@[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*\.[a-zA-Z]+\s*$/;
+            if (!regEmail.exec(params.email.trim())) {
+                return errInfo.updateUser.emailError;
+            }
+            updateInfo.email = params.email.trim();
+            updateInfo.email = updateInfo.email.toLowerCase();
+        }else {
+            return errInfo.updateUser.updateEmailError;
         }
-        updateInfo.email = params.email.trim();
-        updateInfo.email = updateInfo.email.toLowerCase();
     }
-    if (params.mobile && params.mobile.trim() != '' && params.isEmail) {
-        updateInfo.mobile = params.mobile.trim();
+    if (params.mobile && params.mobile.trim() != '') {
+        if(params.isEmail){
+            updateInfo.mobile = params.mobile.trim();
+        }else {
+            return errInfo.updateUser.updateMobileError;
+        }
     }
 
     return updateInfo;
@@ -575,7 +605,7 @@ exports.contactUs = function (req, res, next) {
             contactMsg.content=content;
             contactMsg.parkName=params.parkName;
             contactMsg.createdBy=params.userId || 'Guest';
-            contactMsg.dataOfVisit=new Date(contactMsg.dataOfVisit).toString() != "Invalid Date" ? contactMsg.dataOfVisit : new Date();
+            contactMsg.dataOfVisit=rq.util.convertStrToDate(params.dataOfVisit);
             contactMsg.orderId=params.orderId || '';
             contactMsg.operatingSystem=params.operatingSystem || '';
             contactMsg.feedback=params.feedback;

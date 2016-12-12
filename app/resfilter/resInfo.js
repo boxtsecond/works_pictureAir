@@ -114,8 +114,8 @@ var errInfo={
         emailError: {status: 4017, msg: "params is not valid", desc: "email input error"},
         passwordError: {status: 4018, msg: "params is not valid", desc: "password input error"},
         denyUpdateRegister:{status:4019,msg: 'deny Update Register' , desc: 'can\'t modify register email or mobile'},
-        existedEmail: {status:4020,msg: 'existed Email', desc: 'the email already exists'},
-        existedMobile: {status:4021,msg: 'existed Mobile', desc: 'the mobile already exists'},
+        updateEmailError: {status:4020,msg: 'can not update Email', desc: 'can not update Email, because Email is userName'},
+        updateMobileError: {status:4021,msg: 'can not update Mobile', desc: 'can not update Email, because Mobile is userName'},
         notFind: {status: 4022,msg: 'not find user', desc: "not find user from db"},
         userError: {status: 3020,msg: "system error", desc: "get userModel from db error"},
         promiseError: {status: 3021, msg: "system error", desc: "promise error"}
