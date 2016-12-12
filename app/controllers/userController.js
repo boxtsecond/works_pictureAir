@@ -701,23 +701,26 @@ exports.addCodeToUser = function (req, res, next) {
     var userId = params.userId;
     var cType = 'ppCard';
     var findPhotoObj = {};
-    cardCodeModel.findOneAsync({PPPCode:customerId})
-        .then(function (card) {
-            //绑定付费卡
-            if(card && card.length > 0){
-                cType = 'pppCard';
-                return card;
-            }else {
-                //验证白卡是否有效
-                return cardTools.validatePPType(customerId)
-                    .then(function (code) {
-                        if(!code){
-                            return Promise.reject(errInfo.addCodeToUser.invalidCode);
-                        }else {
-                            cType = 'ppCard';
-                        }
-                    })
+
+    //验证卡是否有效
+    cardTools.validatePPType(customerId)
+        .then(function (code) {
+            if(!code){
+                return Promise.reject(errInfo.addCodeToUser.invalidCode);
             }
+        })
+        .then(function () {
+            return cardCodeModel.findOneAsync({PPPCode:customerId})
+                .then(function (card) {
+                    //绑定付费卡
+                    if(card && card.length > 0){
+                        cType = 'pppCard';
+                    }
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(errInfo.addCodeToUser.invalidCode);
+                });
         })
         .then(function (card) {
             if(cType === 'ppCard'){
@@ -780,6 +783,7 @@ exports.addCodeToUser = function (req, res, next) {
                         if(err.status){
                             return Promise.reject(err);
                         }else {
+                            console.log(err);
                             return Promise.reject(errInfo.addCodeToUser.userError);
                         }
                     })

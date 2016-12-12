@@ -12,24 +12,29 @@ var  cardprefixArray=['PACC','BPSG'];
 //
 function validatePPType(pppCode) {
     return new Promise(function (resolve, reject) {
-        if(pppCode.length!=16) return reject(false);
-        else if(cardprefixArray.indexOf(pppCode.substr(0,4))<0)return reject(false);
+        if(pppCode.length!=16) return resolve(false);
+        else if(cardprefixArray.indexOf(pppCode.substr(0,4))<0)return resolve(false);
         else if(cardTypeArray.indexOf(Number(pppCode[5]))>=0) return resolve(pppCode);
-        else return reject(false);
+        else return resolve(false);
     });
 }
 
 function validatePP(pppCode) {
     return validatePPType(pppCode).then(function (code) {
-       return  carCodeModel.findOne({PPPCode:code}).then(function (obj) {
-           if(!obj) return null;
-           else if(!obj.active&&(obj.expiredOn-new Date()>0)){
-               return obj;
-           }else return null;
-       })
-    }).catch(function (pppCode) {
-        return null;
-    })
+        if (!code) {
+            return null;
+        } else {
+            return carCodeModel.findOne({PPPCode: code}).then(function (obj) {
+                if (!obj) return null;
+                else if (!obj.active && (obj.expiredOn - new Date() > 0)) {
+                    return obj;
+                } else return null;
+            })
+                .catch(function (pppCode) {
+                    return null;
+                });
+        }
+    });
 }
 
 //激活（购买）卡

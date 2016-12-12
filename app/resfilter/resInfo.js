@@ -196,7 +196,7 @@ var errInfo={
         repeatBound: {status: 4042, msg:'repeat binding',desc:'you have bounded this card already!'},
         notFind: {status: 3046, msg: "system error", desc: "not find user form db"},
         userError: {status: 3047, msg: "system error", desc: "get userModel from db error"},
-        promiseError: {status: 3047, msg: "system error", desc: "promise error"}
+        promiseError: {status: 3048, msg: "system error", desc: "promise error"}
     }
 
     //-------------------system 5x 9x-------------------
