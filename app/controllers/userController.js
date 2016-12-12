@@ -446,8 +446,6 @@ exports.updateUser = function (req, res, next) {
                 .then(function (ur) {
                     var user = new filterUserToredis(ur);
                     var md5Useranme =req.ext.md5(userName);
-                    user.birthday = rq.util.convertDateToStrYYMMDD(user.birthday);
-                    console.log(user.birthday);
                     return redisclient.set("access_token:"+md5Useranme, JSON.stringify(user));
                 })
         })
