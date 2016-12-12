@@ -430,6 +430,7 @@ exports.updateUser = function (req, res, next) {
                 return Promise.reject(result);
             }
             var updateInfo = result;
+            console.log(updateInfo);
             return userModel.findByIdAndUpdateAsync(userId, updateInfo)
                 .then(function (ur) {
                     if(!ur){
@@ -444,6 +445,7 @@ exports.updateUser = function (req, res, next) {
         .then(function () {
             return userModel.findByIdAsync(userId)
                 .then(function (ur) {
+                    console.log('!!!!!!!!!!!!!!!', ur);
                     var user = new filterUserToredis(ur);
                     var md5Useranme =req.ext.md5(userName);
                     return redisclient.set("access_token:"+md5Useranme, JSON.stringify(user));
