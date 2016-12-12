@@ -966,7 +966,7 @@ function getuser(req,res) {
             } else return  Promise.reject(null);
         }).catch(function (err) {
             if(req.ext.isArray(err)) return  Promise.reject(err);
-            if(err) return  Promise.reject(errInfo.userRegisterFinddbForEmailError);
+            if(err) return  Promise.reject(errInfo.usergetUserFor_idError);
             else return  Promise.reject(errInfo.usergetuserNotFind);
         });
     }).then(function (obj) {

@@ -64,6 +64,23 @@ function  filterUserRes(user){
     this.customerIds = user.customerIds;
     this.coupons=user.coupons;
     this.pppCodes=user.pppCodes;
+    if(this.pppCodes.length>0){
+        for(var item in this.pppCodes){
+           if(resTools.haveOwnproperty(this.pppCodes[item],"bindOn")) this.pppCodes[item].bindOn=resTools.convertDateToStr( this.pppCodes[item].bindOn);
+            if(resTools.haveOwnproperty(this.pppCodes[item],"expiredOn"))this.pppCodes[item].expiredOn=resTools.convertDateToStr( this.pppCodes[item].expiredOn);
+            if(resTools.haveOwnproperty(this.pppCodes[item],"soldOn"))this.pppCodes[item].soldOn=resTools.convertDateToStr( this.pppCodes[item].soldOn);
+        }
+    }
+    if(this.customerIds.length>0){
+        for(var item in this.customerIds){
+            if(resTools.haveOwnproperty(this.pppCodes[item],"bindOn"))  this.customerIds[item].bindOn=resTools.convertDateToStr( this.customerIds[item].bindOn);
+        }
+    }
+    if(this.coupons.length>0){
+        for(var item in this.coupons){
+            if(resTools.haveOwnproperty(this.coupons[item],"bindOn"))  this.coupons[item].bindOn=resTools.convertDateToStr( this.coupons[item].bindOn);
+        }
+    }
     //this.cart={};
     //console.log(this);
 }

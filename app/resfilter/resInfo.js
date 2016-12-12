@@ -25,7 +25,7 @@ var errInfo={
     "userSMSRedisGetValidateCodeError":{status: 305, msg:"get ValidateCode error",desc:"get ValidateCode from redis err"},
     "userSMSRedisSetValidateCodeError":{status: 306, msg:"get ValidateCode error",desc:"set ValidateCode from redis err"},
     "userSMSdbSaveValidateCodeError":{status: 307, msg:"get ValidateCode error",desc:"save usemsg to db  err"},
-
+    "usergetUserFor_idError":{status: 308, msg:"system error",desc:"find db for _id"},
 
     "authParamAppidError":{status: 400, msg:"param not valid",desc:"appid is required"},//参数错误
     "authVerifyAppidError":{status: 401, msg:"param not valid",desc:"verify appid error"},
