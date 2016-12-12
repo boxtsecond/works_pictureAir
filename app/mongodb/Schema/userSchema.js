@@ -56,9 +56,19 @@ var config= {
     pppCodes: {type: [
         mongoose.Schema(
             {
-                code: {type: String, index: true}, //pp或ep的code
-                cType: String, // 标示类型为pp还是ep
-                bindOn:{type:Date,default: Date.now}
+                siteIds : {type:[String]},
+                locationIds:{type:[String]},//可以使用的地点。
+                productIds:[String],//可以适用的商品
+                PPPCode: {type: String, index: true,unique: true},  //pp+卡号
+                PPPType:String,//OneDayPass photoPassPlus的类型
+                oType:String,//大类：Gift photoPassPlus，photoPass，coupon，eventPass
+                days:{type:Number}, //天数，可绑定的天数
+                bindOn:{type:Date,default: Date.now},
+                expiredDay:{type:Number,default:3},//有效期，激活后多久失效
+                expiredOn:{type:Date},//失效时间，激活时间+有效期
+                soldOn: {type: Date},//卖出时间
+                active: {type:Boolean,default:false},//是否可用
+                photoCount:{type:Number,default:-1},//可升级的photo数，不限制数量为-1
             }, {_id: false})
     ]},
     customerIds: {type: [
