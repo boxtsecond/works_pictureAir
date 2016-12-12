@@ -2,7 +2,7 @@
  * Created by meteor on 16/11/24.
  */
 
-var util = require('../rq.js').util;
+var resTools = require('./resTools');
 
 function  filterUser(user){
     this.name=user.name; if(!this.name)this.name="";
@@ -46,7 +46,7 @@ function  filterUserRes(user){
     this.email=user.email;
     this.country=user.country;
     this.gender=user.gender;
-    this.birthday=util.convertDateToStr(user.birthday);
+    this.birthday=resTools.convertDateToStr(user.birthday);
     this.address=user.address;
     this.coverHeaderImage=user.coverHeaderImage;
     this.favoriteLocationIds=user.favoriteLocationIds;

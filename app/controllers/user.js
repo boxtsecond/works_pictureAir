@@ -232,7 +232,7 @@ function login(req,res){
                 access_token:obj.access_token
             }]);
         }).catch(function(err){
-            //console.log(err);
+            console.log(err);
             res.ext.json(err);
       });
     //查询redis 直接返回生成新的token并 用户数据

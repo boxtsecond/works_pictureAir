@@ -53,6 +53,14 @@ var config= {
             defaultChose: {type: Boolean}	//默认是否选中（单选）
         }
     ],
+    ppCodes: {type: [
+        mongoose.Schema(
+            {
+                code: {type: String, index: true}, //pp或ep的code
+                cType: String, // 标示类型为pp还是ep
+                bindOn:{type:Date,default: Date.now}
+            }, {_id: false})
+    ]},
     customerIds: {type: [
         mongoose.Schema(
             {
@@ -61,7 +69,7 @@ var config= {
                 bindOn:{type:Date,default: Date.now}
             }, {_id: false})
     ]},
-    couponIds: {type: [
+    coupons: {type: [
         mongoose.Schema(
             {
                 code: {type: String, index: true}, //pp或ep的code
