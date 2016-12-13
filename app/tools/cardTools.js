@@ -38,14 +38,14 @@ function validatePP(pppCode) {
 }
 
 //激活（购买）卡
-function  activeCard(pppCode, SN) {
+function  activeCard(pppCode) {
     var cardType = '';
     Promise.resolve()
         .then(function () {
             // 验证
             return validatePP(pppCode)
                 .then(function (card) {
-                    if(card.SN !== SN){
+                    if(!card){
                         return null;
                     }else {
                         return card;
