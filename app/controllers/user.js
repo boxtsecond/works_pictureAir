@@ -970,7 +970,9 @@ function getuser(req,res) {
             else return  Promise.reject(errInfo.usergetuserNotFind);
         });
     }).then(function (obj) {
-        res.ext.json([200,'success',obj]);
+        res.ext.json([200,'success',{
+            user:obj
+        }]);
     }).catch(function (err) {
         res.ext.json(err);
     });
