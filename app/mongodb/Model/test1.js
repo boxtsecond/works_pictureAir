@@ -31,10 +31,11 @@ var db=require('../mongodb.js');
 //
 
 
-function dob () {
-    console.log(dob)
-    // if (!val) return val;
-    // return (val.getMonth() + 1) + "/" + val.getDate() + "/" + val.getFullYear();
+function dob (val) {
+    // console.log(dob)
+    // return "123456789";
+    if (!val) return val;
+    return (val.getMonth() + 1) + "/" + val.getDate() + "/" + val.getFullYear();
 }
 function fndobname (val) {
     console.log(val)
@@ -42,40 +43,40 @@ function fndobname (val) {
 }
 // defining within the schema
 var schema = new mongoose.Schema({
-    born: { get: dob,type: Date },
+    born: {  getters: [dob],type: Date },
     str:{type:String,get: fndobname},
 })
-schema.virtual('aa');
-schema.virtual('aa').set(function(name){
-    var split = name.split(' ');
-    this.name=this.born;
-});
-schema.virtual('aa').get(function(name){
-    var split = name.split(' ');
-    this.name=this.born;
-});
-
-schema.pre('save',true,function(next,done){
-    console.log("save...111.")
-    next();
-    done();
-});
-schema.pre('init',function(next){
-
-    // this.born=new Date(2000,1,1).getTime();
-    // this.str="aaaaa";
-    next();
-    // return next;
-});
-schema.post('init',function(next){
-    console.log("init....",this)
-    // this.born=new Date(2000,1,1).getTime();
-    this.born=this.born.getTime();
-    this.str="aaaaa";
-    this.aa="aaaa";
-    // next();
-    // return next;
-});
+// schema.virtual('aa');
+// schema.virtual('aa').set(function(name){
+//     var split = name.split(' ');
+//     this.name=this.born;
+// });
+// schema.virtual('aa').get(function(name){
+//     var split = name.split(' ');
+//     this.name=this.born;
+// });
+//
+// schema.pre('save',true,function(next,done){
+//     console.log("save...111.")
+//     next();
+//     done();
+// });
+// schema.pre('init',function(next){
+//
+//     // this.born=new Date(2000,1,1).getTime();
+//     // this.str="aaaaa";
+//     next();
+//     // return next;
+// });
+// schema.post('init',function(next){
+//     console.log("init....",this)
+//     // this.born=new Date(2000,1,1).getTime();
+//     this.born=this.born.getTime();
+//     this.str="aaaaa";
+//     this.aa="aaaa";
+//     // next();
+//     // return next;
+// });
 
 // or by retreiving its SchemaType
 // var schema = new mongoose.Schema({ born: Date })
@@ -95,5 +96,8 @@ var a = db.model('a', schema);
 a.findOne({},function (err,data) {
     console.log(err,data);
 })
+
+
+console.log()
 
 

@@ -77,7 +77,8 @@ describe('/auth/getAccessToken', function() {
                 password: md5("000000")
             })
             .expect(200, function(err1, res1) {
-                console.log(res1.body.result.user.customerIds)
+                console.log(res1.body)
+                // console.log(res1.body.result.user.customerIds)
                 should.not.exist(err1);
                 done();
                 // res.text.should.containEql('用户名或密码不能为空');
