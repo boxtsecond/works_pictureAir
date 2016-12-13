@@ -22,6 +22,7 @@ Promise.promisifyAll(nodemailer);
 var auth=require('../middleware/auth');
 var userMode=require('./mongodb/Model/userModel');
 var userMsgModel=require('./mongodb/Model/userMsgModel');
+var versionModel=require('./mongodb/Model/versionModel');
 //Promise.promisifyAll(fs);
 module.exports= {
     verifyreg:verifyreg,
@@ -41,7 +42,8 @@ module.exports= {
     resInfo:resInfo,
     auth:auth,
     userMode:userMode,
-    userMsgModel:userMsgModel
+    userMsgModel:userMsgModel,
+    versionModel:versionModel
 };
 
 
