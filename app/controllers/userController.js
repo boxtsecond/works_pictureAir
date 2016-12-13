@@ -278,7 +278,7 @@ exports.getShareInfo = function (req, res, next) {
 //SN 验证码        customerId 被激活卡的卡号      cardId 激活卡的卡号
 exports.activeCodeToUser = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.checkExistProperty(params, ['customerId', 'userId', 'SN', 'cardId'])) {
+    if (!req.ext.checkExistProperty(params, ['customerId', 'userId', 'cardId'])) {
         return res.ext.json(errInfo.activeCodeToUser.paramsError);
     }
     var customerId = params.customerId;
@@ -292,7 +292,7 @@ exports.activeCodeToUser = function (req, res, next) {
                 return Promise.reject(errInfo.activeCodeToUser.notFind);
             } else {
                 //修改卡状态(激活)
-                return cardTools.activeCard(params.cardId, params.SN);
+                return cardTools.activeCard(params.cardId);
             }
         })
         .then(function (cType) {
