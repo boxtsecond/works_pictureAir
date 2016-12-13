@@ -83,7 +83,7 @@ function  filterUserRes(user){
     this.email=user.email;
     this.country=user.country;
     this.gender=user.gender;
-    this.birthday=resTools.convertDateToStr(user.birthday);
+    this.birthday=resTools.convertDateToStrYYMMDD(user.birthday);
     this.address=user.address;
     this.coverHeaderImage=user.coverHeaderImage;
     this.favoriteLocationIds=user.favoriteLocationIds;
@@ -117,7 +117,7 @@ function  filterUserRes(user){
         }
     }
     //this.cart={};
-    //console.log(this);
+    //console.log(this.birthday);
 }
 module.exports={
     filterUser:filterUser,

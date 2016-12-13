@@ -5,6 +5,9 @@ var isDate=function isDate(data){
     if((data instanceof Date)&& Date === data.constructor) return true;else return false;
 }
 function formatDate(date,fmt) {
+    if(new Date(date).toString(date) !== 'Invalid Date'){
+        date = new Date(date);
+    }
     if(!isDate(date)) return "";
     var o = {
         "M+" : date.getMonth()+1,                 //月份

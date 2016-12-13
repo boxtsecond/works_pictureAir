@@ -104,7 +104,7 @@ function findPhotos(conditions, fields, options) {
                     var pushPhoto = new filterPhoto(pto);
                     //判断 isPaid
                     return Promise.each(pto.customerIds, function (pp) {
-                        return cardCodeModel.findAsync({PPPCode: pp.code})
+                        return cardCodeModel.findOneAsync({PPPCode: pp.code})
                             .then(function (card) {
                                 if(card && card.length > 0){
                                     pushPhoto.isPaid = true;
@@ -123,16 +123,10 @@ function findPhotos(conditions, fields, options) {
                     })
 
                 })
-            }else {
-                return errInfo.findPhotos.notFind;
             }
         })
         .then(function () {
-            if(photos.length > 0){
-                return photos;
-            }else {
-                return errInfo.findPhotos.notFind;
-            }
+            return photos;
         })
         .catch(function (error) {
             console.log(error);
