@@ -106,7 +106,7 @@ function convertPathToOnline(websiteStoragePath,websitePhotoStoragePath,siteId,o
     var objPath=path.join(websitePhotoStoragePath,siteId,mpath.substr(mpath.indexOf('/photos')+7));
     return {
         path:objPath,
-        url:enUrl(url.format(objPath.substr(websiteStoragePath.length+1)))
+        url:enUrl(url.format(objPath.substr(websiteStoragePath.length+1))) 
     };
 }
 

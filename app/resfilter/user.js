@@ -4,6 +4,20 @@
 
 var resTools = require('./resTools');
 
+
+function filterCodebindOn(customerIds) {
+    var res=[];
+    if(this.customerIds.length>0){
+        for(var item in this.customerIds){
+            var customerIds_item=this.customerIds[item];
+            if(resTools.haveOwnproperty(customerIds_item,"bindOn")) customerIds_item.bindOn=customerIds_item.bindOn.getTime();
+            if(resTools.haveOwnproperty(customerIds_item,"expiredOn"))customerIds_item.expiredOn=customerIds_item.expiredOn.getTime();
+            if(resTools.haveOwnproperty(customerIds_item,"soldOn"))customerIds_item=customerIds_item.soldOn.getTime();
+            res.push(customerIds_item);
+        }
+    }
+    return res;
+}
 function  filterUser(user){
     this.name=user.name; if(!this.name)this.name="";
     this.userName=user.userName;if(!this.userName)this.userName="";
@@ -28,9 +42,30 @@ function  filterUser(user){
     this.disabled=user.disabled;
     this.disablereason=user.disablereason;
     this.lgcode=user.lgcode;if(!this.lgcode)this.lgcode="en-US";
-    this.customerIds = user.customerIds;if(!this.customerIds)this.customerIds=[];//pp
     this.coupons = user.coupons;if(!this.coupons)this.coupons=[]; //
     this.pppCodes=user.pppCodes;if(!this.pppCodes)this.pppCodes=[];
+    // if(this.pppCodes.length>0){
+    //     for(var item in this.pppCodes){
+    //         if(resTools.haveOwnproperty(this.pppCodes[item],"bindOn")) this.pppCodes[item].bindOn=this.pppCodes[item].bindOn.getTime();
+    //         if(resTools.haveOwnproperty(this.pppCodes[item],"expiredOn"))this.pppCodes[item].expiredOn=this.pppCodes[item].expiredOn.getTime();
+    //         if(resTools.haveOwnproperty(this.pppCodes[item],"soldOn"))this.pppCodes[item].soldOn=this.pppCodes[item].soldOn.getTime();
+    //     }
+    // }
+    this.customerIds=[];
+    if(user.customerIds.length>0){
+        for(var item in user.customerIds){
+            var customerIds_item=user.customerIds[item];
+            if(resTools.haveOwnproperty(customerIds_item,"bindOn")) customerIds_item.bindOn=customerIds_item.bindOn.getTime();
+            console.log(customerIds_item)
+            this.customerIds.push(customerIds_item);
+        }
+    }
+    // this.customerIds = user.customerIds;if(!this.customerIds)this.customerIds=[];//pp
+    // if(this.coupons.length>0){
+    //     for(var item in this.coupons){
+    //         if(resTools.haveOwnproperty(this.coupons[item],"bindOn")) this.coupons[item].bindOn=this.coupons[item].bindOn.getTime();
+    //     }
+    // }
     //this.cart={};
     //console.log(this);
 }
