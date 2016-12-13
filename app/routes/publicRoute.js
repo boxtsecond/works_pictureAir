@@ -8,6 +8,8 @@ var express = require('express');
 var router = express.Router();
 var ctr=require("./ctr");
 
+router.get('/share', ctr.userController.getShareInfo);
+
 
 
 module.exports = router;

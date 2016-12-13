@@ -4,6 +4,7 @@
 
 var Promise=require('bluebird');
 var carCodeModel=require("../mongodb/Model/cardCodeModel");
+var errInfo = require('../resfilter/resInfo.js').errInfo;
 // 20161208 验证
 // 扫卡绑定  //扫卡获取照片
 // 验证卡是否合法
@@ -46,7 +47,7 @@ function  activeCard(pppCode) {
             return validatePP(pppCode)
                 .then(function (card) {
                     if(!card){
-                        return null;
+                        return Promise.reject(errInfo.activeCodeToUser.invalidCard);
                     }else {
                         return card;
                     }
@@ -56,22 +57,28 @@ function  activeCard(pppCode) {
             if(!obj){
                 return null;
             }else {
-                // 修改 active=true   obj.expiredOn= new Date()+expiredDay
-                var updateObj = {};
-                updateObj.active = true;
-                updateObj.expiredOn= new Date() + obj.expiredDay;
-                cardType = obj.PPPType;
-                return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
+                if(obj.active == true){
+                    return Promise.reject(errInfo.activeCodeToUser.repeatBound);
+                }else {
+                    // 修改 active=true   obj.expiredOn= new Date()+expiredDay
+                    var updateObj = {};
+                    updateObj.active = true;
+                    updateObj.expiredOn= new Date() + obj.expiredDay;
+                    return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
+                }
             }
         })
         .then(function () {
-            return cardType;
+            return carCodeModel.findAsync({PPPCode:pppCode});
         })
         .catch(function (error) {
-            console.log(error);
-            return null;
+            if(error.status){
+                return error;
+            }else {
+                console.log(error);
+                return errInfo.activeCodeToUser.promiseError;
+            }
         })
-
 }
 // /sync/syncToCloud',
 // '/sync/syncFile',

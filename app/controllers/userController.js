@@ -38,31 +38,6 @@ exports.getShareUrl = function (req, res, next) {
     var fullUrl, secretKey;
     var shareModel = require('../mongodb/Model/shareModel.js');
     var shareContent = params.shareContent;
-    var maxRetryCheck = 10;
-    var checkCount = 0;
-    var checkSecretKey = function(){
-        return Promise.resolve()
-            .then(function () {
-                return shareModel.countAsync({"secretKey":secretKey});
-            })
-            .then(function (n) {
-                if(n >= 1 && checkCount < maxRetryCheck){
-                    secretKey = util.shortUrlGenerate(fullUrl);
-                    ++ checkCount;
-                    checkSecretKey(secretKey);
-                }
-                if(checkCount >= maxRetryCheck){
-                    return Promise.reject(errInfo.getShareUrl.shareUrlError);
-                }
-            })
-            .catch(function (err) {
-                if(err.status){
-                    return Promise.reject(err);
-                }else {
-                    return Promise.reject(errInfo.getShareUrl.shareUrlError);
-                }
-            });
-    }
 
     Promise.resolve()
         .then(function () {
@@ -92,14 +67,12 @@ exports.getShareUrl = function (req, res, next) {
                 "key": key,
                 "ids": shareContent.ids
             })
-            fullUrl = require('url').parse(path.join(config.serverIP, config.apiPort, 'share', urlParams)).path.replace("/" + config.apiPort, ":" + config.apiPort);
+            fullUrl = url.resolve(config.serverIP, 'f/share?'+ urlParams);
             secretKey = util.shortUrlGenerate(fullUrl);
         })
         .then(function(){
             if (!targetDataModel) {
                 return Promise.reject(errInfo.getShareUrl.paramsError);
-            }else {
-                return checkSecretKey();
             }
         })
         .then(function () {
@@ -121,12 +94,13 @@ exports.getShareUrl = function (req, res, next) {
             if (shareData) {
                 info.shareId = shareData._id;
                 info.shareUrl = (params.isUseShortUrl) ? shareData.shareShortUrl : shareData.shareUrl;
+                return info;
             }else {
                 shareData = new shareModel({
-                    shareDomain: config.serverIP + ':' + config.apiPort,
+                    shareDomain: config.serverIP,
                     sharerId: params.userId,
                     shareUrl: fullUrl,
-                    shareShortUrl: url.resolve(config.serverIP + ':' + config.apiPort, '/share/' + secretKey),
+                    shareShortUrl: url.resolve(config.serverIP, 'f/share/' + secretKey),
                     secretKey: secretKey,
                     shareContent: {
                         mode: shareContent.mode,
@@ -139,8 +113,9 @@ exports.getShareUrl = function (req, res, next) {
                     shareId: shareData._id,
                     shareUrl: (params.isUseShortUrl) ? shareData.shareShortUrl : shareData.shareUrl
                 };
+                return info;
             }
-            return info;
+
         })
         .then(function (result) {
             var resultObj = errInfo.success;
@@ -155,6 +130,13 @@ exports.getShareUrl = function (req, res, next) {
             }
             return res.ext.json(errInfo.getShareUrl.promiseError);
         });
+}
+
+exports.getShareInfoByFullUrl = function (req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, ['userId', 'key', 'ids'])){
+        return res.ext.json(errInfo.getShareUrl.paramsError);
+    }
 }
 
 //分享链接
@@ -295,25 +277,36 @@ exports.activeCodeToUser = function (req, res, next) {
                 return cardTools.activeCard(params.cardId);
             }
         })
-        .then(function (cType) {
-            if (cType.status) {
-                return Promise.reject(cType);
-            } else if(cType == null){
-                return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+        .then(function (obj) {
+            if (obj.status) {
+                return Promise.reject(obj);
             } else {
                 //修改用户信息
-                cardType = cType
-                return userModel.findByIdAndUpdateAsync(userId, {
-                    $addToSet: {
-                        customerIds: {
-                            code: params.cardId,
-                            cType: cType
+                cardType = obj.PPPType;
+                return userModel.findById(userId)
+                    .then(function (user) {
+                        if(user.PPPCodes && user.PPPCodes.length > 0){
+                            return Promise.each(user.PPPCodes, function (code) {
+                                if(code.PPPCode == customerId){
+                                    return Promise.reject(errInfo.activeCodeToUser.repeatBound);
+                                }
+                            });
                         }
-                    }
-                })
+                    })
+                    .then(function () {
+                        var saveInfo = filterCard.filterPPPCardToUserDB(obj);
+                        return userModel.findByIdAndUpdateAsync(userId, saveInfo)
+                            .catch(function (err) {
+                                console.log(err);
+                                return Promise.reject(errInfo.activeCodeToUser.userUpdateError);
+                            });
+                    })
                     .catch(function (err) {
-                        console.log(err);
-                        return Promise.reject(errInfo.activeCodeToUser.userUpdateError);
+                        if(err.status){
+                            return Promise.reject(err);
+                        }else {
+                            return Promise.reject(errInfo.activeCodeToUser.userError);
+                        }
                     })
             }
         })

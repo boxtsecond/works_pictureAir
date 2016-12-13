@@ -115,7 +115,7 @@ function findPhotos(conditions, fields, options) {
                                     .then(function (park) {
                                         //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
                                         pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                        pushPhoto.avatarUrl = park.avatarUrl;
+                                        pushPhoto.logoUrl = park.logoUrl;
                                         pushPhoto.pageUrl = park.pageUrl;
                                         photos.push(pushPhoto);
                                     })

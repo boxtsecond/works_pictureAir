@@ -28,8 +28,8 @@ module.exports.config={
         dashBoardParkId: "DisneyShangHai",
         dashBoardRoom: "dashboard"
     },
-    "apiPort":"3006",
-    "serverIP":"http://www.disneyphotopass.com",
+    //"apiPort":"4001",
+    "serverIP":"http://211.95.27.37/api/",
     "MasterAPIList":{
         pullPhotosFromLocal:'http://172.16.164.17:3000/help/getPhotosByPPs',
         removePhotosFromPP:'http://172.16.164.17:3000/sync/removePhotosFromPP'

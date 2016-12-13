@@ -185,6 +185,7 @@ exports.getCouponsByUserId = function (req, res, next) {
 exports.getPPsByUserId = function (req, res, next) {
     var params = req.ext.params;
     var userId = params.userId;
+    console.log(userId)
     var PPList = [];
     var emptyPPs = [];
     var flag = false;
