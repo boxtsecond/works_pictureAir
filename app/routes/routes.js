@@ -8,6 +8,8 @@ module.exports=function(app){
     //app.use('/',require('./index'));
     app.use('/auth',require('./auth'));
     app.use('/sync',require('./sync'));
+    //public
+    app.use('/f',require('./publicRoute'));
     //Guest
     app.use('/g',auth.authGuest,require('./guestRoute'));
     app.use('/p',auth.authUser,require('./privateRoute'));
