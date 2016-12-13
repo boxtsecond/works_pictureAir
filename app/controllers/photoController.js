@@ -297,6 +297,7 @@ exports.removePhotosFromPP = function (req, res, next) {
             }
         })
         .catch(function (err) {
+            console.log(err);
             return res.ext.json(errInfo.removePhotosFromPP.promiseError);
         });
 }
