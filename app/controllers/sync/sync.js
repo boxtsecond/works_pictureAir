@@ -109,6 +109,7 @@ function  syncFileData(req,res) {
     });
 }
 function syncFile(req,res) {
+    res.ext.json([200,'success',{}]);
   // console.log(req.ext.params.length);
   //   console.log(req.ext.params.relativePath)
   //   console.log(req.ext.params.oLength)
