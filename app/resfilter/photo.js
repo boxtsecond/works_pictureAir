@@ -10,7 +10,7 @@ exports.filterPhoto = function(photo) {
     this.name=photo.name; if(!this.name)this.name="";
     this.locationId=photo.locationId; if(!this.locationId)this.locationId="";
     this.shootOn=resTools.convertDateToStr(photo.shootOn); if(!this.shootOn)this.shootOn="";
-    this.shootDate=resTools.convertDateToStr(photo.shootDate);if(!this.shootDate)this.shootDate="";
+    this.shootDate=resTools.convertDateToStrYYMMDD(photo.shootOn);if(!this.shootDate)this.shootDate="";
     this.isFree=photo.isFree;if(!this.isFree)this.isFree="";
     this.parentId=photo.parentId;if(!this.parentId)this.parentId="";
     this.createdOn=photo.createdOn;if(!this.createdOn)this.createdOn="";
