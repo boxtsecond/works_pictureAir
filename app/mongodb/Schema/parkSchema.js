@@ -113,7 +113,11 @@ var config=
     //sharedUsers: [String], //分享乐园的用户Ids
     //likedUsers: [String], //喜欢乐园的用户Ids
     //visitedUsers: [String], //访问过乐园的用户Ids
-    coverHeaderImage: {type: String}, //乐园头部背景图url
+    coverHeaderImage: {
+        lg: String,
+        xs: String
+    }, //乐园头部背景图url
+    logoUrl: {type: String}, //乐园头像url
     avatarUrl: {type: String}, //乐园头像url
     contact: { //
         telephone: String, //联系电话

@@ -6,6 +6,7 @@ var options = {};
 var config = {
     appName:{type:String,index:true},//app名称
     version:{type:String,index:true},//版本号
+    versionOS:{type:String,index:true},//android，ios
     mandatory:{type:Boolean,default:false},//是否强制更新
     content:
         {
@@ -17,8 +18,8 @@ var config = {
         channel:String,
         downloadUrl:String
     }],
-//    downloadUrl:{type:String},//下载地址
-    versionOS:[String],//android，ios
+    versionHistory:[],
+//   downloadUrl:{type:String},//下载地址
     createdOn: {type: Date,default:Date.now()},//创建时间
     createdBy: {type: String,default:"system"},//创建人
     modifiedOn: {type: Date},//修改时间
