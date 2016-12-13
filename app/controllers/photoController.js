@@ -201,7 +201,7 @@ exports.getPhotosByConditions = function (req, res, next) {
 
 exports.removePhotosFromPP = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.checkExistProperty(params, ['ids', 'pp'])) {
+    if (!req.ext.checkExistProperty(params, ['ids', 'pp', 'userId'])) {
         res.ext.json(errInfo.removePhotosFromPP.paramsError);
     }
     var customerId = params.pp;
