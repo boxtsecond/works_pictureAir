@@ -714,7 +714,7 @@ exports.addCodeToUser = function (req, res, next) {
                 .then(function (card) {
                     //绑定付费卡
                     if(card && card.length > 0){
-                        cType = 'pppCard';
+                        cType = card.PPPType;
                     }
                 })
                 .catch(function (err) {
@@ -888,7 +888,10 @@ exports.addCodeToUser = function (req, res, next) {
                 })
         })
         .then(function () {
-            return res.ext.json();
+            var resultObj = errInfo.success;
+            resultObj.result = {};
+            resultObj.result.cType = cType;
+            return res.ext.json(resultObj);
         })
         .catch(function (error) {
             if(error.status){
