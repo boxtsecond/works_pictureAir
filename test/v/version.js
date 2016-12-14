@@ -1,0 +1,257 @@
+/**
+ * Created by meteor on 16/11/22.
+ */
+var crypto=require('crypto');
+function md5(str){
+    var md5sum=crypto.createHash('md5');
+    md5sum.update(str);
+    str=md5sum.digest('hex');
+    return str;
+}
+var assert = require('assert');
+var request = require('supertest');
+var should=require('should');
+request = request('http://localhost:4001');
+
+
+
+
+
+describe('/auth/getAccessToken', function() {
+
+
+    // it('should getAccessToken', function(done) {
+    //    request.post('/auth/getAccessToken')
+    //        .send({
+    //            appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+    //            password: "password",
+    //            t:1,
+    //            lg:"zh-CN"
+    //        })
+    //        .expect(200, function(err, res) {
+    //            console.log(res.body);
+    //            testios(res.body.result.access_token)
+    //            testandroid(res.body.result.access_token)
+    //
+    //            // console.log(res.body.result.access_token);
+    //        });
+    //
+    // });
+
+    // it('should login', function(done) {
+    //     request.post('/g/user/login')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MTc1NDksImV4cCI6MTQ4MjEyMjM0OSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZWMzZDYxMjBjMDI0MTFlNmEwMTIzMWJjMGI5ZGRlNmUiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.pFQLSjzyqMmxDnlYGbM7-xx65tShwjYahfYAnLoQE854eCQcwWEX6X9tYswTE61F6wK5Ybh6B2BoAM4xGNsarrsZ2cXGlWRPl6CLHm-_cRDl1eKGp04eGPxjqvLBIEoeNHaU9KLETdg-bnE1jH1LlyJpmHm1kkeuwqFv_imeaOeBiTxjXnpu16OVdkOqnXe__VhdVkVuuadGBQ5HQ3XOZjQRgS7Fkpo8joay54NqfUXYRiDSG-2y75s_aL6kGrQBWyrKpN8hZytstbSRtYWvUknjNasUt6VxcGYJucrlkGKyrSRMYI5sYcOSOWnP1U-5TxrcINUbNSn8O5iIm7jADg',
+    //             // username: '8618321538399',
+    //             // password: md5("123456")
+    //             username: '2@2.com',
+    //             password: md5("000000")
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             // console.log(res1.body.result.user.customerIds)
+    //             should.not.exist(err1);
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
+
+
+    it('should android', function(done) {
+        request.get('/g/version/android')
+            .query({
+                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE3MTExNzAsImV4cCI6MTQ4MjMxNTk3MCwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiMWU2ZmQ4ZTU2ODc5Yzg0OTk5Y2Q0ODEyNTU1MzA1OTIiLCJ0IjoxLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwibGciOiJ6aC1DTiJ9.Nk0LdUelR9X4RCZHtpmXUasCR8n0OENa7g50RTdwMCgKzcgAi0U_7XSSXcFB6lsa1nZaPnbT89rx0KIBfIo6DpmFipdvc56ggIKpSv6AukrAa0A2sT2S1x2lsvi82EsARnhbfuXVmuOp9jzWPwO72m8mkUy3PwVY5-Q1qva0sYKB6NsQpR4_vvJkik2P34Wug3jBa9FNZT7a3uCfwZHxP_1k5PF0X_agSbUXHSZdvhfyGdkWRBY2wzkAnRo_dvA2zBKYjPfCTkEvDJIqwdoSwXS5hTgoLmCZAsh6PovBYVa2CCbh452UbdN-kwFvNDvAGuQwo0Kc111B7V_wZToczA'})
+            .expect(200, function(err, res) {
+                console.log(res.body);
+                done();
+            });
+
+    });
+    // it('should ios', function(done) {
+    //     request.get('/g/version/ios')
+    //         .query({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE2OTgyNTEsImV4cCI6MTQ4MjMwMzA1MSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYTZkYjVjODBjMWM5MTFlNjgyZmZmNTE2NGU2NjcyZmEiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.nKgliwfCxPZnCT889V3eqXHMoKCeggl52ODHK52gJpvzCclDzzahepn-hPEnOumd9TB8S_s2wcmXoqa6KryAMGVP5XX9m5FCqtg37WtQz-BFg44-Kl2yAsR-6EWAH6u412o4-dh4gyZxqsxX_HFCdBxdyjcKjO3bF1hX76kK6NaX75qbunJL_3AzjItWM1cf5c968V1TTZBmZuON7f6lbCHtu3F1YgOFdZAIS5MjaXWuEgq0EjvNrw9NurlcBy1j2dtfBMKP5ftrLga574MfH5PQiNM5kWBnMI15rdc1wUn7V-ppQasljwgQRS38K9rZpEB_gdBDbZpA_d4RPvC6XQ'
+    //         })
+    //         .expect(200, function(err, res) {
+    //             console.log(res.body);
+    //             done();
+    //         });
+    //
+    // });
+
+
+
+
+
+
+    // it('should getAccessToken2', function(done) {
+    //    request.post('/g/user/sendsms')
+    //        .send({
+    //            //access_token:  'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTMzNjcsImV4cCI6MTQ4MDM5MzM3NywiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiN2I3NWFiNzBiNWViMTFlNmJlYjRiMzUwZjA1YzkxZGIiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.NVLQeD19yRj5x6oAMGnjYP7ZjicYgeX7wptoaflfWCN1kI3jT-r_xPyzIKUbV5K0fyicE8qjE6vlxdun5mk_FyHTDzAHbBVFXsNVT3emH0pOm7SVunmK2jrmYB3TX-x8YTkRmv-Re-8cDe6eEBT9f9ojrguCz15ZuVsx5KlBzZyOMlV8VW10xnkr3Yp3q-QKSX2HcJF57DHMwdMEoHIL25ExVmztBjeXKjJBC3wXJfqVGCuWoJv38ck4OagHJY4w2ZYw5iU1rzqWyZWp1AnqDWsYIDhW_79sI6UWXamVNbgErUE6Pn37ee5H-KD7ArRLk3rnXy_OUO6bFojavNSkNQ',
+    //            // access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
+    //            access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE2OTQ4MTEsImV4cCI6MTQ4MjI5OTYxMSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYTQ3NGRkNzBjMWMxMTFlNmFhYjA2ZDVkYjE0ZjczZjkiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.d7EGPexfqKT4Z0rNcz-l_hiaGpLBfoacwazRvpnSQFi8rgMTPuOqMgBOONM4JMGYYs1H4SipE_U9VsydrM6DMtv9vBfSrISgUBwdymxgfmLgzV_ORN_KAui4T9mpG1d5_8gC0GChtXYNdEULAALSSnHUBDf6spNcGD5eJfNSH5Ih9LKk6dz0mAAAzdzQw8aW5JqUXLgbiRgiDkClMRUkv_GtrDpW9fM47_x9NgDK4hd7Jpp-KI_jDjtdNSbc5RDCJMvqL2JSFzc563SFb4aMlCD8b0hpMQuRYJBpkuai0ANg81C2FddUglNwn0ZYZjKgXlH8UzrEPUP8D9r4KiEXhQ',
+    //            //appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+    //            phone: "8618321538399",
+    //            // phone: "8615802136305",
+    //             type:0
+    //        })
+    //        .expect(200, function(err1, res1) {
+    //            console.log(res1.body)
+    //            console.log(res1.body.result.validateCode)
+    //            should.not.exist(err1);
+    //
+    //        });
+    // });
+
+    // it('should register', function(done) {
+    //    request.post('/g/user/register')
+    //        .send({
+    //            // username: '8618321538399',
+    //            access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE2OTQ4MTEsImV4cCI6MTQ4MjI5OTYxMSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYTQ3NGRkNzBjMWMxMTFlNmFhYjA2ZDVkYjE0ZjczZjkiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.d7EGPexfqKT4Z0rNcz-l_hiaGpLBfoacwazRvpnSQFi8rgMTPuOqMgBOONM4JMGYYs1H4SipE_U9VsydrM6DMtv9vBfSrISgUBwdymxgfmLgzV_ORN_KAui4T9mpG1d5_8gC0GChtXYNdEULAALSSnHUBDf6spNcGD5eJfNSH5Ih9LKk6dz0mAAAzdzQw8aW5JqUXLgbiRgiDkClMRUkv_GtrDpW9fM47_x9NgDK4hd7Jpp-KI_jDjtdNSbc5RDCJMvqL2JSFzc563SFb4aMlCD8b0hpMQuRYJBpkuai0ANg81C2FddUglNwn0ZYZjKgXlH8UzrEPUP8D9r4KiEXhQ',
+    //            // username: 'meteor.liu@pictureworks.biz',
+    //            username: '8618321538399',
+    //            password: md5("123456"),
+    //            vcode:'000184'
+    //            //000094
+    //        })
+    //        .expect(200, function(err1, res1) {
+    //            console.log(res1.body)
+    //            should.not.exist(err1);
+    //            done();
+    //            // res.text.should.containEql('用户名或密码不能为空');
+    //
+    //        });
+    // });
+
+    // it('should login', function(done) {
+    //     request.post('/g/user/login')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MTc1NDksImV4cCI6MTQ4MjEyMjM0OSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZWMzZDYxMjBjMDI0MTFlNmEwMTIzMWJjMGI5ZGRlNmUiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.pFQLSjzyqMmxDnlYGbM7-xx65tShwjYahfYAnLoQE854eCQcwWEX6X9tYswTE61F6wK5Ybh6B2BoAM4xGNsarrsZ2cXGlWRPl6CLHm-_cRDl1eKGp04eGPxjqvLBIEoeNHaU9KLETdg-bnE1jH1LlyJpmHm1kkeuwqFv_imeaOeBiTxjXnpu16OVdkOqnXe__VhdVkVuuadGBQ5HQ3XOZjQRgS7Fkpo8joay54NqfUXYRiDSG-2y75s_aL6kGrQBWyrKpN8hZytstbSRtYWvUknjNasUt6VxcGYJucrlkGKyrSRMYI5sYcOSOWnP1U-5TxrcINUbNSn8O5iIm7jADg',
+    //             username: '8618321538399',
+    //             password: md5("123456")
+    //             // username: '1@1.com',
+    //             // password: md5("000000")
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             // console.log(res1.body.result.user.customerIds)
+    //             should.not.exist(err1);
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
+
+    // it('should sendsms forgotpwd', function(done) {
+    //    request.post('/g/user/sendsms')
+    //        .send({
+    //            access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MTc1NDksImV4cCI6MTQ4MjEyMjM0OSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZWMzZDYxMjBjMDI0MTFlNmEwMTIzMWJjMGI5ZGRlNmUiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.pFQLSjzyqMmxDnlYGbM7-xx65tShwjYahfYAnLoQE854eCQcwWEX6X9tYswTE61F6wK5Ybh6B2BoAM4xGNsarrsZ2cXGlWRPl6CLHm-_cRDl1eKGp04eGPxjqvLBIEoeNHaU9KLETdg-bnE1jH1LlyJpmHm1kkeuwqFv_imeaOeBiTxjXnpu16OVdkOqnXe__VhdVkVuuadGBQ5HQ3XOZjQRgS7Fkpo8joay54NqfUXYRiDSG-2y75s_aL6kGrQBWyrKpN8hZytstbSRtYWvUknjNasUt6VxcGYJucrlkGKyrSRMYI5sYcOSOWnP1U-5TxrcINUbNSn8O5iIm7jADg',
+    //      // access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
+    //            //appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+    //             phone: "8618321538399",
+    //             type:1
+    //        })
+    //        .expect(200, function(err1, res1) {
+    //            console.log(res1.body)
+    //            console.log(res1.body.result.validateCode)
+    //
+    //        });
+    // });
+    //it('should forgotpwd', function(done) {
+    //    request.post('/user/forgotpwd')
+    //        .send({
+    //            access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
+    //            username: '8618321538399',
+    //            password: md5("123456"),
+    //            vcode: '000140'
+    //        })
+    //        .expect(200, function(err1, res1) {
+    //            console.log(res1.body)
+    //            should.not.exist(err1);
+    //            done();
+    //            // res.text.should.containEql('用户名或密码不能为空');
+    //
+    //        });
+    //});
+
+
+    //it('should getAccessToken', function(done) {
+    //    request.post('/user/sendsms')
+    //        .send({
+    //            access_token:"access_token",
+    //            appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+    //            password: "password",
+    //            t:1,
+    //            lg:"zh-CN"
+    //        }).set('auth',"auth")
+    //        .expect(200, function(err1, res1) {
+    //            console.log(res1.body)
+    //            should.not.exist(err1);
+    //            // res.body.status.should.eql(401);
+    //            // res.text.should.containEql('用户名或密码不能为空');
+    //            done();
+    //        });
+    //});
+
+    // it('should login', function(done) {
+    //     request.post('/p/user/switchlg')
+    //         .send({
+    //             // access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
+    //             //access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODA5NDU4MTcsImV4cCI6MTQ4MTU1MDYxNywiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiM2RlOTM2NzU4NGE2MTQ3ZTY3ZWRlMjdjNWJjOTI1NWYiLCJ0IjoxLCJsZyI6InpoLUNOIn0.WrW0j-rhdrvm2tnBiiGHru4AkOEkViNfPfc5VRTFKXS2T9LzugF9Xbf6xRfhu9I6rIeTGmeqnwI8nJiwfBJMKGjfyA0ciXmfDF-QOSCmSgKcNZvuttDrBY4wspxaqMH9kscrgZKJ8ZFWlq1A7anrMADhewTqBq1zG73ohJyX8KSh04OOtQ4qRhNgKD7oJzp29mO7ZWzL32xUyXGiJzVxDqAVkARz6IK-HtCsa_vIlH9vZkj0B5BH302zGkSdK_7SAhxjkaa5D0aTFrXKDOl3UdL0C29Qgc19LK2kjEqU-LlggRCLDX5I_amhfzZC6CjwpGaRPqs7bwyMaeHIefDsrA',
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODA5NDY5MTMsImV4cCI6MTQ4MTU1MTcxMywiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiM2RlOTM2NzU4NGE2MTQ3ZTY3ZWRlMjdjNWJjOTI1NWYiLCJ0IjoxLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwibGciOiJ6aC1DTiJ9.YaffcxXMQi04U51_ExsUl39gQr-_zw-OXyhB62p1Nu16dOJA2zq58xLW-KpnZG5C9FpkTr_69GriQ5yUut_hw_tGb_2YYZuYjsP41B4xU6oazdNOCBFs5Opo3rhAt5NmegeH_BQI0FCI0WNM-GY5Y9ZvY5U4RMgFCCP5GAveJtMsKDU9t2U3IAiACXOunkovw7Knfzi3-svavZOm3dg2iTjqhl_GU6F0mU8y9dXIW2UzUriNtLI1YvdXv8n0IPnd3MdHejOP-oVyB2BjnRJZ-Cz0UChDGegqMf8RLLaHduwvG76hhwaSp1nb_CG640CdsHpAy_i85Zzy7Q14wsaK2w',
+    //             // lg:"zh-CN"
+    //             lg:"en-US"
+    //
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
+    // it('should login', function(done) {
+    //     request.post('/g/cache/carousel')
+    //         .send({
+    //             // access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODAzOTM4ODUsImV4cCI6MTQ4MDk5ODY4NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYjA2NWE2ZTBiNWVjMTFlNjk4Mzg5ZGU1YjllMGJkYzQiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.1dja2V8T6Vdl6cQIp0fSGRY5bEpCVjkWEp9wHUoMqhTzKi3MInnTaerK71F612NN67zNOVUi6e1tO6lIf-QwL6_tAS0PdsV8Dz2gyxXjf13fkbf1dyYD2cQYxFH3roSFok5adayVCT0qWXu7skPp5mfiMU8Thf0l_qTEDH_VvdnHPvZqEuGnSqLQRFkCAFtJh9364P3172pDx4Oe10_t1a7Q0rmCjK2qyf2z6czPiezftWat08McIeKfIrO8YQS_-52myWR8H3QyhmM3D1oCHHHlMl1sLH7-mXYvRaZ6WKluWjNEFywijDo3PQ7TcrYA7vdiTEat2DkCJo8pzxTh-Q',
+    //             //access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODA5NDU4MTcsImV4cCI6MTQ4MTU1MDYxNywiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiM2RlOTM2NzU4NGE2MTQ3ZTY3ZWRlMjdjNWJjOTI1NWYiLCJ0IjoxLCJsZyI6InpoLUNOIn0.WrW0j-rhdrvm2tnBiiGHru4AkOEkViNfPfc5VRTFKXS2T9LzugF9Xbf6xRfhu9I6rIeTGmeqnwI8nJiwfBJMKGjfyA0ciXmfDF-QOSCmSgKcNZvuttDrBY4wspxaqMH9kscrgZKJ8ZFWlq1A7anrMADhewTqBq1zG73ohJyX8KSh04OOtQ4qRhNgKD7oJzp29mO7ZWzL32xUyXGiJzVxDqAVkARz6IK-HtCsa_vIlH9vZkj0B5BH302zGkSdK_7SAhxjkaa5D0aTFrXKDOl3UdL0C29Qgc19LK2kjEqU-LlggRCLDX5I_amhfzZC6CjwpGaRPqs7bwyMaeHIefDsrA',
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODA5NDY5MTMsImV4cCI6MTQ4MTU1MTcxMywiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiM2RlOTM2NzU4NGE2MTQ3ZTY3ZWRlMjdjNWJjOTI1NWYiLCJ0IjoxLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwibGciOiJ6aC1DTiJ9.YaffcxXMQi04U51_ExsUl39gQr-_zw-OXyhB62p1Nu16dOJA2zq58xLW-KpnZG5C9FpkTr_69GriQ5yUut_hw_tGb_2YYZuYjsP41B4xU6oazdNOCBFs5Opo3rhAt5NmegeH_BQI0FCI0WNM-GY5Y9ZvY5U4RMgFCCP5GAveJtMsKDU9t2U3IAiACXOunkovw7Knfzi3-svavZOm3dg2iTjqhl_GU6F0mU8y9dXIW2UzUriNtLI1YvdXv8n0IPnd3MdHejOP-oVyB2BjnRJZ-Cz0UChDGegqMf8RLLaHduwvG76hhwaSp1nb_CG640CdsHpAy_i85Zzy7Q14wsaK2w',
+    //             // lg:"zh-CN"
+    //             lg:"en-US"
+    //
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
+
+    // it('should login', function(done) {
+    //     request.post('/g/user/sendemailpwd')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODEwMTcxNzUsImV4cCI6MTQ4MTYyMTk3NSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZTYyM2YxZjBiYjk3MTFlNmJmYWJlMzFmMGM3OGFhODYiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.FVfppNwtbekdEPDkLKz4QmQnETBeDwaIROThQ8hMPYgNx7mQ8AkTRfez5I-598hfLQ-EyYnkLGuMcnew8bh5bkTrgXoLKStyGIdWNvoV5csAXwXDOwODTETxLu5sJdg3OhSjVHspAT_K-9kPS3lEwS-7G8bs5ilrO16HKlGUsvdSjhsuzq6D1EZlpYCXkbfI_ne_bj1SqqZhOakZlYBMZXVokzf33-U7XKRJ4SkkLKfw861BdOQ46CnzUlkjObe3L1imx2dipbC6XCyL8ibLy9MD9Nruw5qWJ-Mk9gNzPINISRS5JA2lse8JztwRj4Hizef0rkH4-F1vRCJy5SXYXw',
+    //             username: 'meteor.liu@pictureworks.biz'
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
+
+    //            password: md5("123456")
+
+    // it('should login', function(done) {
+    //     request.post('/p/user/getuser')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MjMzOTYsImV4cCI6MTQ4MjEyODE5NiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiM2RlOTM2NzU4NGE2MTQ3ZTY3ZWRlMjdjNWJjOTI1NWYiLCJ0IjoxLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwibGciOiJ6aC1DTiJ9.awi_rIohTU6iqFSNDSgZA2OJiMB49D6yuEuFItoFk0nx3kzhAS-5-k6dAN-6g2861Q44cNKE7dpIdIQ6Xr4RvSdyMjvqcOf3NlmTum5d1FoEYTsffPbvI41WVvw7v9dA8Ipq1TnOrtBCD9_IKw3toztQ89n0aIAGvaRdEQqQLoeo1BEV4vm6IM8veIB23NW4MO2aKAXWzSsmyI1kZSKfh_qqW_NCMncCnTjr1lTzMJyAyZ20YeGIGzQgVfb2u9LeqYR9LUPIwSa55eToT_D-54O1XDTL3j3GLoQb5e0hGpQu8wz52VT0OtXaNW23mC00E3Q0L48tAVk7LEzGIi56Kg'
+    //             // ,username: '8618321538399',
+    //             // password: md5("123456")
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             should.not.exist(err1);
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
+});

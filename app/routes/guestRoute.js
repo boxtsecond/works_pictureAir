@@ -15,6 +15,9 @@ router.post('/user/verifymobilecode',ctr.users.verifyMobileCode);
 router.post('/user/verifyemailcode',ctr.users.verifyEmailCode);
 router.post('/user/forgotpwd',ctr.users.resetPassword);
 
+router.get('/version/ios',ctr.version.geIosUp);
+router.get('/version/android',ctr.version.geAndroidUp);
+
 router.get('/user/contactUs', ctr.userController.contactUs);
 
 router.post('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
