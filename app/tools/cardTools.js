@@ -86,8 +86,21 @@ function  activeCard(pppCode) {
 //     return str.replace(new RegExp(s1,"gm"),s2);
 // }
 // console.log(replaceAll(,"-",""))
+
+var codeType={
+    OneDayPass:"OneDayPass",
+    photo: 'photo',
+    photoPass: 'photoPass',
+    photoPassPlus: 'photoPassPlus',
+    eventPass: 'eventPass',
+    userPass: 'userPass',
+    invalid: 'invalid',
+    experienceCard: 'experienceCard',
+    coupon:'coupon'
+}
 module.exports={
     validatePPType:validatePPType,
     validatePP:validatePP,
-    activeCard: activeCard
+    activeCard: activeCard,
+    codeType:codeType
 };

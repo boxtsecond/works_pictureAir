@@ -16,7 +16,9 @@ var configData=rq.configData;
 var _=rq._;
 var access_token=rq.access_token;
 var redisclient=rq.redisclient;
-
+var codeType={
+    userPass: 'userPass'
+};
 var registerTerminalArray=['web','ios',"android"];
 var SendSMStypeArray=['register','forgotPassword'];
 function verifySpportLanguageCode(code){
@@ -328,6 +330,10 @@ function register(req,res){
                    user.disabled=false;
                    user.disablereason='';
                    user.allowedPermissions=[];
+                   user.userPP="PWUP" + user._id.toString().substr(12,12).toUpperCase();
+                   user.customerIds = [
+                        {code: user.userPP, cType: codeType.userPass}
+                    ];
                    user.password=req.ext.md5(userobj[1].params.password);
                     return user.save().then(function(){
                         return  Promise.resolve([userobj[1],user,userobj[2],userobj[3],userobj[4],userobj[5]]);

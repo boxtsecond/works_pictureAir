@@ -4,12 +4,11 @@
 var rq=require('../rq');
 var Promise=rq.Promise;
 function  geIosUp(req,res) {
-    Promise.resolve().then(function (err) {
+    Promise.resolve(req.ext.params).then(function (obj) {
 
+    }).catch(function(err){
+        res.ext.json(err);
     });
-
-
-
 }
 function  geAndroidUp(req,res) {
 
