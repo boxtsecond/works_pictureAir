@@ -115,7 +115,7 @@ function findPhotos(conditions, fields, options) {
                                     .then(function (park) {
                                         //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
                                         pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                        pushPhoto.avatarUrl = park.avatarUrl;
+                                        pushPhoto.logoUrl = park.logoUrl;
                                         pushPhoto.pageUrl = park.pageUrl;
                                         photos.push(pushPhoto);
                                     })
@@ -212,9 +212,12 @@ exports.removePhotosFromPP = function (req, res, next) {
     } catch (e) {
         ids = params.ids;
     }
+    console.log(ids);
     var userId = params.userId;
     var photoIds = [];
-    photoModel.findAsync({'customerIds.code': customerId, _id: {$in: ids}})
+
+
+    photoModel.findAsync({'customerIds.code': customerId, "_id": {"$in": ids}})
         .then(function (list) {
             var count = 0;
             var flag = false;
@@ -257,20 +260,6 @@ exports.removePhotosFromPP = function (req, res, next) {
                         console.log('unBindCodeFromUser', err);
                     }
 
-                    socketController.pushToUsers(pushMsgType.delPhotos, pUserIds, pubScribeList.pushDelPhotos,
-                        {
-                            id: item._id
-                        }, function () {
-
-                        });
-
-                    socketController.pushToUsers(pushMsgType.photoSend, pNewUserIds, pubScribeList.pushNewPhotoCount,
-                        {
-                            c: 1
-                        }, function () {
-
-                        });
-
                     count++;
                     if (count == list.length) {
 
@@ -297,6 +286,7 @@ exports.removePhotosFromPP = function (req, res, next) {
             }
         })
         .catch(function (err) {
+            console.log(err);
             return res.ext.json(errInfo.removePhotosFromPP.promiseError);
         });
 }
