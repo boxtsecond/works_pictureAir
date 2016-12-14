@@ -259,20 +259,6 @@ exports.removePhotosFromPP = function (req, res, next) {
                         console.log('unBindCodeFromUser', err);
                     }
 
-                    socketController.pushToUsers(pushMsgType.delPhotos, pUserIds, pubScribeList.pushDelPhotos,
-                        {
-                            id: item._id
-                        }, function () {
-
-                        });
-
-                    socketController.pushToUsers(pushMsgType.photoSend, pNewUserIds, pubScribeList.pushNewPhotoCount,
-                        {
-                            c: 1
-                        }, function () {
-
-                        });
-
                     count++;
                     if (count == list.length) {
 
