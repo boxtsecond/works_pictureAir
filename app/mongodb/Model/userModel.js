@@ -24,21 +24,43 @@ Schema.virtual('name1').get(function () {
 Schema.methods.insert= function(callback) {
     return this.save(callback);
 };
-Schema.post('save',function(next){
-    console.log("save....")
-    //next();
-    return next;
-});
-Schema.pre('save',true,function(next,done){
-    console.log("save...111.")
-     next();
-     done();
-});
-Schema.post('init',function(next){
-    console.log("init....")
-    //next();
-    return next;
-});
+// Schema.post('save',function(next){
+//     console.log("save....")
+//     //next();
+//     return next;
+// });
+// Schema.pre('save',true,function(next,done){
+//     console.log("save...111.")
+//      next();
+//      done();
+// });
+// Schema.post('init',function(next){
+//     console.log("init....")
+//     //next();
+//     return next;
+// });
 var model=db.model(collectionname, Schema);
 module.exports=model;
 
+// var Promise=require('bluebird');
+// model.find({},function (err,data) {
+//     Promise.each(data,function (item,index) {
+//         if(!item.userPP){
+//             model.update({_id:item._id},
+//                 {
+//                     "$set":{
+//                         "userPP":("PWUP" + item._id.toString().substr(12, 12).toUpperCase())
+//                        },
+//                     "$push":{"customerIds":{
+//                         code:("PWUP" + item._id.toString().substr(12, 12).toUpperCase()),
+//                         "bindOn":new Date()
+//                     }}
+//                 },function(err){
+//
+//                 });
+//               console.log(item,index)
+//         }
+//         // console.log(item,index)
+//     })
+//
+// })
