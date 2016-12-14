@@ -212,11 +212,12 @@ exports.removePhotosFromPP = function (req, res, next) {
     } catch (e) {
         ids = params.ids;
     }
+    console.log(ids);
     var userId = params.userId;
     var photoIds = [];
 
 
-    photoModel.findAsync({'customerIds.code': customerId, "_id": {$in: ids}})
+    photoModel.findAsync({'customerIds.code': customerId, "_id": {"$in": ids}})
         .then(function (list) {
             var count = 0;
             var flag = false;
