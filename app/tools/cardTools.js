@@ -41,12 +41,18 @@ function validatePP(pppCode) {
 //激活（购买）卡
 function  activeCard(pppCode, userId) {
     // 验证
-    return validatePP(pppCode)
+    return validatePPType(pppCode)
         .then(function (card) {
             if(!card){
                 return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             }else {
-                return card;
+                return carCodeModel.findOne({PPPCode: code}).then(function (obj) {
+                    if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+                    else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);
+                    else if (!obj.active && (obj.expiredOn - new Date() > 0)) {
+                        return obj;
+                    } else return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+                })
             }
         })
         .then(function (obj) {
