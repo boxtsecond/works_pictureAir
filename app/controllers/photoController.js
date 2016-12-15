@@ -255,11 +255,6 @@ exports.removePhotosFromPP = function (req, res, next) {
                 }
                 item.save();
             });
-            if(flag){
-                return true;
-            }else {
-                return Promise.reject(errInfo.removePhotosFromPP.saveError);
-            }
         })
         .then(function (result) {
             if(result){
@@ -282,4 +277,3 @@ exports.removePhotosFromPP = function (req, res, next) {
             }
         });
 }
-

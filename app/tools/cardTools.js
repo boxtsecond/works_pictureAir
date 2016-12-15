@@ -40,35 +40,27 @@ function validatePP(pppCode) {
 
 //激活（购买）卡
 function  activeCard(pppCode) {
-    Promise.resolve()
-        .then(function () {
-            // 验证
-            return validatePP(pppCode)
-                .then(function (card) {
-                    if(!card){
-                        return Promise.reject(errInfo.activeCodeToUser.invalidCard);
-                    }else {
-                        return card;
-                    }
-                })
+    // 验证
+    return validatePP(pppCode)
+        .then(function (card) {
+            if(!card){
+                return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+            }else {
+                return card;
+            }
         })
         .then(function (obj) {
             if(!obj){
                 return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             }else {
-                if(obj.active == true){
-                    return Promise.reject(errInfo.activeCodeToUser.repeatBound);
-                }else {
-                    // 修改 active=true   obj.expiredOn= new Date()+expiredDay
-                    var updateObj = {};
-                    updateObj.active = true;
-                    updateObj.expiredOn= new Date() + obj.expiredDay;
-                    return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
-                }
+                var updateObj = {};
+                updateObj.active = true;
+                updateObj.expiredOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
+                return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
             }
         })
         .then(function () {
-            return carCodeModel.findAsync({PPPCode:pppCode});
+            return true;
         })
         .catch(function (error) {
             if(error.status){

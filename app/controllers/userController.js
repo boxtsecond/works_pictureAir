@@ -274,7 +274,14 @@ exports.activeCodeToUser = function (req, res, next) {
                 return Promise.reject(errInfo.activeCodeToUser.notFind);
             } else {
                 //修改卡状态(激活)
-                return cardTools.activeCard(params.cardId);
+                return cardTools.activeCard(params.cardId)
+                    .then(function (info) {
+                        if(info.status){
+                            return Promise.reject(info);
+                        }else {
+                            return cardCodeModel.findOneAsync({PPPCode:params.cardId});
+                        }
+                    })
             }
         })
         .then(function (obj) {
@@ -283,7 +290,7 @@ exports.activeCodeToUser = function (req, res, next) {
             } else {
                 //修改用户信息
                 cardType = obj.PPPType;
-                return userModel.findById(userId)
+                return userModel.findByIdAsync(userId)
                     .then(function (user) {
                         if(user.pppCodes && user.pppCodes.length > 0){
                             return Promise.each(user.pppCodes, function (code) {
@@ -355,6 +362,14 @@ exports.activeCodeToUser = function (req, res, next) {
                         return Promise.reject(errInfo.activeCodeToUser.photoSaveError);
                     }
                 });
+        })
+        .then(function () {
+            //更新缓存
+            return userModel.findByIdAsync(userId)
+                .then(function (user) {
+                    var update = new filterUserToredis(user);
+                    return redisclient.set('access_token:'+req.ext.md5(user.userName), JSON.stringify(update));
+                })
         })
         .then(function () {
             return res.ext.json();
@@ -435,59 +450,6 @@ exports.updateUser = function (req, res, next) {
                 return res.ext.json(errInfo.updateUser.promiseError);
             }
         });
-}
-
-function getCodeTypeByCode(code, cb) {
-//    var PPPTypes=['3','7','E','F','8','9','A','B','C','D'];
-//     var cardTypes = JSON.parse(fs.readFileSync(__dirname + '/cardTypes.json'));
-//     var PPPTypes = cardTypes.pppTypes.split(',');
-//
-//     var couponTypes = cardTypes.couponTypes.split(',');
-    var PPPTypes = ['3','7','E','F','8','9','A','B','C','D','G','H','J','S','K','N','M'];
-    var couponTypes = ['X','Y','Z','V'];
-    code = code.toUpperCase().replace(/-/g, "");
-    if(code=='7000000040448097'){
-        return enums.codeType.invalid;
-    }
-    if(code.length==0){
-        return enums.codeType.invalid;
-    }
-    var regNum=/^[0-9]*$/;
-    if(regNum.exec(code)){
-        return enums.codeType.photoPass;
-    };
-    if (code.length == 16) {
-        var prefix = code.substring(0, 4);
-        var cType = code.substr(5, 1);
-        if (prefix == 'DPUP') {
-            return enums.codeType.userPass;
-        }
-        else  if (prefix == 'DPPP' || cType == enums.codeTypeNum.photoPass) {
-            return enums.codeType.photoPass;
-        } else if (cType == enums.codeTypeNum.experienceCard) {
-            return enums.codeType.experienceCard;
-        }
-        else if (prefix == 'DPEP' || cType == enums.codeTypeNum.eventPass) {
-            return enums.codeType.eventPass;
-        } else if (prefix == 'DPTP') {
-            //disneyTicket门票
-            return enums.codeType.photoPass;
-        }
-        else if (couponTypes.indexOf(cType) > -1) {
-            return enums.codeType.coupon;
-        }
-        else if (prefix == 'DPVP' || PPPTypes.indexOf(cType) > -1) {
-            return enums.codeType.photoPassPlus;
-        } else {
-            return enums.codeType.invalid;
-        }
-
-
-    } else if (code.length >= 8 && code.length < 32) {
-        return enums.codeType.photoPass;
-    } else {
-        return enums.codeType.invalid;
-    }
 }
 
 function getUpdateUserInfo(params) {
