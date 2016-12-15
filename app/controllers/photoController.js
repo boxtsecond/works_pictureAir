@@ -15,6 +15,8 @@ var config = require('../../config/config.js').config;
 var request = require('request');
 var enums = require('../tools/enums.js');
 var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
+var mongoose = require('mongoose');
+var ObjectId = mongoose.Types.ObjectId;
 
 function getCondition(params) {
     var condition = {};
@@ -212,15 +214,11 @@ exports.removePhotosFromPP = function (req, res, next) {
     } catch (e) {
         ids = params.ids;
     }
-    console.log(ids);
     var userId = params.userId;
     var photoIds = [];
-
-
+    
     photoModel.findAsync({'customerIds.code': customerId, "_id": {"$in": ids}})
         .then(function (list) {
-            var count = 0;
-            var flag = false;
             Promise.mapSeries(list, function (item) {
                 var index = -1;
                 var pushUserIds = [];
@@ -255,22 +253,12 @@ exports.removePhotosFromPP = function (req, res, next) {
                         pNewUserIds.push(pushUserIds[p]);
                     }
                 }
-                item.save(function (err) {
-                    if (err) {
-                        console.log('unBindCodeFromUser', err);
-                    }
-
-                    count++;
-                    if (count == list.length) {
-
-                        flag = true;
-                    }
-                })
+                item.save();
             });
             if(flag){
                 return true;
             }else {
-                return  Promise.reject(errInfo.removePhotosFromPP.saveError);
+                return Promise.reject(errInfo.removePhotosFromPP.saveError);
             }
         })
         .then(function (result) {
@@ -286,8 +274,12 @@ exports.removePhotosFromPP = function (req, res, next) {
             }
         })
         .catch(function (err) {
-            console.log(err);
-            return res.ext.json(errInfo.removePhotosFromPP.promiseError);
+            if(err.status){
+                return res.ext.json(err);
+            }else {
+                console.log(err);
+                return res.ext.json(errInfo.removePhotosFromPP.promiseError);
+            }
         });
 }
 

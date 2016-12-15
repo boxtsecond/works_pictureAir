@@ -208,6 +208,7 @@ exports.getPPsByUserId = function (req, res, next) {
                         var ppInfo = {};
                         var photos = [];
                         Promise.each(list, function (pto) {
+                            console.log(pto);
                             var photo = new filterPhoto(pto);
                             photos.push(photo);
                         })

@@ -40,7 +40,6 @@ function validatePP(pppCode) {
 
 //激活（购买）卡
 function  activeCard(pppCode) {
-    var cardType = '';
     Promise.resolve()
         .then(function () {
             // 验证
@@ -55,7 +54,7 @@ function  activeCard(pppCode) {
         })
         .then(function (obj) {
             if(!obj){
-                return null;
+                return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             }else {
                 if(obj.active == true){
                     return Promise.reject(errInfo.activeCodeToUser.repeatBound);
