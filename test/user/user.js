@@ -24,6 +24,7 @@ describe('/auth/getAccessToken', function() {
     //        })
     //        .expect(200, function(err, res) {
     //            console.log(res.body);
+    //            done();
     //        });
     //
     // });
@@ -51,9 +52,9 @@ describe('/auth/getAccessToken', function() {
     //    request.post('/g/user/register')
     //        .send({
     //            // username: '8618321538399',
-    //            access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE2OTQ4MTEsImV4cCI6MTQ4MjI5OTYxMSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYTQ3NGRkNzBjMWMxMTFlNmFhYjA2ZDVkYjE0ZjczZjkiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.d7EGPexfqKT4Z0rNcz-l_hiaGpLBfoacwazRvpnSQFi8rgMTPuOqMgBOONM4JMGYYs1H4SipE_U9VsydrM6DMtv9vBfSrISgUBwdymxgfmLgzV_ORN_KAui4T9mpG1d5_8gC0GChtXYNdEULAALSSnHUBDf6spNcGD5eJfNSH5Ih9LKk6dz0mAAAzdzQw8aW5JqUXLgbiRgiDkClMRUkv_GtrDpW9fM47_x9NgDK4hd7Jpp-KI_jDjtdNSbc5RDCJMvqL2JSFzc563SFb4aMlCD8b0hpMQuRYJBpkuai0ANg81C2FddUglNwn0ZYZjKgXlH8UzrEPUP8D9r4KiEXhQ',
+    //            access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE3Njc5MjUsImV4cCI6MTQ4MjM3MjcyNSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZTAxNGFmNDBjMjZiMTFlNmIwNjIyOWE5MWViODNiMjEiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MCwibGciOiJlbi1VUyJ9.HzZKsUDIonJmSwmNowoG_lno6l57GFeDD26vmybJ4lQudx49Wr_MdUCUVC4zwen9_xgguF-xHd54g2gkuWG1sbUHpHLkLY35-CBiYov_ZWHO6KGxT0J3W_QmHCGzxLaTIOl8pjMxcZFhsK4GJoSMLZ-nbVy_giYQ12x-rR_FKBK2Nm652e85H1q6xKcE5FB8IhL6Md2N8mVfTLs57lOBCkmqUtGgotpCwoY0yGyRXlagGqMu5j-ZoVsgIhqytOEXLAE_611Ggb4K2nkfa4CfZMEVmRd_TICUDF4rq_mQs0qxQZlXRhIFC0YXDbqMG29JkTRXMCa2Zq68xHXSyvp6Tg',
     //            // username: 'meteor.liu@pictureworks.biz',
-    //            username: '8618321538399',
+    //            username: '123@123.com',
     //            password: md5("123456"),
     //            vcode:'000184'
     //            //000094
@@ -70,8 +71,8 @@ describe('/auth/getAccessToken', function() {
     it('should login', function(done) {
         request.post('/g/user/login')
             .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE1MTc1NDksImV4cCI6MTQ4MjEyMjM0OSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZWMzZDYxMjBjMDI0MTFlNmEwMTIzMWJjMGI5ZGRlNmUiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.pFQLSjzyqMmxDnlYGbM7-xx65tShwjYahfYAnLoQE854eCQcwWEX6X9tYswTE61F6wK5Ybh6B2BoAM4xGNsarrsZ2cXGlWRPl6CLHm-_cRDl1eKGp04eGPxjqvLBIEoeNHaU9KLETdg-bnE1jH1LlyJpmHm1kkeuwqFv_imeaOeBiTxjXnpu16OVdkOqnXe__VhdVkVuuadGBQ5HQ3XOZjQRgS7Fkpo8joay54NqfUXYRiDSG-2y75s_aL6kGrQBWyrKpN8hZytstbSRtYWvUknjNasUt6VxcGYJucrlkGKyrSRMYI5sYcOSOWnP1U-5TxrcINUbNSn8O5iIm7jADg',
-                username: '8618321538399',
+                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE3OTE2ODIsImV4cCI6MTQ4MjM5NjQ4MiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiMzA1OTg2MTBjMmEzMTFlNjgwZDE1Mzg1NTg2ZGY2MDMiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.ToyhEy2_6VotbYU8jmKunniNXmeZDyMOiaq_y097gx5zET7NJrL7ep9VUOoLtjKpoH47qlLYKqZNqhwJPissdptKfPwMmwmtJ2Rzm-snjU9DUvN-8afexXkyklq8V1X4t7nh_xAdmbuIe_c3BChNPL9WY7tu2caTfPJg4AUxbmo-guaXY5V3be58oCMqJ6I3cIw2S2wz-1BC4Gz2vKQ-wyQKGf9Wbqpp1zrlGrcKvKQ9WgVr4_x3zojd9_r1nWJI8SIOXmqXH3SS78JeWfy6ym73jSl8eRnpkJOhbBKYS3BmvO7_h_PBSpSqiFRT9lCJ0rTDCAK4a32sFPuLSiAObw',
+                username: '123@123.com',
                 password: md5("123456")
                 // username: '1@1.com',
                 // password: md5("000000")

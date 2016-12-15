@@ -274,7 +274,7 @@ exports.activeCodeToUser = function (req, res, next) {
                 return Promise.reject(errInfo.activeCodeToUser.notFind);
             } else {
                 //修改卡状态(激活)
-                return cardTools.activeCard(params.cardId)
+                return cardTools.activeCard(params.cardId, userId)
                     .then(function (info) {
                         if(info.status){
                             return Promise.reject(info);

@@ -39,7 +39,7 @@ function validatePP(pppCode) {
 }
 
 //激活（购买）卡
-function  activeCard(pppCode) {
+function  activeCard(pppCode, userId) {
     // 验证
     return validatePP(pppCode)
         .then(function (card) {
@@ -56,6 +56,9 @@ function  activeCard(pppCode) {
                 var updateObj = {};
                 updateObj.active = true;
                 updateObj.expiredOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
+                updateObj.bindOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
+                updateObj.modifiedOn = new Date();
+                updateObj.userId = userId;
                 return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
             }
         })
@@ -71,6 +74,7 @@ function  activeCard(pppCode) {
             }
         })
 }
+
 // /sync/syncToCloud',
 // '/sync/syncFile',
 
