@@ -119,6 +119,7 @@ function findPhotos(conditions, fields, options) {
                                         pushPhoto.coverHeaderImage = park.coverHeaderImage;
                                         pushPhoto.logoUrl = park.logoUrl;
                                         pushPhoto.pageUrl = park.pageUrl;
+                                        pushPhoto.parkName = park.name;
                                         photos.push(pushPhoto);
                                     })
                             })
