@@ -766,6 +766,68 @@ exports.addCodeToUser = function (req, res, next) {
             }
         })
         .then(function () {
+            //修改照片信息
+            return photoModel.findAsync(findPhotoObj)
+                .then(function (photoList) {
+                    if(photoList && photoList.length > 0){
+                        if(cType == 'ppCard'){
+                            return Promise.mapSeries(photoList, function (photo) {
+                                var userIds = [];
+                                return Promise.each(photo.customerIds, function (pt) {
+                                    pt.userIds.length>0 ? userIds = pt.userIds : userIds = [];
+                                    Promise.each(pt.userIds, function (ptid) {
+                                        if(ptid == userId){
+                                            return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                        }
+                                    });
+
+                                    userIds.push(userId);
+                                    photo.customerIds = [
+                                        {
+                                            code: customerId,
+                                            //cType: params.cType ? params.cType : 'photoPass',
+                                            userIds: userIds
+                                        }
+                                    ];
+                                    photo.userIds = userIds;
+                                    photo.modifiedOn = Date.now();
+                                    photo.save();
+                                });
+                            })
+                        }else if(cType == 'pppCard'){
+                            return Promise.mapSeries(photoList, function (photo) {
+                                var userIds = [];
+                                Promise.each(photo.orderHistory, function (pt) {
+                                    if(pt.userId == userId){
+                                        return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                    }
+                                });
+
+                                photo.modifiedOn = Date.now();
+                                photo.orderHistory = [
+                                    {
+                                        prepaidId: customerId,
+                                        productId: params.productId ? params.productId : 'photo',
+                                        userIds: userId,
+                                        createdOn: Date.now()
+                                    }
+                                ];
+                                photo.save();
+                            })
+                        }
+                    }
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        console.log(err);
+                        return Promise.reject(errInfo.addCodeToUser.promiseError);
+                    }
+                })
+        })
+        .then(function () {
             var resultObj = errInfo.success;
             resultObj.result = {};
             resultObj.result.cType = cType;
