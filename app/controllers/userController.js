@@ -275,13 +275,14 @@ exports.activeCodeToUser = function (req, res, next) {
             if(!card){
                 return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             }else {
-                return cardCodeModel.findOneAsync({PPPCode: params.cardId}).then(function (obj) {
-                    if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
-                    else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);
-                    else if (!obj.active && (obj.expiredOn - new Date() > 0)) {
-                        return obj;
-                    } else return Promise.reject(errInfo.activeCodeToUser.invalidCard);
-                })
+                return cardCodeModel.findOneAsync({PPPCode: params.cardId})
+                    .then(function (obj) {
+                        if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+                        else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);
+                        else if (!obj.active && (obj.expiredOn - new Date() > 0)) {
+                            return obj;
+                        } else return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+                    })
                     .catch(function (err) {
                         if(err.status){
                             return Promise.reject(err);
@@ -381,12 +382,22 @@ exports.activeCodeToUser = function (req, res, next) {
                 });
         })
         .then(function () {
+            //更新缓存
+            return userModel.findByIdAsync(userId)
+                .then(function (user) {
+                    var update = new filterUserToredis(user);
+                    return redisclient.set('access_token:'+req.ext.md5(user.userName), JSON.stringify(update));
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(errInfo.activeCodeToUser.userError);
+                })
+        })
+        .then(function () {
             //修改卡状态(激活)
-            return cardTools.activeCard(params.cardId, userId)
-                .then(function (info) {
-                    if (info.status) {
-                        return Promise.reject(info);
-                    }
+            return Promise.resolve()
+                .then(function () {
+                    return cardTools.activeCard(params.cardId, userId);
                 })
                 .catch(function (err) {
                     if(err.status){
@@ -397,20 +408,13 @@ exports.activeCodeToUser = function (req, res, next) {
                 })
         })
         .then(function () {
-            //更新缓存
-            return userModel.findByIdAsync(userId)
-                .then(function (user) {
-                    var update = new filterUserToredis(user);
-                    return redisclient.set('access_token:'+req.ext.md5(user.userName), JSON.stringify(update));
-                })
-                .then(function () {
-                    return res.ext.json();
-                })
+            return res.ext.json();
         })
         .catch(function (error) {
             if(error.status){
                 return res.ext.json(error);
             }else {
+                console.log(error);
                 return res.ext.json(errInfo.activeCodeToUser.promiseError);
             }
         });

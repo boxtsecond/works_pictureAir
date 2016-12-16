@@ -108,7 +108,7 @@ function findPhotos(conditions, fields, options, flag) {
                         return Promise.each(pto.orderHistory, function (pp) {
                             return cardCodeModel.findOneAsync({PPPCode: pp.prepaidId, active: true, userId: conditions.userIds})
                                 .then(function (card) {
-                                    if(card  && card.active){
+                                    if(card){
                                         isPaid = true;
                                     }
                                 })

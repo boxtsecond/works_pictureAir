@@ -40,7 +40,7 @@ function validatePP(pppCode) {
 
 //激活（购买）卡
 function  activeCard(pppCode, userId) {
-    carCodeModel.findOneAsync({PPPCode: pppCode})
+    return carCodeModel.findOneAsync({PPPCode: pppCode})
         .then(function (obj) {
             if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);
@@ -57,15 +57,12 @@ function  activeCard(pppCode, userId) {
             updateObj.userId = userId;
             return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
         })
-        .then(function () {
-            return true;
-        })
         .catch(function (error) {
             if(error.status){
-                return error;
+                return Promise.reject(error);
             }else {
                 console.log(error);
-                return errInfo.activeCodeToUser.promiseError;
+                return Promise.reject(errInfo.activeCodeToUser.promiseError);
             }
         })
 }
