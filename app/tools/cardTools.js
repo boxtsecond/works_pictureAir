@@ -56,17 +56,13 @@ function  activeCard(pppCode, userId) {
             }
         })
         .then(function (obj) {
-            if(!obj){
-                return Promise.reject(errInfo.activeCodeToUser.invalidCard);
-            }else {
-                var updateObj = {};
-                updateObj.active = true;
-                updateObj.expiredOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
-                updateObj.bindOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
-                updateObj.modifiedOn = new Date();
-                updateObj.userId = userId;
-                return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
-            }
+            var updateObj = {};
+            updateObj.active = true;
+            updateObj.expiredOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
+            updateObj.bindOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
+            updateObj.modifiedOn = new Date();
+            updateObj.userId = userId;
+            return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);
         })
         .then(function () {
             return true;

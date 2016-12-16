@@ -197,8 +197,17 @@ var errInfo={
         notFind: {status: 3046, msg: "system error", desc: "not find user form db"},
         userError: {status: 3047, msg: "system error", desc: "get userModel from db error"},
         promiseError: {status: 3048, msg: "system error", desc: "promise error"}
-    }
+    },
+    "quickDownloadPhotosParam":{
+        paramsError: {status: 4043, msg: "params is incomplete", desc: "missing photoIds"},
+        redisSetError: {status: 3049, msg: "system error", desc: "set redis error"}
+    },
+    "quickDownloadPhotos":{
+        paramsError: {status: 4044, msg: "params is incomplete", desc: "missing key"},
+        redisNotFind: {status: 3050, msg: "system error", desc: "not find photoIds in redis"},
+        redisGetError: {status: 3051, msg: "system error", desc: "get photoIds in redis error"},
 
+    }
     //-------------------system 5x 9x-------------------
 };
 module.exports={
