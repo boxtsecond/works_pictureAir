@@ -8,15 +8,13 @@ var userModel = require('../mongodb/Model/userModel');
 var cardCodeModel=require("../mongodb/Model/cardCodeModel");
 var common = require('../tools/common.js');
 var async = require('async');
-var socketController = require('../controllers/socketController.js');
-var pushMsgType = require('../tools/enums.js').pushMsgType;
-var pubScribeList = require('../tools/socketApi.js').pubScribeList;
 var config = require('../../config/config.js').config;
 var request = require('request');
 var enums = require('../tools/enums.js');
 var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
-var mongoose = require('mongoose');
-var ObjectId = mongoose.Types.ObjectId;
+var resTools = require('../resfilter/resTools');
+var redisclient=require('../redis/redis').redis;
+var fs = require('fs');
 
 function getCondition(params) {
     var condition = {};
@@ -97,34 +95,48 @@ function getOptions(params) {
     return options;
 }
 
-function findPhotos(conditions, fields, options) {
+//flag true---login
+function findPhotos(conditions, fields, options, flag) {
     var photos = [];
     return photoModel.findAsync(conditions, fields, options)
         .then(function (list) {
+            var isPaid = false;
             if (list && list.length > 0) {
                 return Promise.each(list, function (pto) {
-                    var pushPhoto = new filterPhoto(pto);
                     //判断 isPaid
-                    return Promise.each(pto.customerIds, function (pp) {
-                        return cardCodeModel.findOneAsync({PPPCode: pp.code})
-                            .then(function (card) {
-                                if(card && card.length > 0){
-                                    pushPhoto.isPaid = true;
-                                }
+                    if(flag){
+                        return Promise.each(pto.orderHistory, function (pp) {
+                            return cardCodeModel.findOneAsync({PPPCode: pp.prepaidId, active: true, userId: conditions.userIds})
+                                .then(function (card) {
+                                    if(card  && card.active){
+                                        isPaid = true;
+                                    }
+                                })
+                                .then(function () {
+                                    var pushPhoto = new filterPhoto(pto, isPaid);
+                                    return parkModel.findOneAsync({siteId: pto.siteId})
+                                        .then(function (park) {
+                                            //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
+                                            pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                                            pushPhoto.logoUrl = park.logoUrl;
+                                            pushPhoto.pageUrl = park.pageUrl;
+                                            pushPhoto.parkName = park.name;
+                                            photos.push(pushPhoto);
+                                        })
+                                })
+                        })
+                    }else {
+                        var pushPhoto = new filterPhoto(pto, false);
+                        return parkModel.findOneAsync({siteId: pto.siteId})
+                            .then(function (park) {
+                                //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
+                                pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                                pushPhoto.logoUrl = park.logoUrl;
+                                pushPhoto.pageUrl = park.pageUrl;
+                                pushPhoto.parkName = park.name;
+                                photos.push(pushPhoto);
                             })
-                            .then(function () {
-                                return parkModel.findOneAsync({siteId: pto.siteId})
-                                    .then(function (park) {
-                                        //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                        pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                        pushPhoto.logoUrl = park.logoUrl;
-                                        pushPhoto.pageUrl = park.pageUrl;
-                                        pushPhoto.parkName = park.name;
-                                        photos.push(pushPhoto);
-                                    })
-                            })
-                    })
-
+                    }
                 })
             }
         })
@@ -180,11 +192,13 @@ exports.getPhotosByConditions = function (req, res, next) {
         mimeType: 1,
         bundleWithPPP: 1,
         adInfo: 1
-    }
+    };
+    var flag;
+    params.userId ? flag = true : flag = false;
 
     Promise.resolve()
         .then(function () {
-            return findPhotos(conditions, fields, options);
+            return findPhotos(conditions, fields, options, flag);
         })
         .then(function (photos) {
             if(photos.status){
@@ -277,4 +291,113 @@ exports.removePhotosFromPP = function (req, res, next) {
                 return res.ext.json(errInfo.removePhotosFromPP.promiseError);
             }
         });
+}
+
+exports.quickDownloadPhotosParam = function (req, res, next) {
+    var params = req.ext.params;
+    var photoIds = params.photoIds;
+    if(!req.ext.checkExistProperty(params, [photoIds, params.userId, params.userName])){
+        return res.ext.json(errInfo.quickDownloadPhotosParam.paramsError);
+    }
+    if(isstring(photoIds)){
+        photoIds = photoIds.split(',');
+    }
+    var photoIdIndex = 'download_' + params.userId + '_' + resTools.convertDateToStr((new Date().getTime() / 1000)) + '';
+    var config = {};
+    config.photoIds = photoIds;
+    config.userId = params.userId;
+    config.userName = params.userName;
+    var multi = redisclient.multi();
+    multi.set(photoIdIndex, JSON.stringify(config));
+    multi.expire(photoIdIndex, 60 * 60 * 24) ;
+    multi.exec(function (err, replies) {
+        if (err) {
+            return res.ext.json(errInfo.quickDownloadPhotosParam.redisSetError);
+        } else {
+            var resultObj = errInfo.success;
+            resultObj.result = {key: photoIdIndex};
+            return res.ext.json(resultObj);
+        }
+    });
+}
+
+exports.quickDownloadPhotos = function (req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, params.key)){
+        return res.ext.json(errInfo.quickDownloadPhotos.paramsError);
+    }
+    var redisKey = params.key;
+
+    Promise.resolve()
+        .then(function () {
+            return redisclient.get(redisKey)
+                .then(function (info) {
+                    if(!info){
+                        return Promise.reject(errInfo.quickDownloadPhotos.redisNotFind);
+                    }else {
+                        return JSON.parse(info);
+                    }
+                })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        return Promise.reject(errInfo.quickDownloadPhotos.redisGetError);
+                    }
+                });
+        })
+        .then(function (photoObj) {
+            var Archiver = require('archiver');
+            var zipArchiver = Archiver('zip');
+            var downloadName = req.body.userName + '_' + (new Date().getTime() / 1000) + '.zip';
+            var photoIds = photoObj.photoIds;
+            return photoModel.findAsync({_id: {$in: photoIds}, $or: [{'orderHistory.userId': photoObj.userId}, {isFree: true}]},
+                {$inc: {downloadCount: 1}}, {multi: true})
+                .then(function (photos) {
+                    return photoModel.updateAsync({_id: {$in: photoIds}, $or: [{'orderHistory.userId': photoObj.userId}, {isFree: true}]}, {$inc: {downloadCount: 1}}, {multi: true})
+                        .then(function () {
+                            return Promise.each(photos, function (pt) {
+                                if(photoExists(pt)){
+                                    var photoPath = pt.originalInfo.path;
+                                    var photoName = photoPath.substring(photoPath.lastIndexOf('/') - 1);
+                                    return zipArchiver.append(fs.createReadStream(photoPath), {name: photoName});
+                                }
+                            })
+                        })
+                        .then(function () {
+                            res.attachment(downloadName);
+                            zipArchiver.pipe(res);
+                            return zipArchiver.finalize();
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                            return Promise.reject(errInfo.quickDownloadPhotos.photoError);
+                        })
+                })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        console.log(err);
+                        return Promise.reject(errInfo.quickDownloadPhotos.photoError);
+                    }
+                })
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                return res.ext.json(errInfo.quickDownloadPhotos.promiseError);
+            }
+        })
+}
+
+function photoExists(photo) {
+    try {
+        var stats = fs.lstatSync(photo.originalInfo.path);
+        return stats.isFile();
+    } catch (e) {
+        //console.log(e);
+        return false;
+    }
 }

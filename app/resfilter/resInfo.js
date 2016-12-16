@@ -206,7 +206,8 @@ var errInfo={
         paramsError: {status: 4044, msg: "params is incomplete", desc: "missing key"},
         redisNotFind: {status: 3050, msg: "system error", desc: "not find photoIds in redis"},
         redisGetError: {status: 3051, msg: "system error", desc: "get photoIds in redis error"},
-
+        photoError: {status: 3052, msg: "system error", desc: "get photoModel from db error"},
+        promiseError: {status: 3053, msg: "system error", desc: "promise error"}
     }
     //-------------------system 5x 9x-------------------
 };

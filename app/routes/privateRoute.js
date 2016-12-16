@@ -21,14 +21,11 @@ router.post('/user/modifyUserPwd', ctr.userController.modifyUserPwd);
 
 router.post('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
 router.post('/photo/removePhotosFromPP', ctr.photoController.removePhotosFromPP);
-//router.post('/photo/quickDownloadPhotosParam', ctr.photoController.quickDownloadPhotosParam);
-//router.get('/photo/quickDownloadPhotos', ctr.photoController.quickDownloadPhotos);
-
+router.post('/photo/quickDownloadPhotosParam', ctr.photoController.quickDownloadPhotosParam);
+router.get('/photo/quickDownloadPhotos', ctr.photoController.quickDownloadPhotos);
 
 router.get('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);
 router.get('/card/getCouponsByUserId', ctr.cardController.getCouponsByUserId);
 router.get('/card/removePPFromUser', ctr.cardController.removePPFromUser);
-
-
 
 module.exports = router;

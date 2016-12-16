@@ -15,17 +15,17 @@ request = request('http://localhost:4001');
 
 describe('/auth/getAccessToken', function() {
     // it('should getAccessToken', function(done) {
-    //    request.post('/auth/getAccessToken')
-    //        .send({
-    //            appid: '6c8c8dc48280ed2163136ad416e1dbfe',
-    //            password: "password",
-    //            t:1,
-    //            lg:"zh-CN"
-    //        })
-    //        .expect(200, function(err, res) {
-    //            console.log(res.body);
-    //            done();
-    //        });
+    //     request.post('/auth/getAccessToken')
+    //         .send({
+    //             appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+    //             password: "password",
+    //             t:1,
+    //             lg:"zh-CN"
+    //         })
+    //         .expect(200, function(err, res) {
+    //             console.log(res.body);
+    //             done();
+    //         });
     //
     // });
 
@@ -71,7 +71,7 @@ describe('/auth/getAccessToken', function() {
     it('should login', function(done) {
         request.post('/g/user/login')
             .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE3OTE2ODIsImV4cCI6MTQ4MjM5NjQ4MiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiMzA1OTg2MTBjMmEzMTFlNjgwZDE1Mzg1NTg2ZGY2MDMiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.ToyhEy2_6VotbYU8jmKunniNXmeZDyMOiaq_y097gx5zET7NJrL7ep9VUOoLtjKpoH47qlLYKqZNqhwJPissdptKfPwMmwmtJ2Rzm-snjU9DUvN-8afexXkyklq8V1X4t7nh_xAdmbuIe_c3BChNPL9WY7tu2caTfPJg4AUxbmo-guaXY5V3be58oCMqJ6I3cIw2S2wz-1BC4Gz2vKQ-wyQKGf9Wbqpp1zrlGrcKvKQ9WgVr4_x3zojd9_r1nWJI8SIOXmqXH3SS78JeWfy6ym73jSl8eRnpkJOhbBKYS3BmvO7_h_PBSpSqiFRT9lCJ0rTDCAK4a32sFPuLSiAObw',
+                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE4NjU4MjAsImV4cCI6MTQ4MjQ3MDYyMCwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiY2RkZWViMzBjMzRmMTFlNjgwZTUyMzlkNjVkNTk1NTUiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.uoom2mWDxr91NpC-zXV2YyebyZYx2I2Kpm1SgY91i-s8avsdbHICF_dxqTHDT8yayMj_kluDLYq17-fZR0BNww5tpQopKfC9DmdHN3UXasxcDNjGxropO4oWOORuv5eBO4cqUJ_7jlE9GTOQz2DmwxmUulaJXRW9GNHyRJHiaXLFLaI3iSi7wp8MZv_dO2T0plAj0_4JYtAPrCVb4P2opergOJi2mtud3LMNxlXRIfOOVGLUCiHQUoGA9U7LJPDB-0NEiPQdpThqBzs-Fr_YI65jhMsJffFjhJr5ERlo3P90xTooCKcmZsB-ZdtD9FaKQz98NpOTdZfL2uqH2TRVTg',
                 username: '123@123.com',
                 password: md5("123456")
                 // username: '1@1.com',

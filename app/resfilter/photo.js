@@ -2,7 +2,7 @@
  * Created by xueting-bo on 16/12/5.
  */
 var resTools = require('./resTools');
-exports.filterPhoto = function(photo) {
+exports.filterPhoto = function(photo, isPaid) {
     this._id=photo._id; if(!this._id)this._id="";
     this.siteId=photo.siteId;if(!this.siteId)this.siteId="";
     this.photoId=photo.photoId;if(!this.photoId)this.photoId="";
@@ -32,7 +32,7 @@ exports.filterPhoto = function(photo) {
     this.modifiedOn=photo.modifiedOn;if(!this.modifiedOn)this.modifiedOn="";
     this.allowDownload=photo.allowDownload;if(!this.allowDownload)this.allowDownload=false;
     this.editCount=photo.editCount;if(!this.editCount)this.editCount=0;
-    this.isPaid=photo.isPaid;if(!this.isPaid)this.isPaid=false;
+    this.isPaid=isPaid;if(!this.isPaid)this.isPaid=false;
 
     this.thumbnail = {};
     for(var i in photo.thumbnail){
@@ -44,11 +44,12 @@ exports.filterPhoto = function(photo) {
         }
     }
     //this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail={};
-
-    this.originalInfo ={};
-    for(var k in photo._doc.originalInfo){
-        if(k != 'path'){
-            this.originalInfo[k] = photo.originalInfo[k];
+    if(isPaid){
+        this.originalInfo ={};
+        for(var k in photo._doc.originalInfo){
+            if(k != 'path'){
+                this.originalInfo[k] = photo.originalInfo[k];
+            }
         }
     }
     //this.originalInfo=photo.originalInfo;if(!this.originalInfo)this.originalInfo={};

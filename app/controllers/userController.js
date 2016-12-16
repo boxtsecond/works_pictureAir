@@ -266,63 +266,79 @@ exports.activeCodeToUser = function (req, res, next) {
     var customerId = params.customerId;
     customerId = customerId.toUpperCase().replace(/-/g, "");
     var userId = params.userId;
-    var cardType;
-    var flag;
+    var cardType, flag = {exist: false, needActive: false};
+    var updateInfo = [];
 
-    userModel.findByIdAsync(userId)
-        .then(function (user) {
-            if (!user) {
-                return Promise.reject(errInfo.activeCodeToUser.notFind);
-            } else {
-                //修改卡状态(激活)
-                return cardTools.activeCard(params.cardId, userId)
-                    .then(function (info) {
-                        if(info.status){
-                            return Promise.reject(info);
+    //验证卡是否有效
+    cardTools.validatePPType(params.cardId)
+        .then(function (card) {
+            if(!card){
+                return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+            }else {
+                return cardCodeModel.findOneAsync({PPPCode: params.cardId}).then(function (obj) {
+                    if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+                    else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);
+                    else if (!obj.active && (obj.expiredOn - new Date() > 0)) {
+                        return obj;
+                    } else return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+                })
+                    .catch(function (err) {
+                        if(err.status){
+                            return Promise.reject(err);
                         }else {
-                            return cardCodeModel.findOneAsync({PPPCode:params.cardId});
+                            return Promise.reject(errInfo.activeCodeToUser.invalidCard);
                         }
                     })
             }
         })
         .then(function (obj) {
-            if (obj.status) {
-                return Promise.reject(obj);
-            } else {
-                //修改用户信息
-                cardType = obj.PPPType;
-                return userModel.findByIdAsync(userId)
-                    .then(function (user) {
-                        if(user.pppCodes && user.pppCodes.length > 0){
+            cardType = obj.PPPType;
+            //修改用户信息
+            return userModel.findByIdAsync(userId)
+                .then(function (user) {
+                    if (!user) {
+                        return Promise.reject(errInfo.activeCodeToUser.notFind);
+                    } else {
+                        if (user.pppCodes && user.pppCodes.length > 0) {
                             return Promise.each(user.pppCodes, function (code) {
-                                if(code.PPPCode == params.cardId){
-                                    return flag = true;
+                                if (code.PPPCode == params.cardId) {
+                                    flag.exist = true;
+                                    if (!code.active) {
+                                        code.active = true;
+                                        flag.needActive = true;
+                                    }
                                 }
+                                updateInfo.push(code);
                             });
                         }
-                    })
-                    .then(function (result) {
-                        //没有绑定直接激活
-                        if(!flag){
-                            var saveInfo = new filterCard.filterPPPCardToUserDB(obj);
-                            var updateObj = {$push:{pppCodes: saveInfo}};
-                            updateObj.modifiedOn = Date.now();
-                            return userModel.findByIdAndUpdateAsync(userId, updateObj)
-                                .catch(function (err) {
-                                    console.log(err);
-                                    return Promise.reject(errInfo.activeCodeToUser.userUpdateError);
-                                });
-                        }
-
-                    })
-                    .catch(function (err) {
-                        if(err.status){
-                            return Promise.reject(err);
-                        }else {
-                            return Promise.reject(errInfo.activeCodeToUser.userError);
-                        }
-                    })
-            }
+                    }
+                })
+                .then(function () {
+                    //没有绑定直接激活
+                    if (!flag.exist) {
+                        var saveInfo = new filterCard.filterPPPCardToUserDB(obj);
+                        var updateObj = {$push: {pppCodes: saveInfo}};
+                        updateObj.modifiedOn = Date.now();
+                        return userModel.findByIdAndUpdateAsync(userId, updateObj)
+                            .catch(function (err) {
+                                console.log(err);
+                                return Promise.reject(errInfo.activeCodeToUser.userUpdateError);
+                            });
+                    } else if (flag.needActive) {
+                        return userModel.findByIdAndUpdateAsync(userId, {pppCodes: updateInfo})
+                            .catch(function (err) {
+                                console.log(err);
+                                return Promise.reject(errInfo.activeCodeToUser.userUpdateError);
+                            });
+                    }
+                })
+                .catch(function (err) {
+                    if (err.status) {
+                        return Promise.reject(err);
+                    } else {
+                        return Promise.reject(errInfo.activeCodeToUser.userError);
+                    }
+                })
         })
         .then(function () {
             //修改照片信息
@@ -365,16 +381,31 @@ exports.activeCodeToUser = function (req, res, next) {
                 });
         })
         .then(function () {
+            //修改卡状态(激活)
+            return cardTools.activeCard(params.cardId, userId)
+                .then(function (info) {
+                    if (info.status) {
+                        return Promise.reject(info);
+                    }
+                })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        return Promise.reject(errInfo.activeCodeToUser.invalidCard);
+                    }
+                })
+        })
+        .then(function () {
             //更新缓存
             return userModel.findByIdAsync(userId)
                 .then(function (user) {
                     var update = new filterUserToredis(user);
-                    console.log(req.ext.md5(user.userName))
                     return redisclient.set('access_token:'+req.ext.md5(user.userName), JSON.stringify(update));
                 })
-        })
-        .then(function () {
-            return res.ext.json();
+                .then(function () {
+                    return res.ext.json();
+                })
         })
         .catch(function (error) {
             if(error.status){
@@ -640,6 +671,7 @@ exports.addCodeToUser = function (req, res, next) {
     var userId = params.userId;
     var cType = 'ppCard';
     var findPhotoObj = {};
+    var flag;
 
     //验证卡是否有效
     cardTools.validatePPType(customerId)
@@ -664,7 +696,7 @@ exports.addCodeToUser = function (req, res, next) {
         })
         .then(function (card) {
             if(cType === 'ppCard'){
-                //绑定到用户
+                //白卡绑定到用户
                 findPhotoObj = {'customerIds.code': customerId};
                 return userModel.findByIdAsync(userId)
                     .then(function (user) {
@@ -672,7 +704,7 @@ exports.addCodeToUser = function (req, res, next) {
                             if(user.customerIds && user.customerIds.length > 0){
                                 return Promise.each(user.customerIds, function (cst) {
                                     if(cst.code == customerId){
-                                        return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                        flag = true;
                                     }
                                 });
                             }
@@ -681,13 +713,17 @@ exports.addCodeToUser = function (req, res, next) {
                         }
                     })
                     .then(function () {
-                        var updateObj = {$push: {custmoerIds:[]}};
-                        var newCustomerIds = {
-                            code: customerId
-                        };
-                        updateObj.$push.customerIds = newCustomerIds
-                        updateObj.modifiedOn = Date.now();
-                        return userModel.findByIdAndUpdateAsync(userId, updateObj);
+                        if(flag){
+                            return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                        }else {
+                            var updateObj = {$push: {custmoerIds:[]}};
+                            var newCustomerIds = {
+                                code: customerId
+                            };
+                            updateObj.$push.customerIds = newCustomerIds
+                            updateObj.modifiedOn = Date.now();
+                            return userModel.findByIdAndUpdateAsync(userId, updateObj);
+                        }
                     })
                     .catch(function (err) {
                         if(err.status){
@@ -698,6 +734,7 @@ exports.addCodeToUser = function (req, res, next) {
                         }
                     })
             }else {
+                //付费卡绑定到用户
                 findPhotoObj = {'pppCodes.code': customerId};
                 var cardInfo = new filterCard.filterPPPCardToUserDB(card);
                 return userModel.findByIdAsync(userId)
@@ -705,8 +742,8 @@ exports.addCodeToUser = function (req, res, next) {
                         if(user){
                             if(user.pppCodes && user.pppCodes.length > 0){
                                 return Promise.each(user.pppCodes, function (code) {
-                                    if(customerId == code){
-                                        return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                    if(customerId == code.PPPCode){
+                                        flag = true;
                                     }
                                 })
                             }
@@ -715,9 +752,13 @@ exports.addCodeToUser = function (req, res, next) {
                         }
                     })
                     .then(function () {
-                        var updateObj = {$push:{pppCodes: cardInfo}};
-                        updateObj.modifiedOn = Date.now();
-                        return userModel.findByIdAndUpdateAsync(userId, updateObj);
+                        if(flag){
+                            return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                        }else {
+                            var updateObj = {$push:{pppCodes: cardInfo}};
+                            updateObj.modifiedOn = Date.now();
+                            return userModel.findByIdAndUpdateAsync(userId, updateObj);
+                        }
                     })
                     .catch(function (err) {
                         if(err.status){
