@@ -46,7 +46,7 @@ function  activeCard(pppCode, userId) {
             if(!card){
                 return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             }else {
-                return carCodeModel.findOne({PPPCode: code}).then(function (obj) {
+                return carCodeModel.findOne({PPPCode: pppCode}).then(function (obj) {
                     if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
                     else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);
                     else if (!obj.active && (obj.expiredOn - new Date() > 0)) {

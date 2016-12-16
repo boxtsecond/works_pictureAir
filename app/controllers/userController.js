@@ -267,6 +267,7 @@ exports.activeCodeToUser = function (req, res, next) {
     customerId = customerId.toUpperCase().replace(/-/g, "");
     var userId = params.userId;
     var cardType;
+    var flag;
 
     userModel.findByIdAsync(userId)
         .then(function (user) {
@@ -294,15 +295,15 @@ exports.activeCodeToUser = function (req, res, next) {
                     .then(function (user) {
                         if(user.pppCodes && user.pppCodes.length > 0){
                             return Promise.each(user.pppCodes, function (code) {
-                                if(code.PPPCode == customerId){
-                                    return true;
+                                if(code.PPPCode == params.cardId){
+                                    return flag = true;
                                 }
                             });
                         }
                     })
                     .then(function (result) {
                         //没有绑定直接激活
-                        if(!result){
+                        if(!flag){
                             var saveInfo = new filterCard.filterPPPCardToUserDB(obj);
                             var updateObj = {$push:{pppCodes: saveInfo}};
                             updateObj.modifiedOn = Date.now();
@@ -368,6 +369,7 @@ exports.activeCodeToUser = function (req, res, next) {
             return userModel.findByIdAsync(userId)
                 .then(function (user) {
                     var update = new filterUserToredis(user);
+                    console.log(req.ext.md5(user.userName))
                     return redisclient.set('access_token:'+req.ext.md5(user.userName), JSON.stringify(update));
                 })
         })
@@ -787,6 +789,14 @@ exports.addCodeToUser = function (req, res, next) {
                         console.log(err);
                         return Promise.reject(errInfo.addCodeToUser.promiseError);
                     }
+                })
+        })
+        .then(function () {
+            return userModel.findById(userId)
+                .then(function (ur) {
+                    var user = new filterUserToredis(ur);
+                    var md5Useranme =req.ext.md5(ur.userName);
+                    return redisclient.set("access_token:"+md5Useranme, JSON.stringify(user));
                 })
         })
         .then(function () {
