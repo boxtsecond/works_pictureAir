@@ -15,6 +15,7 @@ var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
 var resTools = require('../resfilter/resTools');
 var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
+var util=require('../../config/util.js');
 
 function getCondition(params) {
     var condition = {};
@@ -296,13 +297,15 @@ exports.removePhotosFromPP = function (req, res, next) {
 exports.quickDownloadPhotosParam = function (req, res, next) {
     var params = req.ext.params;
     var photoIds = params.photoIds;
-    if(!req.ext.checkExistProperty(params, [photoIds, params.userId, params.userName])){
-        return res.ext.json(errInfo.quickDownloadPhotosParam.paramsError);
-    }
-    if(isstring(photoIds)){
+    if(util.isstring(photoIds)){
         photoIds = photoIds.split(',');
     }
-    var photoIdIndex = 'download_' + params.userId + '_' + resTools.convertDateToStr((new Date().getTime() / 1000)) + '';
+    if(!req.ext.checkExistProperty(params, ['photoIds', 'userId', 'userName'])){
+        return res.ext.json(errInfo.quickDownloadPhotosParam.paramsError);
+    }
+
+    var photoIdIndex = 'download_' + params.userId + '_' + resTools.convertDateToStr(new Date().getTime()) + '';
+    photoIdIndex = photoIdIndex.replace(/\s+/g, '');
     var config = {};
     config.photoIds = photoIds;
     config.userId = params.userId;
@@ -323,7 +326,7 @@ exports.quickDownloadPhotosParam = function (req, res, next) {
 
 exports.quickDownloadPhotos = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.checkExistProperty(params, params.key)){
+    if(!req.ext.checkExistProperty(params, 'key')){
         return res.ext.json(errInfo.quickDownloadPhotos.paramsError);
     }
     var redisKey = params.key;
@@ -349,15 +352,17 @@ exports.quickDownloadPhotos = function (req, res, next) {
         .then(function (photoObj) {
             var Archiver = require('archiver');
             var zipArchiver = Archiver('zip');
-            var downloadName = req.body.userName + '_' + (new Date().getTime() / 1000) + '.zip';
+            var havePhoto = false;
+            var nameStr = resTools.convertDateToStr(new Date()).replace(/\s+/g, '');
+            var downloadName = photoObj.userName + '_' + nameStr + '.zip';
             var photoIds = photoObj.photoIds;
-            return photoModel.findAsync({_id: {$in: photoIds}, $or: [{'orderHistory.userId': photoObj.userId}, {isFree: true}]},
-                {$inc: {downloadCount: 1}}, {multi: true})
+            return photoModel.findAsync({_id: {$in: photoIds}, $or: [{'orderHistory.userId': photoObj.userId}, {isFree: true}]})
                 .then(function (photos) {
                     return photoModel.updateAsync({_id: {$in: photoIds}, $or: [{'orderHistory.userId': photoObj.userId}, {isFree: true}]}, {$inc: {downloadCount: 1}}, {multi: true})
                         .then(function () {
                             return Promise.each(photos, function (pt) {
                                 if(photoExists(pt)){
+                                    havePhoto = true;
                                     var photoPath = pt.originalInfo.path;
                                     var photoName = photoPath.substring(photoPath.lastIndexOf('/') - 1);
                                     return zipArchiver.append(fs.createReadStream(photoPath), {name: photoName});
@@ -365,13 +370,21 @@ exports.quickDownloadPhotos = function (req, res, next) {
                             })
                         })
                         .then(function () {
-                            res.attachment(downloadName);
-                            zipArchiver.pipe(res);
-                            return zipArchiver.finalize();
+                            if(havePhoto){
+                                res.attachment(downloadName);
+                                zipArchiver.pipe(res);
+                                return zipArchiver.finalize();
+                            }else {
+                                return Promise.reject(errInfo.quickDownloadPhotos.photoNotFind);
+                            }
                         })
                         .catch(function (err) {
-                            console.log(err);
-                            return Promise.reject(errInfo.quickDownloadPhotos.photoError);
+                            if(err.status){
+                                return Promise.reject(err);
+                            }else {
+                                console.log(err);
+                                return Promise.reject(errInfo.quickDownloadPhotos.photoError);
+                            }
                         })
                 })
                 .catch(function (err) {
@@ -387,6 +400,7 @@ exports.quickDownloadPhotos = function (req, res, next) {
             if(error.status){
                 return res.ext.json(error);
             }else {
+                console.log(error);
                 return res.ext.json(errInfo.quickDownloadPhotos.promiseError);
             }
         })

@@ -199,11 +199,12 @@ var errInfo={
         promiseError: {status: 3048, msg: "system error", desc: "promise error"}
     },
     "quickDownloadPhotosParam":{
-        paramsError: {status: 4043, msg: "params is incomplete", desc: "missing photoIds"},
+        paramsError: {status: 4043, msg: "params is incomplete", desc: "missing photoIds or userName"},
         redisSetError: {status: 3049, msg: "system error", desc: "set redis error"}
     },
     "quickDownloadPhotos":{
         paramsError: {status: 4044, msg: "params is incomplete", desc: "missing key"},
+        photoNotFind: {status: 4045, msg: "not find real photo", desc: "not find real photo"},
         redisNotFind: {status: 3050, msg: "system error", desc: "not find photoIds in redis"},
         redisGetError: {status: 3051, msg: "system error", desc: "get photoIds in redis error"},
         photoError: {status: 3052, msg: "system error", desc: "get photoModel from db error"},
