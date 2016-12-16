@@ -2,10 +2,7 @@
   "port": 4001,
   "DB": {
     "MongoDB": {
-      "host": "192.168.8.107",
-      "port":1008,
-      "bport":1009,
-      "arbport":1010,
+      "host": "192.168.8.107:1010,192.168.8.107:1008,192.168.8.107:1009",
       "dbName":"pictureAir",
       "user": "",
       "pass": ""
@@ -63,8 +60,8 @@
      "guestExpireTime":604800,
      "expireTime":604800,
      "userExpireTime":604800,
-     "validateCodeExpireTime":300,
-     "ForgotPwdMsgExpireTime":300,
+     "validateCodeExpireTime":120,
+     "ForgotPwdMsgExpireTime":120,
      "versionExpireTime":600000
   },
   "redis":{

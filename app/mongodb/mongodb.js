@@ -17,8 +17,10 @@ var opts = {
     },
     user: configData.user, pass: configData.pass
 };
-var connectStr="mongodb://"+configData.host+":"+configData.arbport+","+configData.host+":"+configData.port+","+configData.host+":"+configData.bport+"/"+configData.dbName;
+var connectStr="mongodb://"+configData.host+"/"+configData.dbName;
 
+
+console.log(connectStr)
 var db = mongoose.createConnection(connectStr,opts,function(err){
     if (err) {
         console.warn('can not connect',err);
