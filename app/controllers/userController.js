@@ -14,7 +14,8 @@ var cardCodeModel = require('../mongodb/Model/cardCodeModel.js');
 var photoModel = require('../mongodb/Model/photoModel.js');
 var async = require('async');
 var common = require('../tools/common.js');
-var sendEmail = require('../tools/sendMsg.js').sendEmailTO;
+var sendEmail = require('../tools/sendMsg.js').sendEmailcontactUs;
+var configData=rq.configData;
 var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 var redisclient=require('../redis/redis').redis;
 var cardTools = require('../tools/cardTools.js');
@@ -484,17 +485,36 @@ function getUpdateUserInfo(params) {
     return updateInfo;
 }
 
+
 //联系我们
 exports.contactUs = function (req, res, next) {
     var params = req.ext.params;
-    var subject = 'Picture Enquiry';
-    var content = params.name + params.feedback;
     if(!req.ext.checkExistProperty(params, ['name', 'EmailAddress', 'parkName', 'feedback'])){
         return res.ext.json(errInfo.contactUs.paramsError);
     }
     Promise.resolve()
         .then(function () {
-            return sendEmail(params.EmailAddress, subject, content);
+            var senConObj={name:"",
+                feedback:"",
+                EmailAddress:"",
+                parkName:"",
+                visitDate:"",
+                pictureAirCode:"",
+                orderID:"",
+                operatingSystem:""
+            };
+            if(req.ext.haveOwnproperty(params,'name'))senConObj.name=params.name;
+            if(req.ext.haveOwnproperty(params,'feedback'))senConObj.feedback=params.feedback;
+            if(req.ext.haveOwnproperty(params,'EmailAddress'))senConObj.EmailAddress=params.EmailAddress;
+            if(req.ext.haveOwnproperty(params,'parkName'))senConObj.parkName=params.parkName;
+            if(req.ext.haveOwnproperty(params,'visitDate'))senConObj.visitDate=params.visitDate;
+            if(req.ext.haveOwnproperty(params,'pictureAirCode'))senConObj.pictureAirCode=params.pictureAirCode;
+            if(req.ext.haveOwnproperty(params,'orderID'))senConObj.orderID=params.orderID;
+            if(req.ext.haveOwnproperty(params,'operatingSystem'))senConObj.operatingSystem=params.operatingSystem;
+            return senConObj;
+        })
+        .then(function (senConObj) {
+            return sendEmail("zh-CN",configData.email.customerService,senConObj);
         })
         .then(function () {
             //存入mongo

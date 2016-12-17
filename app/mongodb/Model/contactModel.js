@@ -12,5 +12,6 @@ Schema.methods.insert= function(callback) {
     return this.save(callback);
 };
 
-var model = Promise.promisifyAll(db.model(collectionname, Schema));
+// var model = Promise.promisifyAll(db.model(collectionname, Schema));
+var model = db.model(collectionname, Schema);
 module.exports = model;

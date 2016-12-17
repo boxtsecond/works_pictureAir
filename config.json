@@ -83,7 +83,9 @@
         }
     ]
   },
-
+  "email":{
+  "customerService":["peter.dong@pictureworks.biz,meteor.liu@pictureworks.biz","zhaoyi@pictureworks.biz"]
+  },
   "photo":{
     "websiteStoragePath":"/data/website",
     "websitePhotoStoragePath":"/data/website/photos"
