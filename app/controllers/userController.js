@@ -516,9 +516,9 @@ exports.contactUs = function (req, res, next) {
         .then(function (senConObj) {
             return sendEmail("zh-CN",configData.email.customerService,senConObj);
         })
-        .then(function () {
+        .then(function (obj) {
+            console.log(obj);
             //存入mongo
-            console.log('!!!!!!!!!');
             var date = new Date();
             var contactMsg=new contactModel();
             contactMsg.name=params.name;
