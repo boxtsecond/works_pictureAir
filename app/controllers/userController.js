@@ -135,11 +135,12 @@ exports.getShareUrl = function (req, res, next) {
             return res.ext.json(resultObj);
         })
         .catch(function (err) {
-            console.log(err);
             if(err.status){
                 return res.ext.json(err);
+            }else {
+                console.log(err);
+                return res.ext.json(errInfo.getShareUrl.promiseError);
             }
-            return res.ext.json(errInfo.getShareUrl.promiseError);
         });
 }
 
