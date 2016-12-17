@@ -372,7 +372,7 @@ exports.quickDownloadPhotos = function (req, res, next) {
                                 if(photoExists(pt.originalInfo.path)){
                                     havePhoto = true;
                                     var photoPath = pt.originalInfo.path;
-                                    var photoName = uuid.v1();
+                                    var photoName = uuid.v1() + '.' +path.extname(photoPath);
                                     return zipArchiver.append(fs.createReadStream(photoPath), {name: photoName});
                                 }
                             })
