@@ -518,6 +518,7 @@ exports.contactUs = function (req, res, next) {
         })
         .then(function () {
             //存入mongo
+            console.log('!!!!!!!!!');
             var date = new Date();
             var contactMsg=new contactModel();
             contactMsg.name=params.name;
@@ -539,7 +540,7 @@ exports.contactUs = function (req, res, next) {
             return res.ext.json();
         })
         .catch(function (error) {
-            console.log(error);
+            console.error(error);
             return res.ext.json(errInfo.contactUs.promiseError);
         })
 }
