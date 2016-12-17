@@ -86,7 +86,7 @@ exports.getShareUrl = function (req, res, next) {
                 .then(function (data) {
                     if(data){
                         return Promise.each(data, function (dt) {
-                            var sharePathInfo = filterShare(dt);
+                            var sharePathInfo = new filterShare(dt);
                             sharePath.push(sharePathInfo);
                         })
                     }
