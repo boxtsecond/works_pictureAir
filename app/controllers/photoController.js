@@ -16,6 +16,7 @@ var resTools = require('../resfilter/resTools');
 var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
 var util=require('../../config/util.js');
+var uuid = require('../rq').uuid;
 
 function getCondition(params) {
     var condition = {};
@@ -371,7 +372,7 @@ exports.quickDownloadPhotos = function (req, res, next) {
                                 if(photoExists(pt.originalInfo.path)){
                                     havePhoto = true;
                                     var photoPath = pt.originalInfo.path;
-                                    var photoName = photoPath.substring(photoPath.lastIndexOf('/') - 1);
+                                    var photoName = uuid.v1();
                                     return zipArchiver.append(fs.createReadStream(photoPath), {name: photoName});
                                 }
                             })
