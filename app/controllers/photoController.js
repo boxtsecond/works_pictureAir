@@ -409,7 +409,6 @@ exports.quickDownloadPhotos = function (req, res, next) {
 function photoExists(path) {
     try {
         var stats = fs.lstatSync(path);
-        console.log(stats.isFile());
         return stats.isFile();
     } catch (e) {
         //console.log(e);
