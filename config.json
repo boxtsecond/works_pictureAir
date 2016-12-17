@@ -84,7 +84,7 @@
     ]
   },
   "email":{
-  "customerService":["peter.dong@pictureworks.biz,meteor.liu@pictureworks.biz","zhaoyi@pictureworks.biz"]
+  "customerService":["peter.dong@pictureworks.biz","zhaoyi@pictureworks.biz"]
   },
   "photo":{
     "websiteStoragePath":"/data/website",
