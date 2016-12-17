@@ -313,6 +313,65 @@ function sendEmailTO(email,subject,content) {
         });
 }
 
+function sendEmailcontactUs(lg,email,params){
+    var msgid=uuid.v1().replace(/-/g,'');
+    return getTxtFromCode(lg,"contactUs",email_txt).then(function(txtobj){
+        return  rq.util.txtStrReplacePromise(txtobj.content,[
+            {name:"%msgid%",value:msgid},
+            {name:"%name%",value:params.name},
+            {name:"%EmailAddress%",value:params.EmailAddress},
+            {name:"%parkName%",value:params.parkName},
+            {name:"%visitDate%",value:params.visitDate},
+            {name:"%pictureAirCode%",value:params.pictureAirCode},
+            {name:"%orderID%",value:params.orderID},
+            {name:"%operatingSystem%",value:params.operatingSystem},
+            {name:"%feedback%",value:params.feedback}
+        ])
+            .then(function(content){
+                txtobj.content=content;
+                txtobj.sign='Picture Enquiry '+rq.util.formatDate(new Date(),"yyyyMMdd")+"-"+params.parkName;
+                return  Promise.resolve({
+                    sendFrom:cfgEmail.sendFrom,
+                    data:txtobj,
+                    msgid:msgid,
+                    email:email,
+                    sendTime:new Date(),
+                    content:content
+                });
+            });
+    }).then(function(obj){
+        return  transporter.sendMail({
+            from: cfgEmail.fromEmailUser,to: obj.email,subject:obj.data.sign,text: obj.content, html: obj.content
+        }).then(function(res){
+            if(res.accepted.length>=1) return Promise.resolve(obj);
+            else return Promise.reject(obj);
+        });
+    })
+
+    //.then(function(msg){
+    //    console.log(msg);
+    //}).catch(function(err){
+    //    console.error(err)
+    //});
+}
+// function sendEmailTOcontactUs(params) {
+//     var toEmail=["peter.dong@pictureworks.biz,meteor.liu@pictureworks.biz"];
+//     var subject = 'Picture Enquiry';
+//     var content = params.name + params.feedback;
+//     return transporter
+//         .sendMail({
+//             from: "PictureAir.com Auto-Mailer <do-not-reply@pictureair.com>",to: toEmail,subject:subject,text: content, html: content
+//         });
+// }
+// sendEmailcontactUs("zh-CN",["peter.dong@pictureworks.biz,meteor.liu@pictureworks.biz","zhaoyi@pictureworks.biz"],
+//     {name:"test",feedback:"feedback",EmailAddress:"test@test.qq",parkName:"BPSG",
+//         visitDate:"visitDate",pictureAirCode:"pictureAirCode",orderID:"orderID",operatingSystem:"operatingSystem"}).then(function(msg){
+//    console.log(msg);
+// }).catch(function(err){
+//        console.error(err)
+// });
+
+
 // sendEmailTO("meteor.liu@pictureworks.biz","test","test").then(function(msg){
 //    console.log(">>>>",msg);
 // }).catch(function(err){
@@ -326,6 +385,7 @@ module.exports={
     sendMSMvalidateCode:sendMSMvalidateCode,
     sendEmailforgotPwdMsg:sendEmailforgotPwdMsg,
     getValidateCode:getValidateCode,
-    sendEmailTO:sendEmailTO
+    sendEmailTO:sendEmailTO,
+    sendEmailcontactUs:sendEmailcontactUs
 }
 
