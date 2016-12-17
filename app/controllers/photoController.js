@@ -361,8 +361,7 @@ exports.quickDownloadPhotos = function (req, res, next) {
                     return photoModel.updateAsync({_id: {$in: photoIds}, $or: [{'orderHistory.userId': photoObj.userId}, {isFree: true}]}, {$inc: {downloadCount: 1}}, {multi: true})
                         .then(function () {
                             return Promise.each(photos, function (pt) {
-                                console.log(pt.originalInfo.path)
-                                if(photoExists(pt)){
+                                if(photoExists(pt.originalInfo.path)){
                                     havePhoto = true;
                                     var photoPath = pt.originalInfo.path;
                                     var photoName = photoPath.substring(photoPath.lastIndexOf('/') - 1);
@@ -407,12 +406,13 @@ exports.quickDownloadPhotos = function (req, res, next) {
         })
 }
 
-function photoExists(photo) {
+function photoExists(path) {
     try {
-        var stats = fs.lstatSync(photo.originalInfo.path);
+        var stats = fs.lstatSync(path);
+        console.log(stats.isFile());
         return stats.isFile();
     } catch (e) {
-        console.log(e);
+        //console.log(e);
         return false;
     }
 }
