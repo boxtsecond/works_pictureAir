@@ -209,6 +209,10 @@ var errInfo={
         redisGetError: {status: 3051, msg: "system error", desc: "get photoIds in redis error"},
         photoError: {status: 3052, msg: "system error", desc: "get photoModel from db error"},
         promiseError: {status: 3053, msg: "system error", desc: "promise error"}
+    },
+    "getShareInfo":{
+        paramsError: {status: 4046, msg: "params is incomplete", desc: "missing key"},
+        notFind: {status: 3054, msg: "system error", desc: "not find share model in mongo"}
     }
     //-------------------system 5x 9x-------------------
 };

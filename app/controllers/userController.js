@@ -143,102 +143,26 @@ exports.getShareUrl = function (req, res, next) {
         });
 }
 
-//分享链接
-function share(req, res, params, next) {
-    var params = params || req.ext.params;
-    if(!req.ext.checkExistProperty(params, ['shareId', 'shareKey', 'shareContent'])){
-        return res.ext.json(errInfo.getShareUrl.paramsError);
+//分享
+exports.getShareInfo = function (req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, 'key')){
+        return res.ext.json(errInfo.getShareInfo.paramsError);
     }
     var shareModel = require('../mongodb/Model/shareModel.js');
-    var TargetDataModel, refData, shareEntity, shareContent, idsArray;
 
     Promise.resolve()
         .then(function () {
-            return shareModel.findOneAsync({"$or": [{"_id": params.shareId}, {"secretKey": params.shareKey}]});
+            return shareModel.findOneAsync({"secretKey": params.key});
         })
-        .then(function (data) {
-            if (!data) return Promise.reject(errInfo.share.notFind);
-            var shareModeEnum = enums.shareModeEnum;
-            shareEntity = data;
-            shareContent = data.shareContent;
-            switch (shareContent.mode) {
-                case shareModeEnum.product:
-                    TargetDataModel = require('../mongodb/Model/productModel.js');
-                    break;
-                case shareModeEnum.userInfo:
-                    TargetDataModel = require('../mongodb/Model/userModel.js');
-                    break;
-                case shareModeEnum.photo:
-                    TargetDataModel = require('../mongodb/Model/photoModel.js');
-                    break;
-                case shareModeEnum.video:
-                    TargetDataModel = require('../mongodb/Model/videoModel.js');
-                    break;
-                default :
-                    break;
+        .then(function (share) {
+            if(share){
+                var resultObj = errInfo.success;
+                resultObj.result = {info: share.sharePathInfo};
+                return res.ext.json(resultObj);
+            }else {
+                return Promise.reject(errInfo.getShareInfo.notFind);
             }
-            if (!TargetDataModel) return Promise.reject(errInfo.share.paramsError);
-            idsArray = shareContent.ids;
-        })
-        .then(function () {
-            if (!shareEntity.shareSource) {
-
-                shareEntity.shareSource = {
-                    ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress,
-                    title: params.title || 'share',
-                    terminal: params.token.t || '',
-                    description: params.description || '',
-                    platform: params.platform || ''
-                };
-            }
-            shareEntity.shareCount++;
-            shareEntity.save();
-        })
-        .then(function () {
-            refData = {
-                mode: shareContent.mode,
-                data: []
-            };
-            var condition = {"_id": {"$in": idsArray}};
-            if (shareContent.mode == shareModeEnum.photo) {
-                condition.disabled = false;
-            }
-            return TargetDataModel.findAsync(condition)
-                .then(function (targets) {
-                    targets = targets || [];
-                    return Promise.each(targets, function (target) {
-                        console.log(target)
-                        if (!target) return Promise.reject(errInfo.share.notFindTargetData);
-                        var shareInfoList = target.shareInfo = target.shareInfo || [];
-                        var position = -1;
-                        for (var i = 0; i < shareInfoList.length; i++) {
-                            if (shareInfoList[i].channel == input.platform) {
-                                position = i;
-                            }
-                        }
-                        if (position == -1) {
-                            target.shareInfo.push({
-                                sourceId: shareEntity._id,
-                                sourceSecret: shareEntity.secretKey,
-                                channel: input.platform,
-                                count: 1
-                            });
-                        } else {
-                            target.shareInfo[position].count += 1;
-                        }
-                        refData.data.push(target);
-                        target.save();
-                    });
-                });
-        })
-        .then(function () {
-            var result = {};
-            if (params.getShareData) {
-                result = refData;
-            }
-            var resultObj = errInfo.success;
-            resultObj.result = result;
-            return res.ext.json(resultObj);
         })
         .catch(function (error) {
             if(error.status){
@@ -248,14 +172,7 @@ function share(req, res, params, next) {
                 return res.ext.json(errInfo.share.promiseError);
             }
         });
-}
 
-
-//分享
-exports.getShareInfo = function (req, res, next) {
-    var params = req.ext.params;
-    params.getShareData = true;
-    share(req, res, params, next);
 }
 
 //激活（购买）卡
