@@ -24,6 +24,14 @@ var config = {
         platform: {type: String},//分享至platform
         terminal: {type: String}//分享来源终端
     },
+    sharePathInfo: [{
+        photoCode: {type: String},
+        path: {type: String},
+        shootOn: {type: Date},
+        url: {type: String},
+        width: {type: String},
+        height: {type: String}
+    }],
     createdOn: {type: Date, default: Date.now},//创建时间
     modifiedOn: {type: Date}
 };

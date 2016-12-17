@@ -12,8 +12,6 @@ router.post('/user/logout',ctr.users.logout);
 router.post('/user/getuser',ctr.users.getuser);
 
 router.post('/user/getShareUrl', ctr.userController.getShareUrl);
-router.post('/user/share', ctr.userController.share);
-router.post('/user/getShareInfo', ctr.userController.getShareInfo);
 router.post('/user/addCodeToUser', ctr.userController.addCodeToUser);
 router.post('/user/activeCodeToUser', ctr.userController.activeCodeToUser);
 router.post('/user/updateUser', ctr.userController.updateUser);

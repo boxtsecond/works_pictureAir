@@ -20,6 +20,7 @@ var redisclient=require('../redis/redis').redis;
 var cardTools = require('../tools/cardTools.js');
 var verifyreg=require('../rq.js').verifyreg;
 var filterCard = require('../resfilter/card.js');
+var filterShare = require('../resfilter/share.js').filterShare;
 
 //创建分享链接
 exports.getShareUrl = function (req, res, next) {
@@ -38,6 +39,7 @@ exports.getShareUrl = function (req, res, next) {
     var fullUrl, secretKey;
     var shareModel = require('../mongodb/Model/shareModel.js');
     var shareContent = params.shareContent;
+    var sharePath = [];
 
     Promise.resolve()
         .then(function () {
@@ -80,13 +82,21 @@ exports.getShareUrl = function (req, res, next) {
             if (shareContent.mode == shareModeEnum.photo) {
                 condition.disabled = false;
             }
-            return targetDataModel.findAsync(condition);
+            return targetDataModel.findAsync(condition)
+                .then(function (data) {
+                    if(data){
+                        return Promise.each(data, function (dt) {
+                            var sharePathInfo = filterShare(dt);
+                            sharePath.push(sharePathInfo);
+                        })
+                    }
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(errInfo.getShareUrl.promiseError);
+                });
         })
-        .then(function (targetData) {
-            targetData = targetData || [];
-            if (targetData.length != 0 && targetData.length != shareContent.ids.split(',').length) {
-                return Promise.reject(errInfo.getShareUrl.paramsError);
-            }
+        .then(function () {
             return shareModel.findOneAsync({"sharerId": params.userId, "shareContent.ids": shareContent.ids.split(",")});
         })
         .then(function (shareData) {
@@ -106,6 +116,7 @@ exports.getShareUrl = function (req, res, next) {
                         mode: shareContent.mode,
                         ids: shareContent.ids.split(',')
                     },
+                    sharePathInfo: sharePath,
                     shareCount: 0
                 })
                 shareData.save();
@@ -124,117 +135,35 @@ exports.getShareUrl = function (req, res, next) {
             return res.ext.json(resultObj);
         })
         .catch(function (err) {
-            console.log(err);
             if(err.status){
                 return res.ext.json(err);
+            }else {
+                console.log(err);
+                return res.ext.json(errInfo.getShareUrl.promiseError);
             }
-            return res.ext.json(errInfo.getShareUrl.promiseError);
         });
 }
 
-exports.getShareInfoByFullUrl = function (req, res, next) {
+//分享
+exports.getShareInfo = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.checkExistProperty(params, ['userId', 'key', 'ids'])){
-        return res.ext.json(errInfo.getShareUrl.paramsError);
-    }
-}
-
-//分享链接
-function share(req, res, params, next) {
-    var params = params || req.ext.params;
-    if(!req.ext.checkExistProperty(params, ['shareId', 'shareKey', 'shareContent'])){
-        return res.ext.json(errInfo.getShareUrl.paramsError);
+    if(!req.ext.checkExistProperty(params, 'key')){
+        return res.ext.json(errInfo.getShareInfo.paramsError);
     }
     var shareModel = require('../mongodb/Model/shareModel.js');
-    var TargetDataModel, refData, shareEntity, shareContent, idsArray;
 
     Promise.resolve()
         .then(function () {
-            return shareModel.findOneAsync({"$or": [{"_id": params.shareId}, {"secretKey": params.shareKey}]});
+            return shareModel.findOneAsync({"secretKey": params.key});
         })
-        .then(function (data) {
-            if (!data) return Promise.reject(errInfo.share.notFind);
-            var shareModeEnum = enums.shareModeEnum;
-            shareEntity = data;
-            shareContent = data.shareContent;
-            switch (shareContent.mode) {
-                case shareModeEnum.product:
-                    TargetDataModel = require('../mongodb/Model/productModel.js');
-                    break;
-                case shareModeEnum.userInfo:
-                    TargetDataModel = require('../mongodb/Model/userModel.js');
-                    break;
-                case shareModeEnum.photo:
-                    TargetDataModel = require('../mongodb/Model/photoModel.js');
-                    break;
-                case shareModeEnum.video:
-                    TargetDataModel = require('../mongodb/Model/videoModel.js');
-                    break;
-                default :
-                    break;
+        .then(function (share) {
+            if(share){
+                var resultObj = errInfo.success;
+                resultObj.result = {info: share.sharePathInfo};
+                return res.ext.json(resultObj);
+            }else {
+                return Promise.reject(errInfo.getShareInfo.notFind);
             }
-            if (!TargetDataModel) return Promise.reject(errInfo.share.paramsError);
-            idsArray = shareContent.ids;
-        })
-        .then(function () {
-            if (!shareEntity.shareSource) {
-
-                shareEntity.shareSource = {
-                    ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress,
-                    title: params.title || 'share',
-                    terminal: params.token.t || '',
-                    description: params.description || '',
-                    platform: params.platform || ''
-                };
-            }
-            shareEntity.shareCount++;
-            shareEntity.save();
-        })
-        .then(function () {
-            refData = {
-                mode: shareContent.mode,
-                data: []
-            };
-            var condition = {"_id": {"$in": idsArray}};
-            if (shareContent.mode == shareModeEnum.photo) {
-                condition.disabled = false;
-            }
-            return TargetDataModel.findAsync(condition)
-                .then(function (targets) {
-                    targets = targets || [];
-                    return Promise.each(targets, function (target) {
-                        console.log(target)
-                        if (!target) return Promise.reject(errInfo.share.notFindTargetData);
-                        var shareInfoList = target.shareInfo = target.shareInfo || [];
-                        var position = -1;
-                        for (var i = 0; i < shareInfoList.length; i++) {
-                            if (shareInfoList[i].channel == input.platform) {
-                                position = i;
-                            }
-                        }
-                        if (position == -1) {
-                            target.shareInfo.push({
-                                sourceId: shareEntity._id,
-                                sourceSecret: shareEntity.secretKey,
-                                channel: input.platform,
-                                count: 1
-                            });
-                        } else {
-                            target.shareInfo[position].count += 1;
-                        }
-                        refData.data.push(target);
-                        target.save();
-                    });
-                });
-        })
-        .then(function () {
-            var result = {};
-            if (params.getShareData) {
-                result = refData;
-            }
-            var resultObj = errInfo.success;
-            resultObj.result = result;
-            return res.ext.json(resultObj);
         })
         .catch(function (error) {
             if(error.status){
@@ -244,16 +173,7 @@ function share(req, res, params, next) {
                 return res.ext.json(errInfo.share.promiseError);
             }
         });
-}
-exports.share = function (req, res, next) {
-    share(req, res);
-};
 
-//分享图片
-exports.getShareInfo = function (req, res, next) {
-    var params = req.ext.params;
-    params.getShareData = true;
-    share(req, res, params, next);
 }
 
 //激活（购买）卡
@@ -675,7 +595,6 @@ exports.addCodeToUser = function (req, res, next) {
     var customerId = params.customerId;
     var userId = params.userId;
     var cType = 'ppCard';
-    var findPhotoObj = {};
     var flag;
 
     //验证卡是否有效
@@ -702,7 +621,6 @@ exports.addCodeToUser = function (req, res, next) {
         .then(function (card) {
             if(cType === 'ppCard'){
                 //白卡绑定到用户
-                findPhotoObj = {'customerIds.code': customerId};
                 return userModel.findByIdAsync(userId)
                     .then(function (user) {
                         if(user){
@@ -721,11 +639,10 @@ exports.addCodeToUser = function (req, res, next) {
                         if(flag){
                             return Promise.reject(errInfo.addCodeToUser.repeatBound);
                         }else {
-                            var updateObj = {$push: {customerIds:[]}};
                             var newCustomerIds = {
                                 code: customerId
                             };
-                            updateObj.$push.customerIds = newCustomerIds
+                            var updateObj = {$push: {customerIds:newCustomerIds}};
                             updateObj.modifiedOn = Date.now();
                             return userModel.findByIdAndUpdateAsync(userId, updateObj);
                         }
@@ -740,7 +657,6 @@ exports.addCodeToUser = function (req, res, next) {
                     })
             }else {
                 //付费卡绑定到用户
-                findPhotoObj = {'pppCodes.code': customerId};
                 var cardInfo = new filterCard.filterPPPCardToUserDB(card);
                 return userModel.findByIdAsync(userId)
                     .then(function (user) {
@@ -777,10 +693,10 @@ exports.addCodeToUser = function (req, res, next) {
         })
         .then(function () {
             //修改照片信息
-            return photoModel.findAsync(findPhotoObj)
-                .then(function (photoList) {
-                    if(photoList && photoList.length > 0){
-                        if(cType == 'ppCard'){
+            if(cType == 'ppCard'){
+                return photoModel.findAsync({'customerIds.code': customerId})
+                    .then(function (photoList) {
+                        if(photoList && photoList.length){
                             return Promise.mapSeries(photoList, function (photo) {
                                 var userIds = [];
                                 return Promise.resolve()
@@ -808,51 +724,18 @@ exports.addCodeToUser = function (req, res, next) {
                                         photo.save();
                                     })
                                     .catch(function (err) {
-                                        console.log(err);
-                                        return Promise.reject(errInfo.addCodeToUser.promiseError);
+                                        if(err.status){
+                                            return Promise.reject(err);
+                                        }else {
+                                            console.log(err);
+                                            return Promise.reject(errInfo.addCodeToUser.promiseError);
+                                        }
                                     });
 
                             });
-                        }else if(cType == 'pppCard'){
-                            return Promise.mapSeries(photoList, function (photo) {
-                                //var userIds = [];
-                                return Promise.resolve()
-                                    .then(function () {
-                                        return Promise.each(photo.orderHistory, function (pt) {
-                                            if(pt.userId == userId){
-                                                return Promise.reject(errInfo.addCodeToUser.repeatBound);
-                                            }
-                                        });
-                                    })
-                                    .then(function () {
-                                        photo.modifiedOn = Date.now();
-                                        photo.orderHistory = [
-                                            {
-                                                prepaidId: customerId,
-                                                productId: params.productId ? params.productId : 'photo',
-                                                userIds: userId,
-                                                createdOn: Date.now()
-                                            }
-                                        ];
-                                        photo.save();
-                                    })
-                                    .catch(function (err) {
-                                        console.log(err);
-                                        return Promise.reject(errInfo.addCodeToUser.promiseError);
-                                    })
-                            });
                         }
-                    }
-                })
-                .catch(function (err) {
-                    console.log(err);
-                    if(err.status){
-                        return Promise.reject(err);
-                    }else {
-                        console.log(err);
-                        return Promise.reject(errInfo.addCodeToUser.promiseError);
-                    }
-                })
+                    })
+            }
         })
         .then(function () {
             return userModel.findById(userId)
