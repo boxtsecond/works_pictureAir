@@ -318,6 +318,7 @@ exports.activeCodeToUser = function (req, res, next) {
                     //没有绑定直接激活
                     if (!flag.exist) {
                         var saveInfo = new filterCard.filterPPPCardToUserDB(obj);
+                        saveInfo.active = true;
                         var updateObj = {$push: {pppCodes: saveInfo}};
                         updateObj.modifiedOn = Date.now();
                         return userModel.findByIdAndUpdateAsync(userId, updateObj)
@@ -720,7 +721,7 @@ exports.addCodeToUser = function (req, res, next) {
                         if(flag){
                             return Promise.reject(errInfo.addCodeToUser.repeatBound);
                         }else {
-                            var updateObj = {$push: {custmoerIds:[]}};
+                            var updateObj = {$push: {customerIds:[]}};
                             var newCustomerIds = {
                                 code: customerId
                             };
@@ -782,47 +783,64 @@ exports.addCodeToUser = function (req, res, next) {
                         if(cType == 'ppCard'){
                             return Promise.mapSeries(photoList, function (photo) {
                                 var userIds = [];
-                                return Promise.each(photo.customerIds, function (pt) {
-                                    pt.userIds.length>0 ? userIds = pt.userIds : userIds = [];
-                                    Promise.each(pt.userIds, function (ptid) {
-                                        if(ptid == userId){
-                                            return Promise.reject(errInfo.addCodeToUser.repeatBound);
-                                        }
+                                return Promise.resolve()
+                                    .then(function () {
+                                        return Promise.each(photo.customerIds, function (pt) {
+                                            pt.userIds.length > 0 ? userIds = pt.userIds : userIds = [];
+                                            return Promise.each(pt.userIds, function (ptid) {
+                                                if (ptid == userId) {
+                                                    return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                                }
+                                            });
+                                        });
+                                    })
+                                    .then(function () {
+                                        userIds.push(userId);
+                                        photo.customerIds = [
+                                            {
+                                                code: customerId,
+                                                //cType: params.cType ? params.cType : 'photoPass',
+                                                userIds: userIds
+                                            }
+                                        ];
+                                        photo.userIds = userIds;
+                                        photo.modifiedOn = Date.now();
+                                        photo.save();
+                                    })
+                                    .catch(function (err) {
+                                        console.log(err);
+                                        return Promise.reject(errInfo.addCodeToUser.promiseError);
                                     });
 
-                                    userIds.push(userId);
-                                    photo.customerIds = [
-                                        {
-                                            code: customerId,
-                                            //cType: params.cType ? params.cType : 'photoPass',
-                                            userIds: userIds
-                                        }
-                                    ];
-                                    photo.userIds = userIds;
-                                    photo.modifiedOn = Date.now();
-                                    photo.save();
-                                });
-                            })
+                            });
                         }else if(cType == 'pppCard'){
                             return Promise.mapSeries(photoList, function (photo) {
-                                var userIds = [];
-                                Promise.each(photo.orderHistory, function (pt) {
-                                    if(pt.userId == userId){
-                                        return Promise.reject(errInfo.addCodeToUser.repeatBound);
-                                    }
-                                });
-
-                                photo.modifiedOn = Date.now();
-                                photo.orderHistory = [
-                                    {
-                                        prepaidId: customerId,
-                                        productId: params.productId ? params.productId : 'photo',
-                                        userIds: userId,
-                                        createdOn: Date.now()
-                                    }
-                                ];
-                                photo.save();
-                            })
+                                //var userIds = [];
+                                return Promise.resolve()
+                                    .then(function () {
+                                        return Promise.each(photo.orderHistory, function (pt) {
+                                            if(pt.userId == userId){
+                                                return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                            }
+                                        });
+                                    })
+                                    .then(function () {
+                                        photo.modifiedOn = Date.now();
+                                        photo.orderHistory = [
+                                            {
+                                                prepaidId: customerId,
+                                                productId: params.productId ? params.productId : 'photo',
+                                                userIds: userId,
+                                                createdOn: Date.now()
+                                            }
+                                        ];
+                                        photo.save();
+                                    })
+                                    .catch(function (err) {
+                                        console.log(err);
+                                        return Promise.reject(errInfo.addCodeToUser.promiseError);
+                                    })
+                            });
                         }
                     }
                 })
