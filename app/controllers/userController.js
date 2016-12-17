@@ -110,7 +110,7 @@ exports.getShareUrl = function (req, res, next) {
                     shareDomain: config.serverIP,
                     sharerId: params.userId,
                     shareUrl: fullUrl,
-                    shareShortUrl: url.resolve(config.serverIP, 'f/share/' + secretKey),
+                    shareShortUrl: url.resolve(config.serverIP, '/#/share?key=' + secretKey),
                     secretKey: secretKey,
                     shareContent: {
                         mode: shareContent.mode,

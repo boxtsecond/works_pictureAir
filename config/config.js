@@ -29,7 +29,7 @@ module.exports.config={
         dashBoardRoom: "dashboard"
     },
     //"apiPort":"4001",
-    "serverIP":"http://211.95.27.37/api/",
+    "serverIP":"http://211.95.27.37",
     "MasterAPIList":{
         pullPhotosFromLocal:'http://172.16.164.17:3000/help/getPhotosByPPs',
         removePhotosFromPP:'http://172.16.164.17:3000/sync/removePhotosFromPP'
