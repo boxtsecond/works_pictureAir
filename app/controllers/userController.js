@@ -517,14 +517,13 @@ exports.contactUs = function (req, res, next) {
             return sendEmail("zh-CN",configData.email.customerService,senConObj);
         })
         .then(function (obj) {
-            console.log(obj);
             //存入mongo
             var date = new Date();
             var contactMsg=new contactModel();
             contactMsg.name=params.name;
             contactMsg.EmailAddress=params.EmailAddress;
-            contactMsg.subject=subject;
-            contactMsg.content=content;
+            contactMsg.subject=obj.data.sign;
+            contactMsg.content=obj.data.content;
             contactMsg.parkName=params.parkName;
             contactMsg.createdBy=params.pictureAirCode || 'Guest';
             contactMsg.dataOfVisit=rq.util.convertStrToDate(params.visitDate);
