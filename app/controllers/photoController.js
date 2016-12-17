@@ -319,7 +319,7 @@ exports.quickDownloadPhotosParam = function (req, res, next) {
     config.userName = params.userName;
     var multi = redisclient.multi();
     multi.set(photoIdIndex, JSON.stringify(config));
-    multi.expire(photoIdIndex, 60 * 60 * 24) ;
+    multi.expire(photoIdIndex, 60*3) ;
     multi.exec(function (err, replies) {
         if (err) {
             return res.ext.json(errInfo.quickDownloadPhotosParam.redisSetError);

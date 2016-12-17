@@ -60,8 +60,8 @@
      "guestExpireTime":604800,
      "expireTime":604800,
      "userExpireTime":604800,
-     "validateCodeExpireTime":120,
-     "ForgotPwdMsgExpireTime":120,
+     "validateCodeExpireTime":1200,
+     "ForgotPwdMsgExpireTime":1200,
      "versionExpireTime":600000
   },
   "redis":{
