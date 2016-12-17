@@ -567,7 +567,7 @@ function getUpdateUserInfo(params) {
 //联系我们
 exports.contactUs = function (req, res, next) {
     var params = req.ext.params;
-    var subject = 'contact us';
+    var subject = 'Picture Enquiry';
     var content = params.name + params.feedback;
     if(!req.ext.checkExistProperty(params, ['name', 'EmailAddress', 'parkName', 'feedback'])){
         return res.ext.json(errInfo.contactUs.paramsError);

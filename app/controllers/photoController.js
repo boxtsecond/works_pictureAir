@@ -422,3 +422,74 @@ function photoExists(path) {
         return false;
     }
 }
+
+exports.getPhotosForWeb = function (req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, params.condition)){
+        return res.ext.json(errInfo.getPhotosByConditions.paramsError);
+    }
+    var conditions = getCondition(params);
+    var options = getOptions(params);
+    var fields = {
+        presetId: 1,
+        customerIds: 1,
+        photoCode: 1,
+        userIds: 1,
+        shootOn: 1,
+        extractOn: 1,
+        description: 1,
+        downloadCount: 1,
+        visitedCount: 1,
+        shareInfo: 1,
+        editCount: 1,
+        likeCount: 1,
+        orderHistory: 1,
+        comments: 1,
+        originalInfo: 1,
+        thumbnailTypes: 1,
+        thumbnail: 1,
+        locationId: 1,
+        parentId: 1,
+        disabled: 1,
+        isFree: 1,
+        isVIP: 1,
+        targetPoint: 1,
+        allowDownload: 1,
+        siteId: 1,
+        createdBy: 1,
+        modifiedOn: 1,
+        mobileEditActive: 1,
+        mimeType: 1,
+        bundleWithPPP: 1,
+        adInfo: 1
+    };
+    var flag;
+    var sendPhotos = [];
+    params.userId ? flag = true : flag = false;
+
+    Promise.resolve()
+        .then(function () {
+            return findPhotos(conditions, fields, options, flag);
+        })
+        .then(function (photos) {
+            if(photos.status) {
+                return res.ext.json(photos);
+            }else {
+                return Promise.each(photos, function (pt) {
+                    if(pt.isPaid){
+                        sendPhotos.push(pt);
+                    }
+                })
+            }
+        })
+        .then(function () {
+            var resultObj = errInfo.success;
+            resultObj.result = {};
+            resultObj.result.photos = sendPhotos;
+            return res.ext.json(resultObj);
+        })
+        .catch(function (error) {
+            console.log(error);
+            return res.ext.json(errInfo.getPhotosByConditions.promiseError);
+        });
+}
