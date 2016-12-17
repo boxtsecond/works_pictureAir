@@ -348,7 +348,7 @@ exports.activeCodeToUser = function (req, res, next) {
                 .then(function (list) {
                     if (list && list.length > 0) {
                         return Promise.each(list, function (photo) {
-                            Promise.resolve()
+                            return Promise.resolve()
                                 .then(function () {
                                     //更改 photo.orderHistory
                                     if (photo.orderHistory && photo.orderHistory.length > 0) {
