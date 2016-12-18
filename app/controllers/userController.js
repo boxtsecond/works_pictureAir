@@ -625,17 +625,25 @@ exports.addCodeToUser = function (req, res, next) {
             }
         })
         .then(function () {
+            //判断卡类型是否是付费卡
             return cardCodeModel.findOneAsync({PPPCode:customerId})
                 .then(function (card) {
                     //绑定付费卡
                     if(card){
+                        if(card.active){
+                            return Promise.reject(errInfo.addCodeToUser.activeAlready);
+                        }
                         cType = card.PPPType;
                         return card;
                     }
                 })
                 .catch(function (err) {
-                    console.log(err);
-                    return Promise.reject(errInfo.addCodeToUser.invalidCode);
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        console.log(err);
+                        return Promise.reject(errInfo.addCodeToUser.invalidCode);
+                    }
                 });
         })
         .then(function (card) {
@@ -716,32 +724,35 @@ exports.addCodeToUser = function (req, res, next) {
             if(cType == 'ppCard'){
                 return photoModel.findAsync({'customerIds.code': customerId})
                     .then(function (photoList) {
-                        if(photoList && photoList.length){
+                        if(photoList && photoList.length > 0){
                             return Promise.mapSeries(photoList, function (photo) {
                                 var userIds = [];
                                 return Promise.resolve()
                                     .then(function () {
+                                        var flag = false;
                                         return Promise.each(photo.customerIds, function (pt) {
                                             pt.userIds.length > 0 ? userIds = pt.userIds : userIds = [];
                                             return Promise.each(pt.userIds, function (ptid) {
                                                 if (ptid == userId) {
-                                                    return Promise.reject(errInfo.addCodeToUser.repeatBound);
+                                                    flag = true;
                                                 }
                                             });
                                         });
                                     })
                                     .then(function () {
-                                        userIds.push(userId);
-                                        photo.customerIds = [
-                                            {
-                                                code: customerId,
-                                                //cType: params.cType ? params.cType : 'photoPass',
-                                                userIds: userIds
-                                            }
-                                        ];
-                                        photo.userIds = userIds;
-                                        photo.modifiedOn = Date.now();
-                                        photo.save();
+                                        if(!flag){
+                                            userIds.push(userId);
+                                            photo.customerIds = [
+                                                {
+                                                    code: customerId,
+                                                    //cType: params.cType ? params.cType : 'photoPass',
+                                                    userIds: userIds
+                                                }
+                                            ];
+                                            photo.userIds = userIds;
+                                            photo.modifiedOn = Date.now();
+                                            photo.save();
+                                        }
                                     })
                                     .catch(function (err) {
                                         if(err.status){

@@ -25,6 +25,6 @@ router.get('/photo/quickDownloadPhotos', ctr.photoController.quickDownloadPhotos
 
 router.get('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);
 router.get('/card/getCouponsByUserId', ctr.cardController.getCouponsByUserId);
-router.get('/card/removePPFromUser', ctr.cardController.removePPFromUser);
+router.post('/card/removePPFromUser', ctr.cardController.removePPFromUser);
 
 module.exports = router;

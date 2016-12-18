@@ -12,8 +12,8 @@
 //40000  80000 prompt 用户输入错误(需要提示给用户) 对外的
 //50000  90000 system 服务器内部错误 （内部日志记录）
 var errInfo={
-    //"dbErrorMax": 3045,
-    //"userErrorMax": 4027,
+    //"dbErrorMax": 3058,
+    //"userErrorMax": 4049,
     //-------------------normal 2x 6x -----------------
     "success": {status: 200, msg: "success", result:{}},
     //-------------------prompt 3x 4x 7x 8x -------------------
@@ -82,8 +82,10 @@ var errInfo={
     "removePPFromUser": {
         paramsError: {status: 4003, msg: "params is incomplete", desc: "missing customerId"},
         paramsInvalid: {status: 4004, msg: "params is invalid", desc: "customerId is invalid"},
-        notFind: {status: 4005, msg: "not find user", desc: "not find user from db"},
+        notFind: {status: 4005, msg: "not find card, card remove already", desc: "not find user from db"},
         photoError: {status: 3008, msg: "system error", desc: "update photoModel from db error"},
+        userError: {status: 3055, msg: "system error", desc: "update userModel from db error"},
+        redisError: {status: 3056, msg: "system error", desc: "set user info to redis error"},
         promiseError: {status: 3009, msg: "system error", desc: "promise error"}
     },
     "getAllLocations": {
@@ -136,9 +138,11 @@ var errInfo={
 
     },
     "removePhotosFromPP": {
-        paramsError: {status: 4008, msg: "params is incomplete", desc: "missing ids or pp"},
+        paramsError: {status: 4008, msg: "params is incomplete", desc: "missing pp"},
+        notFind: {status: 4048, msg: "not find photo, photo removed already", desc: "not find photo from db, can't remove"},
         promiseError: {status: 3024, msg: "system error", desc: "promise error"},
-        saveError: {status: 3025, msg: "system error", desc: "save photo to db error"}
+        photoError: {status: 3025, msg: "system error", desc: "save photo to db error"},
+        redisError: {status: 3057, msg: "system error", desc: "set user info to redis error"}
     },
     "getAllParks": {
         notFind: {status: 4028, msg: "not find park", desc: "not find park from db"},
@@ -194,6 +198,7 @@ var errInfo={
         paramsError: {status: 4013, msg: "params is incomplete", desc: "missing customerId"},
         invalidCode: {status: 4041, msg: "customerId is invalid", desc: "customerId is invalid"},
         repeatBound: {status: 4042, msg:'repeat binding',desc:'you have bounded this card already!'},
+        activeAlready: {status: 4047, msg: "card actived already", desc: "card active already"},
         notFind: {status: 3046, msg: "system error", desc: "not find user form db"},
         userError: {status: 3047, msg: "system error", desc: "get userModel from db error"},
         promiseError: {status: 3048, msg: "system error", desc: "promise error"}

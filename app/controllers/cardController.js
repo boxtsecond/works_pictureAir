@@ -9,12 +9,12 @@ var photoModel = require('../mongodb/Model/photoModel');
 var pppModel = require('../mongodb/Model/photoPassPlusModel');
 var pppTypeModel = require('../mongodb/Model/photoPassPlusTypeModel');
 var codeType = require('../tools/enums.js').codeType;
-var pushMsgType = require('../tools/enums.js').pushMsgType;
-var pppController = require('./photoPassPlusController.js');
-var socketController = require('./socketController.js');
-var pubScribeList = require('../tools/socketApi.js').pubScribeList;
 var util = require('../lib/util/util.js');
 var filterPhoto = require('../resfilter/photo.js').filterPhoto;
+var cardTools = require('../tools/cardTools.js');
+var cardCodeModel = require('../mongodb/Model/cardCodeModel.js');
+var redisclient=require('../redis/redis').redis;
+var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 
 function getListByUserIdAndOType(oType, userId) {
     var result = [];
@@ -257,77 +257,112 @@ exports.getPPsByUserId = function (req, res, next) {
 //解绑卡
 exports.removePPFromUser = function (req, res, next) {
     var params = req.ext.params;
+    if (!req.ext.checkExistProperty(params, 'customerId')) {
+        return res.ext.json(errInfo.removePPFromUser.paramsError);
+    }
     var userId = params.userId;
-    if (!req.ext.checkExistProperty(params, ['customerId'])) {
-        res.ext.json(errInfo.removePPFromUser.paramsError);
-    }
-    var customerId = params.customerId.trim() || '';
-    customerId = customerId.toUpperCase().replace(/-/g, "");
-//    customerId=customerId.replace('http://140.206.125.194:3001/downloadApp.html?','');
-    //判断customerId是否有效
-    var cType = pppController.getCodeTypeByCode(customerId);
-    if (cType != codeType.photoPass && cType != codeType.eventPass) {
-        res.ext.json(errInfo.removePPFromUser.paramsInvalid);
-    }
-    //如果codeType是PP，需要判断当前PP是否已经绑定到用户，已经绑定则不能再绑定
-    Promise.resolve()
-        .then(function () {
-            return userModel.findByIdAsync(userId);
-        })
-        .then(function (usr) {
-            if (usr) {
-                var index = -1;
-                for (var i = 0; i < usr.customerIds.length; i++) {
-                    if (usr.customerIds[i].code == customerId) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index != -1) {
-                    usr.customerIds.splice(index, 1);
-                    usr.save();
-                    return usr;
-                } else {
-                    return usr;
-                }
-            } else {
-                return Promise.reject(errInfo.removePPFromUser.notFind)
+    var customerId = params.customerId;
+    var cType = 'ppCard';
+    var findObj;
+
+    cardTools.validatePPType(customerId)
+        .then(function (code) {
+            if(!code){
+                return Promise.reject(errInfo.removePPFromUser.invalidCode);
             }
         })
-        .then(function (usr) {
-            var pp = customerId;
-            return pppModel.updateAsync({'bindInfo.customerId': pp}, {
-                $pull: {'bindInfo.$.userIds': userId},
-                modifiedOn: Date.now(),
-                modifiedBy: userId
-            }, {multi: true});
+        .then(function () {
+            return cardCodeModel.findOneAsync({PPPCode:customerId})
+                .then(function (card) {
+                    //付费卡
+                    if(card){
+                        cType = card.PPPType;
+                        findObj = {_id: userId, 'pppCodes.code': customerId};
+                        return card;
+                    }else {
+                        findObj = {_id: userId, 'customerIds.code': customerId};
+                        return card;
+                    }
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(errInfo.removePPFromUser.invalidCode);
+                });
         })
         .then(function () {
-            return photoModel.updateAsync({'customerIds.code': customerId}, {$pull: {"customerIds.$.userIds": userId}}, {multi: true})
-                        .then(function () {
-                            return photoModel.updateAsync({'customerIds.code':customerId,'customerIds.userIds':{$ne:userId}},{$pull:{userIds:userId}},{multi:true});
-                        })
-                        .catch(function (err) {
-                            console.log('update', err);
+            return userModel.findAsync(findObj)
+                .then(function (user) {
+                    if(user && user.length > 0){
+                        if(cType == 'ppCard'){
+                            return userModel.findByIdAndUpdateAsync(userId, {$pull: {'customerIds': {code:customerId}}});
+                        }else if(cType == 'OneDayPass'){
+                            return userModel.findByIdAndUpdateAsync(userId, {$pull: {'pppCodes': {PPPCode:customerId}}});
+                        }
+                    }else {
+                        return Promise.reject(errInfo.removePPFromUser.notFind);
+                    }
+                })
+                .catch(function (err) {
+                    if(err.status){
+                        return Promise.reject(err);
+                    }else {
+                        return Promise.reject(errInfo.removePPFromUser.userError);
+                    }
+                });
+        })
+        .then(function () {
+            if(cType == 'ppCard'){
+                return photoModel.findAsync({userIds: userId, "customerIds.code": customerId})
+                    .then(function (photos) {
+                        if(photos && photos.length > 0){
+                            return Promise.each(photos, function (pt) {
+                                return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'userIds': userId}})
+                                    .then(function () {
+                                        return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'customerIds': {userId: userId}}})
+                                            .then(function (data) {
+                                                if(data.userIds.length == 0 && data.customerIds.length == 1){
+                                                    return photoModel.removeAsync({_id: data._id});
+                                                }
+                                            })
+                                    })
+                                    .catch(function (err) {
+                                        console.log(err);
+                                        return Promise.reject(errInfo.removePPFromUser.photoError);
+                                    });
+                            })
+                        }
+                    })
+                    .catch(function (err) {
+                        if(err.status){
+                            return Promise.reject(err);
+                        }else {
+                            console.log(err);
                             return Promise.reject(errInfo.removePPFromUser.photoError);
-                        });
-                })
-        .then(function () {
-            return socketController.pushToUsers(pushMsgType.delPhotos, [userId], pubScribeList.pushDelPhotos,
-                {
-                    customerId: customerId
-                })
+                        }
+                    });
+            }
         })
         .then(function () {
-            return res.ext.json();
+            //更改缓存
+            return userModel.findByIdAsync(userId)
+                .then(function (user) {
+                    var urInfo = new filterUserToredis(user);
+                    return redisclient.set('access_token:'+ params.token.audience, JSON.stringify(urInfo));
+                })
+                .then(function () {
+                    return res.ext.json();
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(errInfo.removePPFromUser.redisError);
+                })
         })
         .catch(function (error) {
-            console.log(error);
             if(error.status){
                 return res.ext.json(error);
             }else {
+                console.log(error);
                 return res.ext.json(errInfo.removePPFromUser.promiseError);
             }
         });
 }
-

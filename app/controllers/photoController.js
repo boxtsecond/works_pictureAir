@@ -17,15 +17,20 @@ var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
 var util=require('../../config/util.js');
 var uuid = require('../rq').uuid;
+var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 
-function getCondition(params) {
+function getCondition(req, params) {
     var condition = {};
     for(var i in params){
         var cdt = params[i];
         switch (true){
             case /^id/.test(i):
-                var idArr = cdt.split(',');
-                condition._id = {'$in': idArr};
+                if(req.ext.isArray(cdt)){
+                    condition._id = {'$in': cdt};
+                }else {
+                    var idArr = cdt.split(',');
+                    condition._id = {'$in': idArr};
+                }
                 break;
             case /^gteID$/.test(i):
                 condition._id = {'$gt': cdt};
@@ -34,8 +39,12 @@ function getCondition(params) {
                 condition._id = {'$lt': cdt};
                 break;
             case /^userId/.test(i):
-                var userIdArr = cdt.split(',');
-                condition.userIds = {'$in': userIdArr};
+                if(req.ext.isArray(cdt)){
+                    condition.userIds = {'$in': cdt};
+                }else {
+                    var userIdArr = cdt.split(',');
+                    condition.userIds = {'$in': userIdArr};
+                }
                 break;
             case /^locationId/.test(i):
                 var locationIdArr = cdt.split(',');
@@ -167,7 +176,7 @@ exports.getPhotosByConditions = function (req, res, next) {
     if(!req.ext.checkExistProperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
     }
-    var conditions = getCondition(params);
+    var conditions = getCondition(req, params);
     var options = getOptions(params);
     var fields = {
         presetId: 1,
@@ -207,6 +216,7 @@ exports.getPhotosByConditions = function (req, res, next) {
 
     Promise.resolve()
         .then(function () {
+            console.log(conditions);
             return findPhotos(conditions, fields, options, flag);
         })
         .then(function (photos) {
@@ -227,70 +237,48 @@ exports.getPhotosByConditions = function (req, res, next) {
 
 exports.removePhotosFromPP = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.checkExistProperty(params, ['ids', 'pp', 'userId'])) {
+    if (!req.ext.checkExistProperty(params, ['pp', 'userId'])) {
         res.ext.json(errInfo.removePhotosFromPP.paramsError);
     }
-    var customerId = params.pp;
-
-    var ids = [];
-    try {
-        ids = JSON.parse(params.ids);
-    } catch (e) {
-        ids = params.ids;
-    }
     var userId = params.userId;
-    var photoIds = [];
+    var conditions = getCondition(req, params);
     
-    photoModel.findAsync({'customerIds.code': customerId, "_id": {"$in": ids}})
+    photoModel.findAsync(conditions)
         .then(function (list) {
-            Promise.mapSeries(list, function (item) {
-                var index = -1;
-                var pushUserIds = [];
-                photoIds.push(item.photoId);
-
-                var addUserIds = [];//其他卡号的用户Id
-
-                for (var i = 0; i < item.customerIds.length; i++) {
-                    if (item.customerIds[i].code != customerId) {
-                        for (var t = 0; t < item.customerIds[i].userIds.length; t++) {
-                            if (addUserIds.indexOf(item.customerIds[i].userIds[t]) == -1) {
-                                addUserIds.push(item.customerIds[i].userIds[t]);
-                            }
-                        }
-
-                    }
-                    if (item.customerIds[i].code == customerId) {
-                        index = i;
-                        pushUserIds = item.customerIds[i].userIds;
-                    }
-
-                }
-                item.userIds = addUserIds;
-                item.customerIds.splice(index, 1);
-                item.modifiedOn = Date.now();
-                var pUserIds = [];
-                var pNewUserIds = [];//如果有另一张卡也存在信息则推送修改后的数据到手机端
-                for (var p = 0; p < pushUserIds.length; p++) {
-                    if (item.userIds.indexOf(pushUserIds[p]) == -1) {
-                        pUserIds.push(pushUserIds[p]);
-                    } else {
-                        pNewUserIds.push(pushUserIds[p]);
-                    }
-                }
-                item.save();
-            });
-        })
-        .then(function (result) {
-            if(result){
-                request.post({
-                    url: config.MasterAPIList.removePhotosFromPP,
-                    body: {photoIds: photoIds, pp: customerId},
-                    json: true
+            if(list && list.length > 0){
+                return Promise.each(list, function (photo) {
+                    return photoModel.findByIdAndUpdateAsync(photo._id, {$pull: {'userIds': userId}})
+                        .then(function () {
+                            return photoModel.findByIdAndUpdateAsync(photo._id, {$pull: {'customerIds': {userId: userId}}})
+                                .then(function (data) {
+                                    if(data.userIds.length == 0 && data.customerIds.length == 1){
+                                        return photoModel.removeAsync({_id: data._id});
+                                    }
+                                })
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                            return Promise.reject(errInfo.removePhotosFromPP.photoError);
+                        });
                 });
-                return res.ext.json();
             }else {
-                return res.ext.json(errInfo.removePhotosFromPP.saveError);;
+                return Promise.reject(errInfo.removePhotosFromPP.notFind);
             }
+        })
+        .then(function () {
+            //更改缓存
+            return userModel.findByIdAsync(userId)
+                .then(function (user) {
+                    var urInfo = new filterUserToredis(user);
+                    return redisclient.set('access_token:'+ params.token.audience, JSON.stringify(urInfo));
+                })
+                .then(function () {
+                    return res.ext.json();
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    return Promise.reject(errInfo.removePhotosFromPP.redisError);
+                })
         })
         .catch(function (err) {
             if(err.status){
