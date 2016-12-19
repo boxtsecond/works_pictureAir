@@ -234,6 +234,7 @@ function txtStrReplacePromise(drawTextStr,dReplaceArray){
 exports.checkExistProperty = function (data, propertyName) {
     var propertyArray = [];
     if(isstring(propertyName)){
+        propertyName = propertyName.replace(/\s+/g, '');
         propertyArray = propertyName.split(',');
     }else if(isArray(propertyName)){
         propertyArray = propertyName;
