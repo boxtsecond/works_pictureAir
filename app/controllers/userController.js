@@ -434,12 +434,10 @@ function getUpdateUserInfo(params) {
             return errInfo.updateUser.birthdayError;
         }
     }
-    if (params.gender && params.gender.toString().trim() != '') {
-        if (params.gender == -1 || params.gender == 0 || params.gender == 1) {
-            updateInfo.gender = params.gender;
-        } else {
-            return errInfo.updateUser.genderError;
-        }
+    if (params.gender == -1 || params.gender == 0 || params.gender == 1) {
+        updateInfo.gender = params.gender;
+    } else {
+        return errInfo.updateUser.genderError;
     }
     if (params.guideYear && common.isPositiveNumber(params.guideYear) != false) {
         updateInfo.guideYear = parseInt(params.guideYear);
