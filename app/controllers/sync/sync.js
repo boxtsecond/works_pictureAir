@@ -94,6 +94,7 @@ function  syncFileData(req,res) {
             else return obj;
         }).then(function (obj) {
                 // console.log('#######',obj);
+                //如果数据已经存在,更新数据
               return photoModel.createAsync(obj.photo).then(function (err) {
                   return obj;
               }).catch(function (err) {

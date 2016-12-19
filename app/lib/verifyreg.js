@@ -22,7 +22,7 @@ function verifyDateStr(str) {
 
 // console.log(verifyDateStr("2016-2-26 00:00:00"))
 // console.log(isMobile("167119499"))
-//console.log(isEmail("peter.dong@pictureworks.biz"))
+console.log(isEmail("peter_d_ong@pictureworks.biz"))
 module.exports={
     verifyuserName:verifyuserName,
     isMobile:isMobile,
