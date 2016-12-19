@@ -314,38 +314,38 @@ exports.removePPFromUser = function (req, res, next) {
                     }
                 });
         })
-        // .then(function () {
-        //     if(cType == 'ppCard'){
-        //         return photoModel.findAsync({userIds: userId, "customerIds.code": customerId})
-        //             .then(function (photos) {
-        //                 if(photos && photos.length > 0){
-        //                     return Promise.each(photos, function (pt) {
-        //                         return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'userIds': userId}})
-        //                             .then(function () {
-        //                                 return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'customerIds': {userId: userId}}})
-        //                                     // .then(function (data) {
-        //                                     //     if(data.userIds.length == 0 && data.customerIds.length == 1){
-        //                                     //         return photoModel.removeAsync({_id: data._id});
-        //                                     //     }
-        //                                     // })
-        //                             })
-        //                             .catch(function (err) {
-        //                                 console.log(err);
-        //                                 return Promise.reject(errInfo.removePPFromUser.photoError);
-        //                             });
-        //                     })
-        //                 }
-        //             })
-        //             .catch(function (err) {
-        //                 if(err.status){
-        //                     return Promise.reject(err);
-        //                 }else {
-        //                     console.log(err);
-        //                     return Promise.reject(errInfo.removePPFromUser.photoError);
-        //                 }
-        //             });
-        //     }
-        // })
+        .then(function () {
+            if(cType == 'ppCard'){
+                return photoModel.findAsync({userIds: userId, "customerIds.code": customerId})
+                    .then(function (photos) {
+                        if(photos && photos.length > 0){
+                            return Promise.each(photos, function (pt) {
+                                return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'userIds': userId}})
+                                    // .then(function () {
+                                    //     return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'customerIds': {userId: userId}}})
+                                    //         // .then(function (data) {
+                                    //         //     if(data.userIds.length == 0 && data.customerIds.length == 1){
+                                    //         //         return photoModel.removeAsync({_id: data._id});
+                                    //         //     }
+                                    //         // })
+                                    // })
+                                    .catch(function (err) {
+                                        console.log(err);
+                                        return Promise.reject(errInfo.removePPFromUser.photoError);
+                                    });
+                            })
+                        }
+                    })
+                    .catch(function (err) {
+                        if(err.status){
+                            return Promise.reject(err);
+                        }else {
+                            console.log(err);
+                            return Promise.reject(errInfo.removePPFromUser.photoError);
+                        }
+                    });
+            }
+        })
         .then(function () {
             //更改缓存
             return userModel.findByIdAsync(userId)
