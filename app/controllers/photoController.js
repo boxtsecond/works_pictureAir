@@ -401,7 +401,7 @@ exports.getPhotosForWeb = function (req, res, next) {
     if(!req.ext.checkExistProperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
     }
-    var conditions = getCondition(params);
+    var conditions = getCondition(req, params);
     var options = getOptions(params);
     var fields = {
         presetId: 1,
