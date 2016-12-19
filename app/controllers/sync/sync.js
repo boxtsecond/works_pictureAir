@@ -123,23 +123,40 @@ function  syncFileData(req,res) {
             else return obj;
         })
         .then(function (obj) {
-
+            return obj.photo;
         })
-        .then(function (obj) {
+        .then(function (photo) {
+            return photoModel.findOne({_id:photo._id}).then(function (err) {
+                if(err) {
+                    //如果数据已经存在,更新数据
+                    var nphoto=new updatePhotoObJ(photo);
+                    return  photoModel.update({_id: photo.id},{$set:nphoto},{ multi: true })
+                        .then(function (onePhoto) {
+                            console.log("upload update rawFileName :--->>>>>",photo.rawFileName);
+                            return Promise.reject([200,'success',{}]);
+                    }).catch(function (nerr) {
+                            console.log("upload update rawFileName :--->>>>>",photo.rawFileName);
+                            return Promise.reject([300,'success',{}]);
+                    });
+                }
+                else return photo;
+            }).catch(function (err) {
+                return photo;
+            });
+        })
+        .then(function (photo) {
                 // console.log('#######',obj);
-                //如果数据已经存在,更新数据
-                //
-              return photoModel.createAsync(obj.photo).then(function (err) {
-                  return obj;
+              return photoModel.createAsync(photo).then(function (err) {
+                  return photo;
               }).catch(function (err) {
-                  return obj;
+                  return Promise.reject([300,'success',{}]);
               });
-        }).then(function (obj) {
-            console.log("upload rawFileName :--->>>>>",obj.photo.rawFileName);
+        }).then(function (photo) {
+            console.log("upload rawFileName :--->>>>>",photo.rawFileName);
                res.ext.json([200,'success',{}]);
         })
         .catch(function (err) {
-            console.error(err)
+            console.error(err);
           res.ext.json(err);
     });
 }

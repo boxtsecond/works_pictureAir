@@ -13,10 +13,12 @@ var  cardprefixArray=['PACC','BPSG'];
 //
 function validatePPType(pppCode) {
     return new Promise(function (resolve, reject) {
-        if(pppCode.length!=16) return resolve(false);
-        else if(cardprefixArray.indexOf(pppCode.substr(0,4))<0)return resolve(false);
-        else if(cardTypeArray.indexOf(Number(pppCode[5]))>=0) return resolve(pppCode);
-        else return resolve(false);
+        // if(pppCode.length!=16) return resolve(false);
+        // else if(cardprefixArray.indexOf(pppCode.substr(0,4))<0)return resolve(false);
+        // else if(cardTypeArray.indexOf(Number(pppCode[5]))>=0) return resolve(pppCode);
+        // else return resolve(false);
+         if(true) return resolve(pppCode);
+         else return reject(pppCode);
     });
 }
 
