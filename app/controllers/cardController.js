@@ -322,15 +322,10 @@ exports.removePPFromUser = function (req, res, next) {
                             return Promise.each(photos, function (pt) {
                                 return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'userIds': userId}})
                                     .then(function () {
-                                        console.log('!!!!!!!!!!!');
                                         return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'customerIds': {userId: userId}}})
-                                        console.log('1111111111');
-                                            // .then(function (data) {
-                                            //     if(data.userIds.length == 0 && data.customerIds.length == 1){
-                                            //         console.log('@@@@@@@@@@@@@@@@@');
-                                            //         return photoModel.removeAsync({_id: data._id});
-                                            //     }
-                                            // })
+                                            .then(function (data) {
+                                                console.log(data);
+                                            })
                                     })
                                     .catch(function (err) {
                                         console.log(err);

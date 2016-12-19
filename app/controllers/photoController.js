@@ -250,12 +250,7 @@ exports.removePhotosFromPP = function (req, res, next) {
                 return Promise.each(list, function (photo) {
                     return photoModel.findByIdAndUpdateAsync(photo._id, {$pull: {'userIds': userId}})
                         .then(function () {
-                            return photoModel.findByIdAndUpdateAsync(photo._id, {$pull: {'customerIds': {userId: userId}}})
-                                // .then(function (data) {
-                                //     if(data.userIds.length == 0 && data.customerIds.length == 1){
-                                //         return photoModel.removeAsync({_id: data._id});
-                                //     }
-                                // })
+                            return photoModel.findByIdAndUpdateAsync(photo._id, {$pull: {'customerIds': {userId: userId}}});
                         })
                         .then(function () {
                             return res.ext.json();
