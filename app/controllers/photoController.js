@@ -243,7 +243,8 @@ exports.removePhotosFromPP = function (req, res, next) {
     }
     var userId = params.userId;
     var conditions = getCondition(req, params);
-    
+    console.log(conditions)
+
     photoModel.findAsync(conditions)
         .then(function (list) {
             if(list && list.length > 0){
