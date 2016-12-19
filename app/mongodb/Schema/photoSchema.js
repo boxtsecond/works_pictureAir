@@ -20,8 +20,8 @@ var config={
     pacId:{type: String,  index: true,default:"0000"},//pac ID
     userId:{type: String,  index: true,default:"00000000"},//usr ID
     hasSynced:{type: Boolean, default: false,index: true}, //是否已经同步
-    appServerIP:{type: String,  index: true},//api ip
-    storageServerIP:{type: String,  index: true}, // nas ip
+    appServerIP:{type: String},//api ip
+    storageServerIP:{type: String}, // nas ip
     siteId:{type: String,  index: true},//服务器ID
     photoId: {type: String, index: true}, //照片Id（siteIdyyyymmddxxxxx）
     photoCode: {type: String, index: true},   //照片code
