@@ -323,11 +323,11 @@ exports.removePPFromUser = function (req, res, next) {
                                 return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'userIds': userId}})
                                     .then(function () {
                                         return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'customerIds': {userId: userId}}})
-                                            .then(function (data) {
-                                                if(data.userIds.length == 0 && data.customerIds.length == 1){
-                                                    return photoModel.removeAsync({_id: data._id});
-                                                }
-                                            })
+                                            // .then(function (data) {
+                                            //     if(data.userIds.length == 0 && data.customerIds.length == 1){
+                                            //         return photoModel.removeAsync({_id: data._id});
+                                            //     }
+                                            // })
                                     })
                                     .catch(function (err) {
                                         console.log(err);

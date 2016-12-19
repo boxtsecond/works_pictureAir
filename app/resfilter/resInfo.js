@@ -84,6 +84,7 @@ var errInfo={
         paramsInvalid: {status: 4004, msg: "params is invalid", desc: "customerId is invalid"},
         notFind: {status: 4005, msg: "not find card, card remove already", desc: "not find user from db"},
         notRemove: {status: 4049, msg: "can't remove userPP card", desc: "can't remove userPP card"},
+        invalidCode: {status: 4050, msg: "customerId is invalid", desc: "customerId is invalid"},
         photoError: {status: 3008, msg: "system error", desc: "update photoModel from db error"},
         userError: {status: 3055, msg: "system error", desc: "update userModel from db error"},
         redisError: {status: 3056, msg: "system error", desc: "set user info to redis error"},
