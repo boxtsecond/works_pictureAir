@@ -198,7 +198,7 @@ var errInfo={
         paramsError: {status: 4013, msg: "params is incomplete", desc: "missing customerId"},
         invalidCode: {status: 4041, msg: "customerId is invalid", desc: "customerId is invalid"},
         repeatBound: {status: 4042, msg:'repeat binding',desc:'you have bounded this card already!'},
-        activeAlready: {status: 4047, msg: "card actived already", desc: "card active already"},
+        activeAlready: {status: 4047, msg: "card actived already", desc: "card active already!"},
         notFind: {status: 3046, msg: "system error", desc: "not find user form db"},
         userError: {status: 3047, msg: "system error", desc: "get userModel from db error"},
         promiseError: {status: 3048, msg: "system error", desc: "promise error"}
