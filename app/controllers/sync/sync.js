@@ -34,30 +34,25 @@ function updatePhotoObJ(photo) {
     this.photoCode=photo.photoCode;
     this.shootOn=photo.shootOn;
     this.extractOn=photo.extractOn;
-
     this.editHistorys=photo.editHistorys;
     this.originalInfo=photo.originalInfo;
     this.locationId=photo.locationId;
     this.targetPoint=photo.targetPoint;
-
     this.tokenBy=photo.tokenBy;
     this.photoSource=photo.photoSource;
     // this.targetPoint=photo.targetPoint;
     this.checkedTime=photo.checkedTime;
+    this.modifiedOn=new Date();
     this.tagBy=photo.tagBy;
     this.customerIds=photo.customerIds;
     this.allowDownload=photo.allowDownload;
     this.isVip=photo.isVip;
     this.disabled=photo.disabled;
     this.mobileEditActive=photo.mobileEditActive;
-
     this.thumbnail=photo.thumbnail;
     this.photoStatus=photo.photoStatus;
     this.checkedUser=photo.checkedUser;
     this.tagBy=photo.tagBy;
-
-
-
 }
 
 // console.log(photoModel)
@@ -126,7 +121,11 @@ function  syncFileData(req,res) {
                 }else  return obj;
             }
             else return obj;
-        }).then(function (obj) {
+        })
+        .then(function (obj) {
+
+        })
+        .then(function (obj) {
                 // console.log('#######',obj);
                 //如果数据已经存在,更新数据
                 //

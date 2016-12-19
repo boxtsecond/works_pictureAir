@@ -329,7 +329,7 @@ function sendEmailcontactUs(lg,email,params){
         ])
             .then(function(content){
                 txtobj.content=content;
-                txtobj.sign='Picture Enquiry '+rq.util.formatDate(new Date(),"yyyyMMdd")+"-"+params.parkName;
+                txtobj.sign='PictureAir Enquiry '+rq.util.formatDate(new Date(),"yyyyMMddhhmm")+"-"+params.parkName+"-"+params.name;
                 return  Promise.resolve({
                     sendFrom:cfgEmail.sendFrom,
                     data:txtobj,
