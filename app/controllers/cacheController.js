@@ -9,27 +9,27 @@ exports.carousel = function (req, res, next) {
     }
     var str={
             "index":{
-                "slide":[  {"url":"h5/assets/slide/01.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/02.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/03.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/04.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/05.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"}
+                "slide":[  {"url":"h5/assets/slide/index/01.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/index/02.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/index/03.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/index/04.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/index/05.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"}
                  ]
             },
             "login":{
-                "slide": [  {"url":"h5/assets/slide/01.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/02.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/03.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/04.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                    {"url":"h5/assets/slide/05.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
+                "slide": [  {"url":"h5/assets/slide/login/01.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/login/02.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/login/03.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/login/04.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                    {"url":"h5/assets/slide/login/05.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
                   ]
             },
           "home":{
-            "slide": [  {"url":"h5/assets/slide/01.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                {"url":"h5/assets/slide/02.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                {"url":"h5/assets/slide/03.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                {"url":"h5/assets/slide/04.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
-                {"url":"h5/assets/slide/05.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"}
+            "slide": [  {"url":"h5/assets/slide/home/01.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                {"url":"h5/assets/slide/home/02.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                {"url":"h5/assets/slide/home/03.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                {"url":"h5/assets/slide/home/04.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
+                {"url":"h5/assets/slide/home/05.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"}
             ],
              "webslide": [  {"url":"h5/assets/webslide/01.jpg","title":"pictureAir01","link":"http://www.birdpark.com.sg","type":"jpg"},
                   {"url":"h5/assets/webslide/02.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
