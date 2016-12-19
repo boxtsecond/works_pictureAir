@@ -46,7 +46,7 @@ function  filterUser(user){
     this.mobile=user.mobile; if(!this.mobile)this.mobile="";
     this.email=user.email; if(!this.email)this.email="";
     this.country=user.country;if(!this.country)this.country="";
-    this.gender=user.gender;if(!this.gender)this.gender="";
+    this.gender=user.gender;if(this.gender != 0 && this.gender != 1)this.gender = -1;
     this.birthday=user.birthday;
     if(!this.birthday)this.birthday=new Date(1970,1,1,1);
     // else this.birthday=this.birthday.getTime();
