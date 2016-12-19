@@ -216,7 +216,6 @@ exports.getPhotosByConditions = function (req, res, next) {
 
     Promise.resolve()
         .then(function () {
-            console.log(conditions);
             return findPhotos(conditions, fields, options, flag);
         })
         .then(function (photos) {
@@ -264,21 +263,6 @@ exports.removePhotosFromPP = function (req, res, next) {
             }else {
                 return Promise.reject(errInfo.removePhotosFromPP.notFind);
             }
-        })
-        .then(function () {
-            //更改缓存
-            return userModel.findByIdAsync(userId)
-                .then(function (user) {
-                    var urInfo = new filterUserToredis(user);
-                    return redisclient.set('access_token:'+ params.token.audience, JSON.stringify(urInfo));
-                })
-                .then(function () {
-                    return res.ext.json();
-                })
-                .catch(function (err) {
-                    console.log(err);
-                    return Promise.reject(errInfo.removePhotosFromPP.redisError);
-                })
         })
         .catch(function (err) {
             if(err.status){

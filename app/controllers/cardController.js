@@ -294,7 +294,11 @@ exports.removePPFromUser = function (req, res, next) {
                 .then(function (user) {
                     if(user && user.length > 0){
                         if(cType == 'ppCard'){
-                            return userModel.findByIdAndUpdateAsync(userId, {$pull: {'customerIds': {code:customerId}}});
+                            if(user.userPP == customerId){
+                                return Promise.reject(errInfo.removePPFromUser.notRemove);
+                            }else {
+                                return userModel.findByIdAndUpdateAsync(userId, {$pull: {'customerIds': {code:customerId}}});
+                            }
                         }else if(cType == 'OneDayPass'){
                             return userModel.findByIdAndUpdateAsync(userId, {$pull: {'pppCodes': {PPPCode:customerId}}});
                         }

@@ -13,7 +13,7 @@
 //50000  90000 system 服务器内部错误 （内部日志记录）
 var errInfo={
     //"dbErrorMax": 3058,
-    //"userErrorMax": 4049,
+    //"userErrorMax": 4050,
     //-------------------normal 2x 6x -----------------
     "success": {status: 200, msg: "success", result:{}},
     //-------------------prompt 3x 4x 7x 8x -------------------
@@ -83,6 +83,7 @@ var errInfo={
         paramsError: {status: 4003, msg: "params is incomplete", desc: "missing customerId"},
         paramsInvalid: {status: 4004, msg: "params is invalid", desc: "customerId is invalid"},
         notFind: {status: 4005, msg: "not find card, card remove already", desc: "not find user from db"},
+        notRemove: {status: 4049, msg: "can't remove userPP card", desc: "can't remove userPP card"},
         photoError: {status: 3008, msg: "system error", desc: "update photoModel from db error"},
         userError: {status: 3055, msg: "system error", desc: "update userModel from db error"},
         redisError: {status: 3056, msg: "system error", desc: "set user info to redis error"},
