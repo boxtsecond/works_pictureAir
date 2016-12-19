@@ -31,7 +31,7 @@ exports.carousel = function (req, res, next) {
                 {"url":"h5/assets/slide/04.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"},
                 {"url":"h5/assets/slide/05.png","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"png"}
             ],
-             "webslide": [  {"url":"h5/assets/webslide/01.jpg","title":"pictureAir01","link":"http://192.168.8.107/h5/test.html","type":"jpg"},
+             "webslide": [  {"url":"h5/assets/webslide/01.jpg","title":"pictureAir01","link":"http://www.birdpark.com.sg","type":"jpg"},
                   {"url":"h5/assets/webslide/02.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
                   {"url":"h5/assets/webslide/03.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"},
                   {"url":"h5/assets/webslide/04.jpg","title":"pictureAir","link":"http://www.birdpark.com.sg","type":"jpg"}
