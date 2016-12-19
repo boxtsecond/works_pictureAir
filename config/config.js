@@ -28,12 +28,6 @@ module.exports.config={
         dashBoardParkId: "DisneyShangHai",
         dashBoardRoom: "dashboard"
     },
-    //"apiPort":"4001",
-    "serverIP":"http://192.168.8.107",
-    "MasterAPIList":{
-        pullPhotosFromLocal:'http://172.16.164.17:3000/help/getPhotosByPPs',
-        removePhotosFromPP:'http://172.16.164.17:3000/sync/removePhotosFromPP'
-    },
     "configJSONData":configJSONData
 }
 module.exports.photosize=require('./photosize');

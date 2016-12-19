@@ -3,7 +3,6 @@
  */
 var errInfo = require('../resfilter/resInfo.js').errInfo;
 var shareModeEnum = require('../tools/enums.js').shareModeEnum;
-var config = require('../../config/config.js').config;
 var util = require('../lib/util/util.js');
 var rq = require('../rq.js');
 var Promise = require('bluebird');
@@ -70,7 +69,7 @@ exports.getShareUrl = function (req, res, next) {
                 "key": key,
                 "ids": shareContent.ids
             })
-            fullUrl = url.resolve(config.serverIP, 'f/share?'+ urlParams);
+            fullUrl = url.resolve(configData.serverIP, 'f/share?'+ urlParams);
             secretKey = util.shortUrlGenerate(fullUrl);
         })
         .then(function(){
@@ -108,10 +107,10 @@ exports.getShareUrl = function (req, res, next) {
                 return info;
             }else {
                 shareData = new shareModel({
-                    shareDomain: config.serverIP,
+                    shareDomain: configData.serverIP,
                     sharerId: params.userId,
                     shareUrl: fullUrl,
-                    shareShortUrl: url.resolve(config.serverIP, '/#/share?key=' + secretKey),
+                    shareShortUrl: url.resolve(configData.serverIP, '/#/share?key=' + secretKey),
                     secretKey: secretKey,
                     shareContent: {
                         mode: shareContent.mode,
