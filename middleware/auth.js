@@ -28,10 +28,10 @@ function getAccessToken(req){
 function authGuest(req,res,next){
     var token=getAccessToken(req);
     if(token) {
-     return access_token.verifyGuestAccess_token(token.toString().trim()).then(function(toke){
+       access_token.verifyGuestAccess_token(token.toString().trim()).then(function(toke){
           req.ext.params.token=toke;
           req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
-         return next();
+          next();
       }).catch(function(err){
           return res.ext.json({ status: 421, msg: 'unauthorized',result:{}});
       })
@@ -42,7 +42,7 @@ function authGuest(req,res,next){
 function authUser(req,res,next){
     var token=getAccessToken(req);
     if(token) {
-        return access_token.verifyAccess_token(token).then(function(toke){
+          access_token.verifyAccess_token(token).then(function(toke){
             // 从redis中获取
             return  redisclient.get("access_token:"+toke.audience).then(function(access_token){
                 if(access_token){
@@ -61,7 +61,7 @@ function authUser(req,res,next){
             req.ext.params.token=obj.toke;
             req.ext.params.userId=obj.userid;
             req.ext.params.token.expire_in=Math.floor(obj.toke.exp-Math.floor(Date.now() / 1000));
-            return next();
+              next();
         }).catch(function(err){
             return res.ext.json({ status: 421, msg: 'unauthorized'});
         })
