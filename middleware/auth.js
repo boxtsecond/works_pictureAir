@@ -32,7 +32,7 @@ function authGuest(req,res,next){
           req.ext.params.token=toke;
           req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
           next();
-         return obj;
+         return toke;
       }).catch(function(err){
           return res.ext.json({ status: 421, msg: 'unauthorized',result:{}});
       })
