@@ -161,7 +161,11 @@ function findPhotos(conditions, fields, options, flag) {
             }
         })
         .then(function () {
-            return photos;
+            if(photos.length == 0){
+
+            }else {
+                return photos;
+            }
         })
         .catch(function (error) {
             console.log(error);
@@ -227,6 +231,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                 var resultObj = errInfo.success;
                 resultObj.result = {};
                 resultObj.result.photos = photos;
+                console.log(resultObj);
                 return res.ext.json(resultObj);
             }
         })
