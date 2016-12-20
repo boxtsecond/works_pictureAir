@@ -727,20 +727,20 @@ exports.addCodeToUser = function (req, res, next) {
                         if(photoList && photoList.length > 0){
                             return Promise.mapSeries(photoList, function (photo) {
                                 var userIds = [];
-                                var flag = false;
+                                var band = false;
                                 return Promise.resolve()
                                     .then(function () {
                                         return Promise.each(photo.customerIds, function (pt) {
                                             pt.userIds.length > 0 ? userIds = pt.userIds : userIds = [];
                                             return Promise.each(pt.userIds, function (ptid) {
                                                 if (ptid == userId) {
-                                                    flag = true;
+                                                    band = true;
                                                 }
                                             });
                                         });
                                     })
                                     .then(function () {
-                                        if(!flag){
+                                        if(!band){
                                             userIds.push(userId);
                                             photo.customerIds = [
                                                 {
