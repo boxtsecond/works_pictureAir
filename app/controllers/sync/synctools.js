@@ -183,10 +183,13 @@ function convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,
 
 
 
-
+function isArray(data) {
+    if((data instanceof Array)&& Array === data.constructor) return true;else return false;
+}
 
 
 module.exports={
     convetphotoDataLineToOnLine:convetphotoDataLineToOnLine,
-    writeStreamBase64:writeStreamBase64
+    writeStreamBase64:writeStreamBase64,
+    isArray:isArray
 }
