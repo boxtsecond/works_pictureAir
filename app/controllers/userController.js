@@ -180,7 +180,7 @@ exports.getShareInfo = function (req, res, next) {
 //SN 验证码        customerId 被激活卡的卡号      cardId 激活卡的卡号
 exports.activeCodeToUser = function (req, res, next) {
     var params = req.ext.params;
-    if (!req.ext.checkExistProperty(params, ['customerId', 'userId', 'cardId'])) {
+    if (!req.ext.checkExistProperty(params, ['customerId', 'userId', 'cardId', 'siteId', 'shootOn'])) {
         return res.ext.json(errInfo.activeCodeToUser.paramsError);
     }
     var customerId = params.customerId;
@@ -264,10 +264,10 @@ exports.activeCodeToUser = function (req, res, next) {
         })
         .then(function () {
             //修改照片信息
-            var today = rq.util.convertDateToStrYYMMDD(Date.now());
-            var todayend = rq.util.convertDateToStrYYMMDD(new Date(new Date().getTime()+ 86400000));
-            return photoModel.findAsync({'customerIds.code': customerId, 'userIds':userId, '$gte': new Date(today),
-                '$lte': new Date(todayend)})
+            var time = params.shootOn;
+            var timeend = rq.util.convertDateToStrYYMMDD(new Date(new Date(time).getTime()+ 86400000));
+            return photoModel.findAsync({'customerIds.code': customerId, 'userIds':userId, '$gte': new Date(time),
+                '$lte': new Date(timeend), 'siteId': params.siteId})
                 .then(function (list) {
                     if (list && list.length > 0) {
                         return Promise.each(list, function (photo) {
