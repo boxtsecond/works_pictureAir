@@ -290,9 +290,9 @@ exports.removePPFromUser = function (req, res, next) {
                 });
         })
         .then(function () {
-            return userModel.findAsync(findObj)
+            return userModel.findOneAsync(findObj)
                 .then(function (user) {
-                    if(user && user.length > 0){
+                    if(user){
                         if(cType == 'ppCard'){
                             if(user.userPP == customerId){
                                 return Promise.reject(errInfo.removePPFromUser.notRemove);
