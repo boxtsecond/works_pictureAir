@@ -264,7 +264,10 @@ exports.activeCodeToUser = function (req, res, next) {
         })
         .then(function () {
             //修改照片信息
-            return photoModel.findAsync({'customerIds.code': customerId, 'userIds':userId})
+            var today = rq.util.convertDateToStrYYMMDD(Date.now());
+            var todayend = rq.util.convertDateToStrYYMMDD(new Date(new Date().getTime()+ 86400000));
+            return photoModel.findAsync({'customerIds.code': customerId, 'userIds':userId, '$gte': new Date(today),
+                '$lte': new Date(todayend)})
                 .then(function (list) {
                     if (list && list.length > 0) {
                         return Promise.each(list, function (photo) {

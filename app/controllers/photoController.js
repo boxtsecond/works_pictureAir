@@ -61,8 +61,8 @@ function getCondition(req, params) {
             case/^shootDate$/.test(i):
                 if(cdt.length == 10){
                     condition['shootOn'] = {
-                        '$gte': new Date(cdt + ' 00:00:00'),
-                        '$lt': new Date(cdt + ' 23:59:59')
+                        '$gte': new Date(cdt),
+                        '$lte': new Date(new Date(cdt)+ 86400000)
                     };
                 }
                 break;
