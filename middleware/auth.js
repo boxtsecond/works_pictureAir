@@ -28,7 +28,7 @@ function getAccessToken(req){
 function authGuest(req,res,next){
     var token=getAccessToken(req);
     if(token) {
-       return access_token.verifyGuestAccess_token(token.toString().trim()).then(function(toke){
+         access_token.verifyGuestAccess_token(token.toString().trim()).then(function(toke){
           req.ext.params.token=toke;
           req.ext.params.token.expire_in=Math.floor(toke.exp-Math.floor(Date.now() / 1000));
           next();
@@ -43,7 +43,7 @@ function authGuest(req,res,next){
 function authUser(req,res,next){
     var token=getAccessToken(req);
     if(token) {
-        return  access_token.verifyAccess_token(token).then(function(toke){
+           access_token.verifyAccess_token(token).then(function(toke){
             // 从redis中获取
             return  redisclient.get("access_token:"+toke.audience).then(function(access_token){
                 if(access_token){
