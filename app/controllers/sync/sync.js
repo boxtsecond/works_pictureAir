@@ -45,10 +45,9 @@ function updatePhotoObJ(photo) {
     this.editHistorys=photo.editHistorys;
     this.originalInfo=photo.originalInfo;
     this.locationId=photo.locationId;
-    this.targetPoint=photo.targetPoint;
+    if(photo.targetPoint)this.targetPoint=photo.targetPoint;
     this.tokenBy=photo.tokenBy;
     this.photoSource=photo.photoSource;
-    // this.targetPoint=photo.targetPoint;
     this.checkedTime=photo.checkedTime;
     this.modifiedOn=new Date();
     this.tagBy=photo.tagBy;
@@ -58,8 +57,8 @@ function updatePhotoObJ(photo) {
     this.disabled=photo.disabled;
     this.mobileEditActive=photo.mobileEditActive;
     this.thumbnail=photo.thumbnail;
-    this.photoStatus=photo.photoStatus;
-    this.checkedUser=photo.checkedUser;
+    if(photo.photoStatus)this.photoStatus=photo.photoStatus;
+    if(photo.checkedUser)  this.checkedUser=photo.checkedUser;
     this.tagBy=photo.tagBy;
 }
 
@@ -122,16 +121,17 @@ function  syncFileData(req,res) {
         if(obj.exist){
             var nphoto=new updatePhotoObJ(obj.photo);
             if(!obj.edit){//没有被编辑
-                return  photoModel.update({_id: obj.photo._id},{$set:nphoto})
+                return  photoModel.updateAsync({_id: obj.photo._id}, nphoto )
                     .then(function (onePhoto) {
                         console.log("upload old rawFileName :--->>>>>",obj.photo.rawFileName);
                         return Promise.reject([200,'success',{}]);
                     }).catch(function (nerr) {
+                        console.log(nerr);
                         if(synctools.isArray(nerr)) return Promise.reject(nerr);
                         else  return Promise.reject(errInfo.syncUpdateToDBerror);
                     });
             }else {
-                return  photoModel.update({_id: obj.photo._id},{$set:nphoto})
+                return  photoModel.updateAsync({_id: obj.photo._id},nphoto)
                     .then(function (onePhoto) {
                         return obj;
                     }).catch(function (nerr) {
@@ -212,6 +212,7 @@ function  syncFileData(req,res) {
                res.ext.json([200,'success',{}]);
         })
         .catch(function (err) {
+            console.error(err);
           res.ext.json(err);
     });
 }
