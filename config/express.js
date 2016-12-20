@@ -116,7 +116,7 @@ module.exports = function() {
     if(req.method=="OPTIONS") 
         res.sendStatus(200);
     else 
-        next();
+        return next();
     });
     // Use helmet to secure Express headers
 

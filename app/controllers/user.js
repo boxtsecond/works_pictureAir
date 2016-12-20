@@ -231,7 +231,7 @@ function login(req,res){
             }]);
         }).catch(function(err){
             console.log(err);
-            res.ext.json(err);
+            return res.ext.json(err);
       });
     //查询redis 直接返回生成新的token并 用户数据
     //redis 里面没有查询DB
@@ -375,14 +375,14 @@ function register(req,res){
         )
         .then(function(userobj){
             //console.log(new resfilter_user.filterUser(userobj[1]))
-            res.ext.json([200,'success',{
+           return res.ext.json([200,'success',{
                 user:new resfilter_user.filterUserRes(userobj[1]),
                 expire_in:userobj[0][2]-60,
                 access_token:userobj[0][3]
             }]);
         }).catch(function(err){
            // console.error(err)
-            res.ext.json(err);
+           return  res.ext.json(err);
      });
 };
 //{
@@ -512,10 +512,10 @@ function sendSMS(req,res){
         }).then(function(obj){
             //{obj:obj}
             //console.log()
-            res.ext.json([200,'success',{validateCode:obj.msg.validateCode}]);
+           return  res.ext.json([200,'success',{validateCode:obj.msg.validateCode}]);
         }).catch(function(err){
             console.error(err);
-            res.ext.json(err);
+           return    res.ext.json(err);
       });
 
 
@@ -586,10 +586,10 @@ function verifyMobileCode(req,res){
             else return  Promise.reject(errInfo.userverifyMobileCodeVcodeParameterError);
         });
     }).then(function (obj) {
-        res.ext.json([200,'success',{}]);
+        return res.ext.json([200,'success',{}]);
     })
         .catch(function(err){
-            res.ext.json(err);
+           return  res.ext.json(err);
         });
 }
 function verifyEmailCode(req,res){
@@ -609,10 +609,10 @@ function verifyEmailCode(req,res){
             else return Promise.reject(errInfo.userverifyEmailCodeVcodeExpireParameterError);
         });
     }).then(function (obj) {
-        res.ext.json([200,'success',{}]);
+       return  res.ext.json([200,'success',{}]);
     })
         .catch(function(err){
-            res.ext.json(err);
+           return  res.ext.json(err);
         });
 }
 function resetPassword(req,res){
@@ -750,9 +750,9 @@ function resetPassword(req,res){
         }else return obj;
     })
       .then(function(obj){
-            res.ext.json([200,'success',{}]);
+           return  res.ext.json([200,'success',{}]);
     }).catch(function(err){
-            res.ext.json(err);
+           return  res.ext.json(err);
         });
 }
 
@@ -909,10 +909,10 @@ function sendEmailForgotPwdMsg(req,res){
     })
         .then(function(obj){
         elemforgotPassword.emit("send",obj);
-        res.ext.json([200,'success',{}]);
+        return res.ext.json([200,'success',{}]);
 
     }).catch(function(err){
-        res.ext.json(err);
+       return  res.ext.json(err);
     });
 }
 //登陆之后才能切换
@@ -940,10 +940,10 @@ function switchLanguage(req,res){
         }
     })
     .then(function(obj){
-            res.ext.json([200,'success',{expire_in:obj.expire_in,access_token:obj.access_token}]);
+           return  res.ext.json([200,'success',{expire_in:obj.expire_in,access_token:obj.access_token}]);
         //
         }).catch(function(err){
-        res.ext.json(err);
+      return   res.ext.json(err);
     });
 }
 
@@ -976,11 +976,11 @@ function getuser(req,res) {
             else return  Promise.reject(errInfo.usergetuserNotFind);
         });
     }).then(function (obj) {
-        res.ext.json([200,'success',{
+       return  res.ext.json([200,'success',{
             user:obj
         }]);
     }).catch(function (err) {
-        res.ext.json(err);
+        return res.ext.json(err);
     });
 }
 

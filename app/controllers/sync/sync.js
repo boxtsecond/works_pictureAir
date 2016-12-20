@@ -209,15 +209,15 @@ function  syncFileData(req,res) {
                 });
             }
         }).then(function (photo) {
-               res.ext.json([200,'success',{}]);
+              return  res.ext.json([200,'success',{}]);
         })
         .catch(function (err) {
             console.error(err);
-          res.ext.json(err);
+          return res.ext.json(err);
     });
 }
 function syncFile(req,res) {
-    res.ext.json([200,'success',{}]);
+    return res.ext.json([200,'success',{}]);
   // console.log(req.ext.params.length);
   //   console.log(req.ext.params.relativePath)
   //   console.log(req.ext.params.oLength)
