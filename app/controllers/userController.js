@@ -727,9 +727,9 @@ exports.addCodeToUser = function (req, res, next) {
                         if(photoList && photoList.length > 0){
                             return Promise.mapSeries(photoList, function (photo) {
                                 var userIds = [];
+                                var flag = false;
                                 return Promise.resolve()
                                     .then(function () {
-                                        var flag = false;
                                         return Promise.each(photo.customerIds, function (pt) {
                                             pt.userIds.length > 0 ? userIds = pt.userIds : userIds = [];
                                             return Promise.each(pt.userIds, function (ptid) {
