@@ -161,11 +161,7 @@ function findPhotos(conditions, fields, options, flag) {
             }
         })
         .then(function () {
-            if(photos.length == 0){
-
-            }else {
-                return photos;
-            }
+            return photos;
         })
         .catch(function (error) {
             console.log(error);
