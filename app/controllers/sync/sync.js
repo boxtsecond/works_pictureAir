@@ -23,6 +23,14 @@ var photoModel=require("../../mongodb/Model/photoModel");
 //50000  90000 system 服务器内部错误 （内部日志记录）
 var errInfo={
     "syncSaveOriginalImage":{status: 900, msg:"get token error",desc:"get token from redis err"},
+    "syncFindToDBerror":{status: 700, msg:"find db error",desc:"find   db error"},
+    "syncUpdateToDBerror":{status: 701, msg:"find db error",desc:"update   db error"},
+    "syncCreateToDBerror":{status: 702, msg:"find db error",desc:"Create   db error"},
+    "syncSaveOriginalImageToDisk":{status: 600, msg:"save Original O Image error",desc:"save Original Image error"},
+    "syncSavePreviewImageToDisk":{status: 601, msg:"save Preview L Image error",desc:"save preview Image error"},
+    "syncSaveThumbnailMImageToDisk":{status: 602, msg:"save Thumbnail M Image error",desc:"save preview Image error"},
+    "syncSaveThumbnailSImageToDisk":{status: 603, msg:"save Thumbnail S Image error",desc:"save preview Image error"},
+    "syncSaveThumbnailWImageToDisk":{status: 604, msg:"save Thumbnail W Image error",desc:"save preview Image error"}
 };
 
 
@@ -37,10 +45,9 @@ function updatePhotoObJ(photo) {
     this.editHistorys=photo.editHistorys;
     this.originalInfo=photo.originalInfo;
     this.locationId=photo.locationId;
-    this.targetPoint=photo.targetPoint;
+    if(photo.targetPoint)this.targetPoint=photo.targetPoint;
     this.tokenBy=photo.tokenBy;
     this.photoSource=photo.photoSource;
-    // this.targetPoint=photo.targetPoint;
     this.checkedTime=photo.checkedTime;
     this.modifiedOn=new Date();
     this.tagBy=photo.tagBy;
@@ -50,8 +57,8 @@ function updatePhotoObJ(photo) {
     this.disabled=photo.disabled;
     this.mobileEditActive=photo.mobileEditActive;
     this.thumbnail=photo.thumbnail;
-    this.photoStatus=photo.photoStatus;
-    this.checkedUser=photo.checkedUser;
+    if(photo.photoStatus)this.photoStatus=photo.photoStatus;
+    if(photo.checkedUser)  this.checkedUser=photo.checkedUser;
     this.tagBy=photo.tagBy;
 }
 
@@ -65,13 +72,79 @@ function  syncFileData(req,res) {
               L:obj.L,//1024
               M:obj.M,//512
               S:obj.S,//128
-              W:obj.W//w512
+              W:obj.W,//w512
+              exist:false,
+              edit:false
           }
     }).then(function (obj) {
+        return photoModel.findOne({_id:obj.photo._id}).then(function (err) {
+            if(err) {
+                if(obj.photo.editHistorys&&obj.photo.editHistorys.length>0){
+                    return {
+                        photo:obj.photo,
+                        O:obj.O,//O
+                        L:obj.L,//1024
+                        M:obj.M,//512
+                        S:obj.S,//128
+                        W:obj.W,//w512
+                        exist:true,
+                        edit:true
+                    }
+                }
+               else  return {
+                    photo:obj.photo,
+                    O:obj.O,//O
+                    L:obj.L,//1024
+                    M:obj.M,//512
+                    S:obj.S,//128
+                    W:obj.W,//w512
+                    exist:true,
+                    edit:false
+                }
+            }
+            else {
+                return {
+                    photo:obj.photo,
+                    O:obj.O,//O
+                    L:obj.L,//1024
+                    M:obj.M,//512
+                    S:obj.S,//128
+                    W:obj.W,//w512
+                    exist:false,
+                    edit:false
+                }
+            }
+        }).catch(function (err) {
+             return Promise.reject(errInfo.syncFindToDBerror);
+        });
+    }).then(function (obj) {
+        if(obj.exist){
+            var nphoto=new updatePhotoObJ(obj.photo);
+            if(!obj.edit){//没有被编辑
+                return  photoModel.updateAsync({_id: obj.photo._id}, nphoto )
+                    .then(function (onePhoto) {
+                        console.log("upload old rawFileName :--->>>>>",obj.photo.rawFileName);
+                        return Promise.reject([200,'success',{}]);
+                    }).catch(function (nerr) {
+                        console.log(nerr);
+                        if(synctools.isArray(nerr)) return Promise.reject(nerr);
+                        else  return Promise.reject(errInfo.syncUpdateToDBerror);
+                    });
+            }else {
+                return  photoModel.updateAsync({_id: obj.photo._id},nphoto)
+                    .then(function (onePhoto) {
+                        return obj;
+                    }).catch(function (nerr) {
+                          return Promise.reject(errInfo.syncUpdateToDBerror);
+                    });
+            }
+        } else return obj;
+    })
+        .then(function (obj) {
             if(obj.O&&obj.O!=""){
                 return synctools.writeStreamBase64(obj.photo.originalInfo.path,obj.O).then(function (err) {
                     if(err) return obj;
-                    else return obj;
+                    else  return Promise.reject(errInfo.syncSaveOriginalImageToDisk);
                 })
             }
             else return obj;
@@ -81,7 +154,7 @@ function  syncFileData(req,res) {
             &&!req.ext.isundefined(obj.photo.thumbnail.x1024.path)){
                 return synctools.writeStreamBase64(obj.photo.thumbnail.x1024.path,obj.L).then(function (err) {
                     if(err) return obj;
-                    else return obj;
+                    else return Promise.reject(errInfo.syncSavePreviewImageToDisk);
                 })
             }else  return obj;
         }
@@ -92,7 +165,7 @@ function  syncFileData(req,res) {
                 &&!req.ext.isundefined(obj.photo.thumbnail.x512.path)){
                 return synctools.writeStreamBase64(obj.photo.thumbnail.x512.path,obj.M).then(function (err) {
                     if(err) return obj;
-                    else return obj;
+                    else return Promise.reject(errInfo.syncSaveThumbnailMImageToDisk);
                 })
             }else  return obj;
         }
@@ -104,7 +177,7 @@ function  syncFileData(req,res) {
                     &&!req.ext.isundefined(obj.photo.thumbnail.x128.path)){
                     return synctools.writeStreamBase64(obj.photo.thumbnail.x128.path,obj.S).then(function (err) {
                         if(err) return obj;
-                        else return obj;
+                        else return Promise.reject(errInfo.syncSaveThumbnailSImageToDisk);
                     })
                 }else  return obj;
             }
@@ -116,43 +189,26 @@ function  syncFileData(req,res) {
                     &&!req.ext.isundefined(obj.photo.thumbnail.w512.path)){
                     return synctools.writeStreamBase64(obj.photo.thumbnail.w512.path,obj.W).then(function (err) {
                         if(err) return obj;
-                        else return obj;
+                        else return Promise.reject(errInfo.syncSaveThumbnailWImageToDisk);
                     })
                 }else  return obj;
             }
             else return obj;
         })
         .then(function (obj) {
-            return obj.photo;
-        })
-        .then(function (photo) {
-            return photoModel.findOne({_id:photo._id}).then(function (err) {
-                if(err) {
-                    //如果数据已经存在,更新数据
-                    var nphoto=new updatePhotoObJ(photo);
-                    return  photoModel.update({_id: photo.id},{$set:nphoto},{ multi: true })
-                        .then(function (onePhoto) {
-                            console.log("upload update rawFileName :--->>>>>",photo.rawFileName);
-                            return Promise.reject([200,'success',{}]);
-                    }).catch(function (nerr) {
-                            console.log("upload update rawFileName :--->>>>>",photo.rawFileName);
-                            return Promise.reject([300,'success',{}]);
-                    });
-                }
-                else return photo;
-            }).catch(function (err) {
-                return photo;
-            });
-        })
-        .then(function (photo) {
                 // console.log('#######',obj);
-              return photoModel.createAsync(photo).then(function (err) {
-                  return photo;
-              }).catch(function (err) {
-                  return Promise.reject([300,'success',{}]);
-              });
+            if(obj.edit){
+                console.log("upload edit  rawFileName :--->>>>>",obj.photo.rawFileName);
+                return obj.photo;
+            }else{
+                return photoModel.createAsync(obj.photo).then(function (err) {
+                    console.log("upload new  rawFileName :--->>>>>",obj.photo.rawFileName);
+                    return obj.photo;
+                }).catch(function (err) {
+                    return Promise.reject(errInfo.syncCreateToDBerror);
+                });
+            }
         }).then(function (photo) {
-            console.log("upload rawFileName :--->>>>>",photo.rawFileName);
                res.ext.json([200,'success',{}]);
         })
         .catch(function (err) {
