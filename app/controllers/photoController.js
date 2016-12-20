@@ -231,7 +231,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                 var resultObj = errInfo.success;
                 resultObj.result = {};
                 resultObj.result.photos = photos;
-                console.log(resultObj);
+                //console.log(photos);
                 return res.ext.json(resultObj);
             }
         })
