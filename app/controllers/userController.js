@@ -266,8 +266,8 @@ exports.activeCodeToUser = function (req, res, next) {
             //修改照片信息
             var time = params.shootOn;
             var timeend = rq.util.convertDateToStrYYMMDD(new Date(new Date(time).getTime()+ 86400000));
-            return photoModel.findAsync({'customerIds.code': customerId, 'userIds':userId, '$gte': new Date(time),
-                '$lte': new Date(timeend), 'siteId': params.siteId})
+            return photoModel.findAsync({'customerIds.code': customerId, 'userIds':userId, 'siteId': params.siteId, shootOn: {'$gte': new Date(time),
+                '$lte': new Date(timeend)}})
                 .then(function (list) {
                     if (list && list.length > 0) {
                         return Promise.each(list, function (photo) {
