@@ -17,7 +17,6 @@ var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
 var util=require('../../config/util.js');
 var uuid = require('../rq').uuid;
-var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
 
 function getCondition(req, params) {
     var condition = {};
@@ -87,7 +86,7 @@ function getCondition(req, params) {
 function getOptions(params) {
     var options = {};
     options.sort = {};
-    options.limit = 50;
+    //options.limit = 50;
     options.sort['_id'] = -1;
     if(!params.gteID && !params.lteID){
         options.sort = {'shootOn': -1};
@@ -244,7 +243,6 @@ exports.removePhotosFromPP = function (req, res, next) {
     }
     var userId = params.userId;
     var conditions = getCondition(req, params);
-    console.log(conditions)
 
     photoModel.findAsync(conditions)
         .then(function (list) {
