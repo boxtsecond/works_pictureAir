@@ -44,7 +44,7 @@ function getCondition(req, params) {
                 //     var userIdArr = cdt.split(',');
                 //     condition.userIds = {'$in': userIdArr};
                 // }
-                condition.userId = cdt;
+                condition.userIds = cdt;
                 break;
             case /^locationId/.test(i):
                 var locationIdArr = cdt.split(',');
