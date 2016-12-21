@@ -254,9 +254,6 @@ exports.removePhotosFromPP = function (req, res, next) {
                         .then(function () {
                             return photoModel.findByIdAndUpdateAsync(photo._id, {$pull: {'customerIds': {userId: userId}}});
                         })
-                        .then(function () {
-                            return res.ext.json();
-                        })
                         .catch(function (err) {
                             console.log(err);
                             return Promise.reject(errInfo.removePhotosFromPP.photoError);
@@ -265,6 +262,9 @@ exports.removePhotosFromPP = function (req, res, next) {
             }else {
                 return Promise.reject(errInfo.removePhotosFromPP.notFind);
             }
+        })
+        .then(function () {
+            return res.ext.json();
         })
         .catch(function (err) {
             if(err.status){
