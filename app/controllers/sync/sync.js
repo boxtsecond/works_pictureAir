@@ -66,7 +66,7 @@ function updatePhotoObJ(photo) {
 function  syncFileData(req,res) {
     Promise.resolve(req.ext.params).then(function (obj) {
           var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
-          return {
+        return {
               photo:photo,
               O:obj.O,//O
               L:obj.L,//1024

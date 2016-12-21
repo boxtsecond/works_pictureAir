@@ -37,13 +37,14 @@ function getCondition(req, params) {
             case /^lteID$/.test(i):
                 condition._id = {'$lt': cdt};
                 break;
-            case /^userId/.test(i):
-                if(req.ext.isArray(cdt)){
-                    condition.userIds = {'$in': cdt};
-                }else {
-                    var userIdArr = cdt.split(',');
-                    condition.userIds = {'$in': userIdArr};
-                }
+            case /^userId$/.test(i):
+                // if(req.ext.isArray(cdt)){
+                //     condition.userIds = {'$in': cdt};
+                // }else {
+                //     var userIdArr = cdt.split(',');
+                //     condition.userIds = {'$in': userIdArr};
+                // }
+                condition.userId = cdt;
                 break;
             case /^locationId/.test(i):
                 var locationIdArr = cdt.split(',');
@@ -119,12 +120,16 @@ function findPhotos(conditions, fields, options, flag) {
                             return Promise.resolve()
                                 .then(function () {
                                     return Promise.each(pto.orderHistory, function (pp) {
-                                        return cardCodeModel.findOneAsync({PPPCode: pp.prepaidId, active: true, userId: conditions.userIds})
-                                            .then(function (card) {
-                                                if(card){
-                                                    isPaid = true;
-                                                }
-                                            })
+                                        // return cardCodeModel.findOneAsync({PPPCode: pp.prepaidId, active: true, userId: conditions.userIds})
+                                        //     .then(function (card) {
+                                        //         if(card){
+                                        //             isPaid = true;
+                                        //         }
+                                        //     })
+                                        if(pp.userId == conditions.userId){
+                                            isPaid = true;
+                                        }
+
                                     })
                                 })
                                 .then(function () {
