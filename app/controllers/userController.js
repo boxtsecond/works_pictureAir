@@ -301,6 +301,7 @@ exports.activeCodeToUser = function (req, res, next) {
                     if(err.status){
                         return Promise.reject(err);
                     }else {
+                        console.log(err);
                         return Promise.reject(errInfo.activeCodeToUser.photoSaveError);
                     }
                 });
@@ -731,7 +732,7 @@ exports.addCodeToUser = function (req, res, next) {
                                 return Promise.resolve()
                                     .then(function () {
                                         return Promise.each(photo.customerIds, function (pt) {
-                                            pt.userIds.length > 0 ? userIds = pt.userIds : userIds = [];
+                                            userIds = pt.userIds;
                                             return Promise.each(pt.userIds, function (ptid) {
                                                 if (ptid == userId) {
                                                     band = true;
