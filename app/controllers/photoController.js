@@ -129,13 +129,12 @@ function findPhotos(conditions, fields, options, flag, audience) {
                 }else {
                     return Promise.reject(errInfo.findPhotos.notFind);
                 }
-            }
-            else {
+            } else {
                 return conditions['customerIds.code'].$in;
             }
         })
         .then(function (customerIds) {
-            //console.log(customerIds)
+            console.log(customerIds)
             return Promise.each(customerIds, function (ctId) {
                 return Promise.resolve()
                     //激活卡（所有）
@@ -150,8 +149,8 @@ function findPhotos(conditions, fields, options, flag, audience) {
                     //         })
                     // })
                     .then(function () {
-                        conditions["customerIds.code"] = ctId.code;
-                        //console.log(conditions);
+                        flag ? conditions["customerIds.code"] = ctId.code : conditions["customerIds.code"] = ctId;
+                        console.log(conditions);
                         return photoModel.findAsync(conditions, fields, options)
                             .then(function (list) {
                                 if(list && list.length > 0){
