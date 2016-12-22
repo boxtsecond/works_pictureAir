@@ -135,34 +135,49 @@ function findPhotos(conditions, fields, options, flag, audience) {
             }
         })
         .then(function (customerIds) {
+            console.log(customerIds)
             return Promise.each(customerIds, function (ctId) {
                 return Promise.resolve()
+                    //激活卡（所有）
+                    // .then(function () {
+                    //     return cardCodeModel.findOneAsync({PPCode: ctId.code})
+                    //         .then(function (card) {
+                    //             if(card){
+                    //                 return true;
+                    //             } else {
+                    //                 return false;
+                    //             }
+                    //         })
+                    // })
                     .then(function () {
-                        return cardCodeModel.findOneAsync({PPCode: ctId.code})
-                            .then(function (card) {
-                                if(card){
-                                    return true;
-                                } else {
-                                    return false;
-                                }
-                            })
-                    })
-                    .then(function (isPaid) {
                         conditions["customerIds.code"] = ctId.code;
+                        console.log(conditions);
                         return photoModel.findAsync(conditions, fields, options)
                             .then(function (list) {
                                 if(list && list.length > 0){
+                                    var isPaid = false;
                                     return Promise.each(list, function (pto) {
-                                        var pushPhoto = new filterPhoto(pto, isPaid);
-                                        return parkModel.findOneAsync({siteId: pto.siteId})
-                                            .then(function (park) {
-                                                //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                                pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                                pushPhoto.logoUrl = park.logoUrl;
-                                                pushPhoto.pageUrl = park.pageUrl;
-                                                pushPhoto.parkName = park.name;
-                                                photos.push(pushPhoto);
+                                        return Promise.resolve()
+                                            .then(function () {
+                                                return Promise.each(pto.orderHistory, function (odHt) {
+                                                    if(odHt.code == ctId.code){
+                                                        isPaid = true;
+                                                    }
+                                                })
                                             })
+                                            .then(function () {
+                                                var pushPhoto = new filterPhoto(pto, isPaid);
+                                                return parkModel.findOneAsync({siteId: pto.siteId})
+                                                    .then(function (park) {
+                                                        //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
+                                                        pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                                                        pushPhoto.logoUrl = park.logoUrl;
+                                                        pushPhoto.pageUrl = park.pageUrl;
+                                                        pushPhoto.parkName = park.name;
+                                                        photos.push(pushPhoto);
+                                                    })
+                                            })
+
                                     })
                                 }
                             })
