@@ -45,7 +45,7 @@ function updatePhotoObJ(photo) {
     this.shootOn=photo.shootOn;
     this.extractOn=photo.extractOn;
     this.editHistorys=photo.editHistorys;
-    this.orderHistorys=photo.orderHistorys;
+    this.orderHistory=photo.orderHistory;
     this.originalInfo=photo.originalInfo;
     this.locationId=photo.locationId;
     if(photo.targetPoint)this.targetPoint=photo.targetPoint;
@@ -104,7 +104,6 @@ function syncPhotos(req, res) {
 function  syncFileData(req, users) {
     Promise.resolve(req.ext.params).then(function (obj) {
         obj.photo.userIds = users;
-        obj.photo.customerIds.userIds = users;
         var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
         return {
               photo:photo,
@@ -161,7 +160,6 @@ function  syncFileData(req, users) {
     }).then(function (obj) {
         if(obj.exist){
             var nphoto=new updatePhotoObJ(obj.photo);
-            console.log(nphoto);
             if(!obj.edit){//没有被编辑
                 return  photoModel.updateAsync({_id: obj.photo._id}, nphoto )
                     .then(function (onePhoto) {

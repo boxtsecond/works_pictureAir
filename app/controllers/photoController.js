@@ -125,6 +125,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                 if(info && info.redis){
                     return info.redis.user.customerIds;
                 }else if(info && info.mongo){
+                    console.log(info.mongo);
                     return info.mongo.customerIds;
                 }else {
                     //return Promise.reject(errInfo.findPhotos.notFind);
