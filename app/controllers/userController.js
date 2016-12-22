@@ -527,7 +527,7 @@ exports.contactUs = function (req, res, next) {
             contactMsg.content=obj.data.content;
             contactMsg.parkName=params.parkName;
             contactMsg.createdBy=params.pictureAirCode || 'Guest';
-            contactMsg.dataOfVisit=rq.util.convertStrToDate(params.visitDate);
+            params.visitDate ? contactMsg.dataOfVisit=rq.util.convertStrToDate(params.visitDate) : contactMsg.dataOfVisit=Date.now();
             contactMsg.orderId=params.orderID || '';
             contactMsg.operatingSystem=params.operatingSystem || '';
             contactMsg.feedback=params.feedback;
