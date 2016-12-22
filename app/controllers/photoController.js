@@ -135,8 +135,9 @@ function findPhotos(conditions, fields, options, flag, audience) {
         })
         .then(function (customerIds) {
             //console.log(customerIds)
-            return Promise.each(customerIds, function (ctId) {
-                return Promise.resolve()
+            if(customerIds && customerIds.length > 0){
+                return Promise.each(customerIds, function (ctId) {
+                    return Promise.resolve()
                     //激活卡（所有）
                     // .then(function () {
                     //     return cardCodeModel.findOneAsync({PPCode: ctId.code})
@@ -148,46 +149,47 @@ function findPhotos(conditions, fields, options, flag, audience) {
                     //             }
                     //         })
                     // })
-                    .then(function () {
-                        flag ? conditions["customerIds.code"] = ctId.code : conditions["customerIds.code"] = ctId;
-                        //console.log(conditions);
-                        return photoModel.findAsync(conditions, fields, options)
-                            .then(function (list) {
-                                if(list && list.length > 0){
-                                    return Promise.each(list, function (pto) {
-                                        var isPaid = false;
-                                        return Promise.resolve()
-                                            .then(function () {
-                                                if(pto.orderHistory && pto.orderHistory.length > 0){
-                                                    return Promise.each(pto.orderHistory, function (odHt) {
-                                                        if(odHt.customerId == ctId.code){
-                                                            isPaid = true;
-                                                        }
-                                                    })
-                                                }
-                                            })
-                                            .then(function () {
-                                                var pushPhoto = new filterPhoto(pto, isPaid);
-                                                return parkModel.findOneAsync({siteId: pto.siteId})
-                                                    .then(function (park) {
-                                                        //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                                        pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                                        pushPhoto.logoUrl = park.logoUrl;
-                                                        pushPhoto.pageUrl = park.pageUrl;
-                                                        pushPhoto.parkName = park.name;
-                                                        photos.push(pushPhoto);
-                                                    })
-                                            })
+                        .then(function () {
+                            flag ? conditions["customerIds.code"] = ctId.code : conditions["customerIds.code"] = ctId;
+                            //console.log(conditions);
+                            return photoModel.findAsync(conditions, fields, options)
+                                .then(function (list) {
+                                    if(list && list.length > 0){
+                                        return Promise.each(list, function (pto) {
+                                            var isPaid = false;
+                                            return Promise.resolve()
+                                                .then(function () {
+                                                    if(pto.orderHistory && pto.orderHistory.length > 0){
+                                                        return Promise.each(pto.orderHistory, function (odHt) {
+                                                            if(odHt.customerId == ctId.code){
+                                                                isPaid = true;
+                                                            }
+                                                        })
+                                                    }
+                                                })
+                                                .then(function () {
+                                                    var pushPhoto = new filterPhoto(pto, isPaid);
+                                                    return parkModel.findOneAsync({siteId: pto.siteId})
+                                                        .then(function (park) {
+                                                            //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
+                                                            pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                                                            pushPhoto.logoUrl = park.logoUrl;
+                                                            pushPhoto.pageUrl = park.pageUrl;
+                                                            pushPhoto.parkName = park.name;
+                                                            photos.push(pushPhoto);
+                                                        })
+                                                })
 
-                                    })
-                                }
-                            })
-                            .catch(function (err) {
-                                console.log(err);
-                                return Promise.reject(errInfo.findPhotos.promiseError);
-                            });
-                    })
-            })
+                                        })
+                                    }
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                    return Promise.reject(errInfo.findPhotos.promiseError);
+                                });
+                        })
+                })
+            }
         })
         .then(function () {
             return photos;

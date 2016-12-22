@@ -39,12 +39,13 @@ var errInfo={
 function updatePhotoObJ(photo) {
     this.encounter=photo.encounter;
     this.pacId=photo.pacId;
-    this.userId=photo.userId;
+    this.userIds=photo.userIds;
     this.photoId=photo.photoId;
     this.photoCode=photo.photoCode;
     this.shootOn=photo.shootOn;
     this.extractOn=photo.extractOn;
     this.editHistorys=photo.editHistorys;
+    this.orderHistorys=photo.orderHistorys;
     this.originalInfo=photo.originalInfo;
     this.locationId=photo.locationId;
     if(photo.targetPoint)this.targetPoint=photo.targetPoint;
@@ -105,7 +106,6 @@ function  syncFileData(req, users) {
         obj.photo.userIds = users;
         obj.photo.customerIds.userIds = users;
         var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
-        console.log(photo.orderHistory);
         return {
               photo:photo,
               O:obj.O,//O
@@ -161,6 +161,7 @@ function  syncFileData(req, users) {
     }).then(function (obj) {
         if(obj.exist){
             var nphoto=new updatePhotoObJ(obj.photo);
+            console.log(nphoto);
             if(!obj.edit){//没有被编辑
                 return  photoModel.updateAsync({_id: obj.photo._id}, nphoto )
                     .then(function (onePhoto) {
