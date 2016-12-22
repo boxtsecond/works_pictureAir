@@ -105,6 +105,7 @@ function  syncFileData(req, users) {
         obj.photo.userIds = users;
         obj.photo.customerIds.userIds = users;
         var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
+        console.log(photo.orderHistory);
         return {
               photo:photo,
               O:obj.O,//O
