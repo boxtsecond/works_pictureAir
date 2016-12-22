@@ -17,6 +17,7 @@ var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
 var util=require('../../config/util.js');
 var uuid = require('../rq').uuid;
+var findInfo = require('../resfilter/cacheTools.js').findInfo;
 
 function getCondition(req, params) {
     var condition = {};
@@ -26,16 +27,16 @@ function getCondition(req, params) {
             case /^id/.test(i):
                 if(req.ext.isArray(cdt)){
                     condition._id = {'$in': cdt};
-                }else {
+                }else if(req.ext.isstring(cdt)){
                     var idArr = cdt.split(',');
                     condition._id = {'$in': idArr};
                 }
                 break;
             case /^gteID$/.test(i):
-                condition._id = {'$gt': cdt};
+                condition._id.$gt = cdt;
                 break;
             case /^lteID$/.test(i):
-                condition._id = {'$lt': cdt};
+                condition._id.$lt = cdt;
                 break;
             case /^userId$/.test(i):
                 // if(req.ext.isArray(cdt)){
@@ -51,12 +52,16 @@ function getCondition(req, params) {
                 condition.locationId = {'$in': locationIdArr};
                 break;
             case /^customerId/.test(i):
-                var ppCodesArr = cdt.split(',');
-                var ppCodes = [];
-                ppCodesArr.forEach(function (ppCode) {
-                    ppCodes.push(ppCode.toUpperCase().replace(/-/g, ''));
-                });
-                condition['customerIds.code'] = {'$in': ppCodes};
+                if(req.ext.isArray(cdt)){
+                    condition['customerIds.code'] = {'$in': cdt};
+                }else if(req.ext.isstring(cdt)){
+                    var ppCodesArr = cdt.split(',');
+                    var ppCodes = [];
+                    ppCodesArr.forEach(function (ppCode) {
+                        ppCodes.push(ppCode.toUpperCase().replace(/-/g, ''));
+                    });
+                    condition['customerIds.code'] = {'$in': ppCodes};
+                }
                 break;
             case/^shootDate$/.test(i):
                 if(cdt.length == 10){
@@ -107,76 +112,77 @@ function getOptions(params) {
 }
 
 //flag true---login
-function findPhotos(conditions, fields, options, flag) {
+function findPhotos(conditions, fields, options, flag, audience) {
     var photos = [];
-    if(flag){
-        return userModel.findAsync({})
-    }else {
-
-    }
-    return photoModel.findAsync(conditions, fields, options)
-        .then(function (list) {
-            if (list && list.length > 0) {
-                return Promise.mapSeries(list, function (pto) {
-                    var isPaid = false;
-                    if(pto.customerIds.length > 0){
-                        //判断 isPaid
-                        if(flag){
-                            return Promise.resolve()
-                                .then(function () {
-                                    return
-                                })
-                                .then(function () {
-                                    return Promise.each(pto.orderHistory, function (pp) {
-                                        // return cardCodeModel.findOneAsync({PPPCode: pp.prepaidId, active: true, userId: conditions.userIds})
-                                        //     .then(function (card) {
-                                        //         if(card){
-                                        //             isPaid = true;
-                                        //         }
-                                        //     })
-                                        if(pp.userId == conditions.userId){
-                                            isPaid = true;
-                                        }
-                                    })
-                                })
-                                .then(function () {
-                                    var pushPhoto = new filterPhoto(pto, isPaid);
-                                    return parkModel.findOneAsync({siteId: pto.siteId})
-                                        .then(function (park) {
-                                            //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                            pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                            pushPhoto.logoUrl = park.logoUrl;
-                                            pushPhoto.pageUrl = park.pageUrl;
-                                            pushPhoto.parkName = park.name;
-                                            photos.push(pushPhoto);
-                                        })
-                                })
-                                .catch(function (err) {
-                                    console.log(err);
-                                    return Promise.reject(errInfo.findPhotos.photoError);
-                                })
-                        }else {
-                            var pushPhoto = new filterPhoto(pto, false);
-                            return parkModel.findOneAsync({siteId: pto.siteId})
-                                .then(function (park) {
-                                    //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                    pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                    pushPhoto.logoUrl = park.logoUrl;
-                                    pushPhoto.pageUrl = park.pageUrl;
-                                    pushPhoto.parkName = park.name;
-                                    photos.push(pushPhoto);
-                                })
-                        }
-                    }
-                });
+    return Promise.resolve()
+        .then(function () {
+            if(flag){
+                return findInfo(audience, 'user', {_id: conditions.userIds});
             }
+        })
+        .then(function (info) {
+            if(flag){
+                if(info && info.redis){
+                    return info.redis.user.customerIds;
+                }else if(info && info.mongo){
+                    return info.mongo.customerIds;
+                }else {
+                    return Promise.reject(errInfo.findPhotos.notFind);
+                }
+            }
+            else {
+                return conditions['customerIds.code'].$in;
+            }
+        })
+        .then(function (customerIds) {
+            return Promise.each(customerIds, function (ctId) {
+                return Promise.resolve()
+                    .then(function () {
+                        return cardCodeModel.findOneAsync({PPCode: ctId.code})
+                            .then(function (card) {
+                                if(card){
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            })
+                    })
+                    .then(function (isPaid) {
+                        conditions["customerIds.code"] = ctId.code;
+                        return photoModel.findAsync(conditions, fields, options)
+                            .then(function (list) {
+                                if(list && list.length > 0){
+                                    return Promise.each(list, function (pto) {
+                                        var pushPhoto = new filterPhoto(pto, isPaid);
+                                        return parkModel.findOneAsync({siteId: pto.siteId})
+                                            .then(function (park) {
+                                                //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
+                                                pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                                                pushPhoto.logoUrl = park.logoUrl;
+                                                pushPhoto.pageUrl = park.pageUrl;
+                                                pushPhoto.parkName = park.name;
+                                                photos.push(pushPhoto);
+                                            })
+                                    })
+                                }
+                            })
+                            .catch(function (err) {
+                                console.log(err);
+                                return Promise.reject(errInfo.findPhotos.promiseError);
+                            });
+                    })
+            })
         })
         .then(function () {
             return photos;
         })
         .catch(function (error) {
-            console.log(error);
-            return errInfo.findPhotos.photoError;
+            if(error.status){
+                return error;
+            }else {
+                console.log(error);
+                return errInfo.findPhotos.photoError;
+            }
         });
 }
 
@@ -224,12 +230,15 @@ exports.getPhotosByConditions = function (req, res, next) {
         bundleWithPPP: 1,
         adInfo: 1
     };
-    var flag;
-    params.userId ? flag = true : flag = false;
+    var flag = false, audience = '';
+    if(params.userId){
+        flag = true
+        audience = params.token.audience;
+    }
 
-    Promise.resolve()
+    return Promise.resolve()
         .then(function () {
-            return findPhotos(conditions, fields, options, flag);
+            return findPhotos(conditions, fields, options, flag, audience);
         })
         .then(function (photos) {
             if(photos.status){

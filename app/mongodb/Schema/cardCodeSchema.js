@@ -25,6 +25,7 @@ var config= {
     days:{type:Number}, //天数，可绑定的天数
     ownerId: {type: String},//购买者Id
     userId: {type: String, index: true},//使用者Id
+    PPCode: {type: String}, //ppCode 被激活卡号
     bindOn: {type: Date}, //绑定PP时间,激活时间,coupon的使用时间，
     expiredDay:{type:Number,default:3},//有效期，激活后多久失效
     expiredOn:{type:Date},//失效时间，激活时间+有效期
