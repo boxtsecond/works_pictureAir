@@ -123,9 +123,9 @@ function findPhotos(conditions, fields, options, flag, audience) {
         .then(function (info) {
             if(flag){
                 if(info && info.redis){
+                    console.log(info.redis.user.customerIds)
                     return info.redis.user.customerIds;
                 }else if(info && info.mongo){
-                    console.log(info.mongo);
                     return info.mongo.customerIds;
                 }else {
                     //return Promise.reject(errInfo.findPhotos.notFind);
@@ -476,13 +476,16 @@ exports.getPhotosForWeb = function (req, res, next) {
         bundleWithPPP: 1,
         adInfo: 1
     };
-    var flag;
     var sendPhotos = [];
-    params.userId ? flag = true : flag = false;
+    var flag = false, audience = '';
+    if(params.userId){
+        flag = true
+        audience = params.token.audience;
+    }
 
     Promise.resolve()
         .then(function () {
-            return findPhotos(conditions, fields, options, flag);
+            return findPhotos(conditions, fields, options, flag, audience);
         })
         .then(function (photos) {
             if(photos.status) {
