@@ -31,7 +31,8 @@ var errInfo={
     "syncSavePreviewImageToDisk":{status: 601, msg:"save Preview L Image error",desc:"save preview Image error"},
     "syncSaveThumbnailMImageToDisk":{status: 602, msg:"save Thumbnail M Image error",desc:"save preview Image error"},
     "syncSaveThumbnailSImageToDisk":{status: 603, msg:"save Thumbnail S Image error",desc:"save preview Image error"},
-    "syncSaveThumbnailWImageToDisk":{status: 604, msg:"save Thumbnail W Image error",desc:"save preview Image error"}
+    "syncSaveThumbnailWImageToDisk":{status: 604, msg:"save Thumbnail W Image error",desc:"save preview Image error"},
+    "syncError":{status: 605, msg:"system error",desc:"promise error"}
 };
 
 
@@ -64,7 +65,7 @@ function updatePhotoObJ(photo) {
 }
 
 function syncPhotos(req, res) {
-    Promise.resolve(req.ext.params).then(function (obj) {
+     Promise.resolve(req.ext.params).then(function (obj) {
         return Promise.each(obj.photo.customerIds, function (csId) {
             if (csId.code) {
                 var userIds = [];
@@ -80,11 +81,26 @@ function syncPhotos(req, res) {
                         }
                     })
                     .then(function () {
-                        return syncFileData(req, res, userIds);
+                        return syncFileData(req, res, userIds)
+                            .catch(function (err) {
+                                console.error(err);
+                                return Promise.reject(err);
+                            });
                     })
             }
         });
     })
+         .then(function (photo) {
+             return  res.ext.json([200,'success',{}]);
+         })
+         .catch(function (err) {
+             if(err.status){
+                 return res.ext.json(err);
+             }else {
+                 console.error(err);
+                 return res.ext.json(errInfo.syncError);
+             }
+         });
 }
 
 // console.log(photoModel)
@@ -232,13 +248,7 @@ function  syncFileData(req,res, users) {
                     return Promise.reject(errInfo.syncCreateToDBerror);
                 });
             }
-        }).then(function (photo) {
-              return  res.ext.json([200,'success',{}]);
         })
-        .catch(function (err) {
-            console.error(err);
-          return res.ext.json(err);
-    });
 }
 function syncFile(req,res) {
     return res.ext.json([200,'success',{}]);
