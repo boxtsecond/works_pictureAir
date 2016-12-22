@@ -155,8 +155,8 @@ function findPhotos(conditions, fields, options, flag, audience) {
                         return photoModel.findAsync(conditions, fields, options)
                             .then(function (list) {
                                 if(list && list.length > 0){
-                                    var isPaid = false;
                                     return Promise.each(list, function (pto) {
+                                        var isPaid = false;
                                         return Promise.resolve()
                                             .then(function () {
                                                 return Promise.each(pto.orderHistory, function (odHt) {
