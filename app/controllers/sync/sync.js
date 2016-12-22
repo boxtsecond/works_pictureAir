@@ -7,6 +7,7 @@ var Promise=require('bluebird');
 var  websiteStoragePath="/data/website";
 var  websitePhotoStoragePath="/data/website/photos";
 var photoModel=require("../../mongodb/Model/photoModel");
+var userModel=require("../../mongodb/Model/userModel");
 // /sync/syncToCloud
 //-1  服务器繁忙（CPU  内存）
 //503  no supper this dev input
@@ -62,10 +63,35 @@ function updatePhotoObJ(photo) {
     this.tagBy=photo.tagBy;
 }
 
-// console.log(photoModel)
-function  syncFileData(req,res) {
+function syncPhotos(req, res) {
     Promise.resolve(req.ext.params).then(function (obj) {
-          var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
+        return Promise.each(obj.photo.customerIds, function (csId) {
+            if (csId.code) {
+                var userIds = [];
+                return Promise.resolve()
+                    .then(function () {
+                        return userModel.findAsync({'customerIds.code': csId.code});
+                    })
+                    .then(function (users) {
+                        if (users && users.length > 0) {
+                            return Promise.each(users, function (ur) {
+                                userIds.push(ur._id);
+                            });
+                        }
+                    })
+                    .then(function () {
+                        return syncFileData(req, res, userIds);
+                    })
+            }
+        });
+    })
+}
+
+// console.log(photoModel)
+function  syncFileData(req,res, users) {
+    Promise.resolve(req.ext.params).then(function (obj) {
+        obj.photo.userIds = users;
+        var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
         return {
               photo:photo,
               O:obj.O,//O
@@ -115,7 +141,8 @@ function  syncFileData(req,res) {
                 }
             }
         }).catch(function (err) {
-             return Promise.reject(errInfo.syncFindToDBerror);
+            console.log(err);
+            return Promise.reject(errInfo.syncFindToDBerror);
         });
     }).then(function (obj) {
         if(obj.exist){
@@ -135,12 +162,12 @@ function  syncFileData(req,res) {
                     .then(function (onePhoto) {
                         return obj;
                     }).catch(function (nerr) {
-                          return Promise.reject(errInfo.syncUpdateToDBerror);
+                        console.log(nerr);
+                        return Promise.reject(errInfo.syncUpdateToDBerror);
                     });
             }
         } else return obj;
-    })
-        .then(function (obj) {
+    }).then(function (obj) {
             if(obj.O&&obj.O!=""){
                 return synctools.writeStreamBase64(obj.photo.originalInfo.path,obj.O).then(function (err) {
                     if(err) return obj;
@@ -170,8 +197,7 @@ function  syncFileData(req,res) {
             }else  return obj;
         }
         else return obj;
-    })
-        .then(function (obj) {
+    }).then(function (obj) {
             if(obj.S&&obj.S!=""){
                 if(!req.ext.isundefined(obj.photo.thumbnail.x128)
                     &&!req.ext.isundefined(obj.photo.thumbnail.x128.path)){
@@ -182,8 +208,7 @@ function  syncFileData(req,res) {
                 }else  return obj;
             }
             else return obj;
-        })
-        .then(function (obj) {
+    }).then(function (obj) {
             if(obj.W&&obj.W!=""){
                 if(!req.ext.isundefined(obj.photo.thumbnail.w512)
                     &&!req.ext.isundefined(obj.photo.thumbnail.w512.path)){
@@ -194,8 +219,7 @@ function  syncFileData(req,res) {
                 }else  return obj;
             }
             else return obj;
-        })
-        .then(function (obj) {
+    }).then(function (obj) {
                 // console.log('#######',obj);
             if(obj.edit){
                 console.log("upload edit  rawFileName :--->>>>>",obj.photo.rawFileName);
@@ -231,5 +255,6 @@ function syncData() {
 module.exports={
     syncFileData:syncFileData,
     syncFile:syncFile,
-    syncData:syncData
+    syncData:syncData,
+    syncPhotos:syncPhotos
 }

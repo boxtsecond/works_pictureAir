@@ -324,6 +324,9 @@ exports.activeCodeToUser = function (req, res, next) {
                 .then(function () {
                     return cardTools.activeCard(params.cardId, userId);
                 })
+                .then(function () {
+                    return res.ext.json();
+                })
                 .catch(function (err) {
                     if(err.status){
                         return Promise.reject(err);
@@ -331,9 +334,6 @@ exports.activeCodeToUser = function (req, res, next) {
                         return Promise.reject(errInfo.activeCodeToUser.invalidCard);
                     }
                 })
-        })
-        .then(function () {
-            return res.ext.json();
         })
         .catch(function (error) {
             if(error.status){

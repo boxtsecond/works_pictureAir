@@ -109,15 +109,23 @@ function getOptions(params) {
 //flag true---login
 function findPhotos(conditions, fields, options, flag) {
     var photos = [];
+    if(flag){
+        return userModel.findAsync({})
+    }else {
+
+    }
     return photoModel.findAsync(conditions, fields, options)
         .then(function (list) {
-            var isPaid = false;
             if (list && list.length > 0) {
                 return Promise.mapSeries(list, function (pto) {
+                    var isPaid = false;
                     if(pto.customerIds.length > 0){
                         //判断 isPaid
                         if(flag){
                             return Promise.resolve()
+                                .then(function () {
+                                    return
+                                })
                                 .then(function () {
                                     return Promise.each(pto.orderHistory, function (pp) {
                                         // return cardCodeModel.findOneAsync({PPPCode: pp.prepaidId, active: true, userId: conditions.userIds})
@@ -129,7 +137,6 @@ function findPhotos(conditions, fields, options, flag) {
                                         if(pp.userId == conditions.userId){
                                             isPaid = true;
                                         }
-
                                     })
                                 })
                                 .then(function () {
