@@ -484,7 +484,7 @@ exports.getPhotosForWeb = function (req, res, next) {
         })
         .then(function (photos) {
             if(photos.status) {
-                return res.ext.json(photos);
+                return Promise.reject(photos);
             }else {
                 return Promise.each(photos, function (pt) {
                     if(pt.isPaid){
