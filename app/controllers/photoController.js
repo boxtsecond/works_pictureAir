@@ -123,12 +123,11 @@ function findPhotos(conditions, fields, options, flag, audience) {
         .then(function (info) {
             if(flag){
                 if(info && info.redis){
-                    console.log(info.redis.user.customerIds)
                     return info.redis.user.customerIds;
                 }else if(info && info.mongo){
                     return info.mongo.customerIds;
                 }else {
-                    //return Promise.reject(errInfo.findPhotos.notFind);
+                    return Promise.reject(errInfo.findPhotos.notFind);
                 }
             } else {
                 return conditions['customerIds.code'].$in;
