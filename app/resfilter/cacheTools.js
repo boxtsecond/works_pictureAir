@@ -45,6 +45,7 @@ function findInfo(audience, modelName, condition) {
 }
 
 function requireModel(modelName) {
+    var _dirname = process.cwd();
     var modelDir = path.join(_dirname, '/mongodb/Model', modelName + 'Model.js');
     var exists = fs_extra.existsSync(modelDir);
     return exists ? require(modelDir) : null;
