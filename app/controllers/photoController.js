@@ -159,11 +159,13 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                         var isPaid = false;
                                         return Promise.resolve()
                                             .then(function () {
-                                                return Promise.each(pto.orderHistory, function (odHt) {
-                                                    if(odHt.code == ctId.code){
-                                                        isPaid = true;
-                                                    }
-                                                })
+                                                if(pto.orderHistory && pto.orderHistory.length > 0){
+                                                    return Promise.each(pto.orderHistory, function (odHt) {
+                                                        if(odHt.customerId == ctId.code){
+                                                            isPaid = true;
+                                                        }
+                                                    })
+                                                }
                                             })
                                             .then(function () {
                                                 var pushPhoto = new filterPhoto(pto, isPaid);
