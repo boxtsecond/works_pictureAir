@@ -127,7 +127,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                 }else if(info && info.mongo){
                     return info.mongo.customerIds;
                 }else {
-                    return Promise.reject(errInfo.findPhotos.notFind);
+                    //return Promise.reject(errInfo.findPhotos.notFind);
                 }
             } else {
                 return conditions['customerIds.code'].$in;
@@ -499,7 +499,11 @@ exports.getPhotosForWeb = function (req, res, next) {
             return res.ext.json(resultObj);
         })
         .catch(function (error) {
-            console.log(error);
-            return res.ext.json(errInfo.getPhotosByConditions.promiseError);
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.getPhotosByConditions.promiseError);
+            }
         });
 }
