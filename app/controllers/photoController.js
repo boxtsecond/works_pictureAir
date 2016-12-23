@@ -157,7 +157,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                         if(list && list.length > 0){
                             return Promise.each(list, function (pto) {
                                 var isPaid = true;
-                                var pushPhoto = new filterPhoto(pto, isPaid);
+                                var pushPhoto = new filterPhoto(pto, isPaid, codes);
                                 return parkModel.findOneAsync({siteId: pto.siteId})
                                     .then(function (park) {
                                         //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
@@ -179,7 +179,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                 if(list && list.length > 0){
                                     return Promise.each(list, function (pto) {
                                         var isPaid = false;
-                                        var pushPhoto = new filterPhoto(pto, isPaid);
+                                        var pushPhoto = new filterPhoto(pto, isPaid, codes);
                                         return parkModel.findOneAsync({siteId: pto.siteId})
                                             .then(function (park) {
                                                 //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)

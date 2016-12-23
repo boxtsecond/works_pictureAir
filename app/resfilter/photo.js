@@ -54,10 +54,12 @@ exports.filterPhoto = function(photo, isPaid, customerIds) {
     }
     //this.customerIds=photo.customerIds;if(!this.customerIds)this.customerIds=[];
     this.customerIds = [];
-    for(var n = 0; n < customerIds.length; ++n){
-        for(var m = 0; m < photo.customerIds.length; ++m){
-            if(customerIds[n] == photo.customerIds[m].code){
-                this.customerIds.push(photo.customerIds[m]);
+    if(!customerIds){
+        for(var n = 0; n < customerIds.length; ++n){
+            for(var m = 0; m < photo.customerIds.length; ++m){
+                if(customerIds[n] == photo.customerIds[m].code){
+                    this.customerIds.push(photo.customerIds[m]);
+                }
             }
         }
     }
