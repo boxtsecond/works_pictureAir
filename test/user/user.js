@@ -69,10 +69,11 @@ describe('/auth/getAccessToken', function() {
     // });
 
     it('should login', function(done) {
+        console.log(md5('111111'))
         request.post('/g/user/login')
             .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODE4ODU2NTQsImV4cCI6MTQ4MjQ5MDQ1NCwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZmMxZGFiNzBjMzdkMTFlNjlkMWE5NWE3YmFiZThjZTgiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.GKjhhbhps9GVFlEzHh56RD6BWTR8yKFp5pZgUnRmF6fI74d7_WfxWNQpkPEeM1gxHtOLy44g1yJd--mT974YkGWTfJ-u607YXCEkWrkkTyH8vtt3BOyhFMNsZNNn3PhloobZOaD1lTw_9vRoClJGUnI4qlBh1Ubh30Inq5QXNtrgn78XG5Ky9wiFCwbbeoE7LaD2VAi091Rzswsh-hLkbFjmms4P7LFEhAr8NmXHbwAhPktamb3si6NJNGR4wXw8RP3IYKTIzkCAiNYSFIa_G6_vdAX3ziKVxEGy290dQ7Wfr0MGUjl-UfnU0O5MgqAjDypWeIHXGBv4sa8KaN9f9w',
-                username: 'p03@126.com',
+                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODIxNDIzOTYsImV4cCI6MTQ4Mjc0NzE5NiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZDUzYzA2ZTU0ODFiMjgwYmQ0YWNlZjE5MGE3OWIxNjAiLCJ0IjoxLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwibGciOiJ6aC1DTiJ9.Qo9dJiN0BJtPOlMtEICMx7BdVqfdm_8dvn_OcJf5b0ECy23gmMRHUxT6cfQYi5F2jWyhluCAFnRmJ5KGpVmWUbatuxEGFVOk2VdoHGMC_-mLIjlwr_2Ewv-7b1s9YRJGPjFBB0Jn0GkwQgw7DQaG-h-yhlr6F5vbNp6Z8exzKczGiSAeCs2_Zrk0JWUJ1mvc-a345Xxe8QzAAfpVxMge4GeqB5nuARrGqCsZLoJbYkysHEFlquBL2pvgokBbPEtVYEG1Fop1-RToRk0PGCOkOEXi4Ts8UmJBk0Eorko00a88XC1_0IJIv-XW6v9eMsInEgyb4M7l0nHCZjUd1NMdXA',
+                username: 'p02@111.com',
                 password: md5("111111")
                 // username: '1@1.com',
                 // password: md5("000000")
