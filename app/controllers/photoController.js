@@ -149,8 +149,8 @@ function findPhotos(conditions, fields, options, flag, audience) {
         .then(function (codeIds) {
             //console.log(customerIds)
             if(codeIds && codeIds.length > 0){
-                conditions["customerIds.code"] = {$in: codeIds};
-                conditions["orderHistory.customerId"] = {$in: codeIds};
+                conditions["customerIds.code"] = {$in: codes};
+                conditions["orderHistory.customerId"] = {$in: codes};
                 //isPaid = true;
                 return photoModel.findAsync(conditions, fields, options)
                     .then(function (list) {
@@ -173,7 +173,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                     })
                     .then(function () {
                         //isPaid = false;
-                        conditions["orderHistory.customerId"] = {$nin: codeIds};
+                        conditions["orderHistory.customerId"] = {$nin: codes};
                         return photoModel.findAsync(conditions, fields, options)
                             .then(function (list) {
                                 if(list && list.length > 0){
