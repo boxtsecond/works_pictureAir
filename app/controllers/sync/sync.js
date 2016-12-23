@@ -67,25 +67,30 @@ function updatePhotoObJ(photo) {
 
 function syncPhotos(req, res) {
      Promise.resolve(req.ext.params).then(function (obj) {
-        return Promise.each(obj.photo.customerIds, function (csId) {
-            if (csId.code) {
-                var userIds = [];
-                return Promise.resolve()
-                    .then(function () {
-                        return userModel.findAsync({'customerIds.code': csId.code});
-                    })
-                    .then(function (users) {
-                        if (users && users.length > 0) {
-                            return Promise.each(users, function (ur) {
-                                userIds.push(ur._id);
-                            });
-                        }
-                    })
-                    .then(function () {
-                        return syncFileData(req, userIds);
-                    })
-            }
-        });
+         if(obj.photo.customerIds && obj.photo.customerIds.length > 0){
+             return Promise.each(obj.photo.customerIds, function (csId) {
+                 if (csId.code) {
+                     var userIds = [];
+                     return Promise.resolve()
+                         .then(function () {
+                             return userModel.findAsync({'customerIds.code': csId.code});
+                         })
+                         .then(function (users) {
+                             if (users && users.length > 0) {
+                                 return Promise.each(users, function (ur) {
+                                     userIds.push(ur._id);
+                                 });
+                             }
+                         })
+                         .then(function () {
+                             return syncFileData(req, userIds);
+                         })
+                 }
+             });
+         }else {
+             //图片解绑
+             return syncFileData(req, []);
+         }
     })
          .then(function (photo) {
              return  res.ext.json([200,'success',{}]);
