@@ -2,7 +2,8 @@
  * Created by xueting-bo on 16/12/5.
  */
 var resTools = require('./resTools');
-exports.filterPhoto = function(photo, isPaid) {
+//customerIds --- 用户实际拥有的卡（数组）
+exports.filterPhoto = function(photo, isPaid, customerIds) {
     this._id=photo._id; if(!this._id)this._id="";
     this.siteId=photo.siteId;if(!this.siteId)this.siteId="";
     this.photoId=photo.photoId;if(!this.photoId)this.photoId="";
@@ -19,7 +20,6 @@ exports.filterPhoto = function(photo, isPaid) {
     this.presetId=photo.presetId;if(!this.presetId)this.presetId="";
     this.targetPoint=photo.targetPoint;if(!this.targetPoint)this.targetPoint="";
     this.downloadCount=photo.downloadCount;if(!this.downloadCount)this.downloadCount=0;
-    this.customerIds=photo.customerIds;if(!this.customerIds)this.customerIds=[];
     this.comments=photo.comments;if(!this.comments)this.comments=[];
     this.visitedCount=photo.visitedCount;if(!this.visitedCount)this.visitedCount=0;
     this.disabled=photo.disabled;if(!this.disabled)this.disabled=false;
@@ -33,7 +33,7 @@ exports.filterPhoto = function(photo, isPaid) {
     this.allowDownload=photo.allowDownload;if(!this.allowDownload)this.allowDownload=false;
     this.editCount=photo.editCount;if(!this.editCount)this.editCount=0;
     this.isPaid=isPaid;if(!this.isPaid)this.isPaid=false;
-
+    //this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail={};
     this.thumbnail = {};
     for(var i in photo.thumbnail){
         this.thumbnail[i] = {};
@@ -43,7 +43,7 @@ exports.filterPhoto = function(photo, isPaid) {
             }
         }
     }
-    //this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail={};
+    //this.originalInfo=photo.originalInfo;if(!this.originalInfo)this.originalInfo={};
     if(isPaid){
         this.originalInfo ={};
         for(var k in photo._doc.originalInfo){
@@ -52,5 +52,13 @@ exports.filterPhoto = function(photo, isPaid) {
             }
         }
     }
-    //this.originalInfo=photo.originalInfo;if(!this.originalInfo)this.originalInfo={};
+    //this.customerIds=photo.customerIds;if(!this.customerIds)this.customerIds=[];
+    this.customerIds = [];
+    for(var n = 0; n < customerIds.length; ++n){
+        for(var m = 0; m < photo.customerIds.length; ++m){
+            if(customerIds[n] == photo.customerIds[m].code){
+                this.customerIds.push(photo.customerIds[m]);
+            }
+        }
+    }
 }
