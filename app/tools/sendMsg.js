@@ -128,7 +128,8 @@ elemsendSMSE.addListener("send",function(smsobj){
                 else{
                     var type=-1;
                     if(obj.type=="validateCode") type=0;
-                    else if(obj.type=="forgotPwdMsg_test"||obj.type=="forgotPwdMsg") type=1;
+                    //else if(obj.type=="forgotPwdMsg_test"||obj.type=="forgotPwdMsg") type=1;
+                    else if(obj.type=="forgotPwdMsg") type=1;
                     if(!rq.util.isArray(obj.phone)){
                         return redisclient.del("validateCode:"+type+"-"+req.ext.md5(obj.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
                             obj.msg.validateCode).then(function(err){
@@ -248,7 +249,7 @@ function sendSMS(lg,type,phone,dReplaceArray,msgid,sendTime){
 }
 
 function sendEmailforgotPwdMsg(lg,email,msgid){
-    return sendEmail(lg,"forgotPwdMsg_test",email,
+    return sendEmail(lg,"forgotPwdMsg",email,
         [{name:"%validateCode%",value:msgid}],msgid,new Date()
     );
         //.then(function(msg){
