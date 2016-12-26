@@ -290,6 +290,7 @@ exports.activeCodeToUser = function (req, res, next) {
                                         productId: params.productId ? params.productId : 'photo',  //对应产品Id（照片，杯子，钥匙扣）
                                         prepaidId: params.cardId,  //激活卡 code
                                         userId: userId,  //用户Id
+                                        activeTime: time,   //所激活照片的日期
                                         createdOn: Date.now()  //创建时间
                                     };
                                     return photoModel.findByIdAndUpdateAsync(photoId, {$push:{orderHistory:newOrderHistory}});

@@ -167,7 +167,6 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                         pushPhoto.parkName = park.name;
                                         photos.push(pushPhoto);
                                     })
-
                             })
                         }
                     })
@@ -267,6 +266,11 @@ exports.getPhotosByConditions = function (req, res, next) {
         .then(function () {
             return findPhotos(conditions, fields, options, flag, audience);
         })
+        // .then(function (photos) {
+        //     if(photos.length == 0){
+        //
+        //     }
+        // })
         .then(function (photos) {
             if(photos.status){
                 return res.ext.json(photos);

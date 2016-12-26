@@ -62,6 +62,7 @@ var config={
             productId: String,  //对应产品Id（照片，杯子，钥匙扣）
             prepaidId: {type:String,index:true},  //pp+的code
             userId: {type:String,index:true},  //用户Id
+            activeTime: {type: String}, //用户所激活的照片的日期
             createdOn: Date  //创建时间
         }
     ],
