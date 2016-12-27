@@ -33,7 +33,7 @@ var errInfo={
     "syncSaveThumbnailSImageToDisk":{status: 603, msg:"save Thumbnail S Image error",desc:"save preview Image error"},
     "syncSaveThumbnailWImageToDisk":{status: 604, msg:"save Thumbnail W Image error",desc:"save preview Image error"},
     "syncError":{status: 605, msg:"system error",desc:"promise error"},
-    "success":{status: 200, msg:"success", desc:"success"}
+    "success":{status: 200, msg: "success"}
 };
 
 
@@ -172,10 +172,14 @@ function  syncFileData(req, users) {
                     .then(function (onePhoto) {
                         console.log("upload old rawFileName :--->>>>>",obj.photo.rawFileName);
                         return Promise.reject(errInfo.success);
-                    }).catch(function (nerr) {
-                        console.log(nerr);
-                        if(synctools.isArray(nerr)) return Promise.reject(nerr);
-                        else  return Promise.reject(errInfo.syncUpdateToDBerror);
+                    })
+                    .catch(function (nerr) {
+                        if(nerr.status){
+                            return Promise.reject(nerr);
+                        }else {
+                            console.log(nerr);
+                            return Promise.reject(errInfo.syncUpdateToDBerror);
+                        }
                     });
             }else {
                 return  photoModel.updateAsync({_id: obj.photo._id},nphoto)
