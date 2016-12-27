@@ -83,21 +83,21 @@ function syncPhotos(req, res) {
                                      if (users && users.length > 0) {
                                          return Promise.each(users, function (ur) {
                                              userIds.push(ur._id);
-                                             return Promise.each(allUserIds, function (aur) {
-                                                 if(aur != ur._id){
-                                                     allUserIds.push(ur._id);
-                                                 }
-                                             })
+                                             if(allUserIds.length != 0){
+                                                 return Promise.each(allUserIds, function (aur) {
+                                                     if(aur != ur._id){
+                                                         allUserIds.push(ur._id);
+                                                     }
+                                                 })
+                                             }else {
+                                                 allUserIds.push(ur._id);
+                                             }
                                          });
                                      }
                                  })
                                  .then(function () {
                                      var csObj = {code: csId.code, userIds: userIds};
-                                     return Promise.each(customerIds, function (cd) {
-                                         if(cd.code != csObj.code){
-                                             customerIds.push(csObj);
-                                         }
-                                     })
+                                     customerIds.push(csObj);
                                  })
                          }
                      });
