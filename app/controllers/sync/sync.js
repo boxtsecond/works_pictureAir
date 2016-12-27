@@ -32,7 +32,8 @@ var errInfo={
     "syncSaveThumbnailMImageToDisk":{status: 602, msg:"save Thumbnail M Image error",desc:"save preview Image error"},
     "syncSaveThumbnailSImageToDisk":{status: 603, msg:"save Thumbnail S Image error",desc:"save preview Image error"},
     "syncSaveThumbnailWImageToDisk":{status: 604, msg:"save Thumbnail W Image error",desc:"save preview Image error"},
-    "syncError":{status: 605, msg:"system error",desc:"promise error"}
+    "syncError":{status: 605, msg:"system error",desc:"promise error"},
+    "success":{status: 200, msg:"success", desc:"success"}
 };
 
 
