@@ -55,7 +55,7 @@
   "uploadFileList": {
     "assets": ""
   },
-  "spportLanguage":["en-US","zh-CN"],
+  "spportLanguage":["en-US","zh-CN","ja-JP"],
   "expireTime":{
      "guestExpireTime":604800,
      "expireTime":604800,

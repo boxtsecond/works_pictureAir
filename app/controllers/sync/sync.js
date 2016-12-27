@@ -98,7 +98,7 @@ function syncPhotos(req, res) {
                      obj.photo.userIds = allUserIds;
                      obj.photo.customerIds = customerIds;
                      photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
-                     return syncFileData(obj, photo);
+                     return syncFileData(obj, photo, req);
                  })
 
          }else {
@@ -106,7 +106,7 @@ function syncPhotos(req, res) {
              obj.photo.userIds = allUserIds;
              obj.photo.customerIds = customerIds;
              photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
-             return syncFileData(obj, photo);
+             return syncFileData(obj, photo, req);
          }
     })
          .then(function () {
@@ -124,7 +124,7 @@ function syncPhotos(req, res) {
 }
 
 // console.log(photoModel)
-function  syncFileData(photoObj, photo) {
+function  syncFileData(photoObj, photo, req) {
     return Promise.resolve().then(function () {
         return {
               photo:photo,
