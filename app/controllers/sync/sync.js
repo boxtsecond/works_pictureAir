@@ -85,9 +85,6 @@ function syncPhotos(req, res) {
                          .then(function () {
                              return syncFileData(req, userIds);
                          })
-                         .catch(function (err) {
-                             return Promise.reject(err);
-                         })
                  }
              });
          }else {
@@ -96,7 +93,8 @@ function syncPhotos(req, res) {
          }
     })
          .then(function () {
-             return  res.ext.json([200,'success',{}]);
+             //return res.ext.json([200,'success',{}]);
+             return res.ext.json();
          })
          .catch(function (err) {
              if(err.status){
@@ -110,7 +108,7 @@ function syncPhotos(req, res) {
 
 // console.log(photoModel)
 function  syncFileData(req, users) {
-    Promise.resolve(req.ext.params).then(function (obj) {
+    return Promise.resolve(req.ext.params).then(function (obj) {
         obj.photo.userIds = users;
         var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
         return {
