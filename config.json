@@ -2,10 +2,10 @@
   "port": 4001,
   "DB": {
     "MongoDB": {
-      "host": "192.168.8.107:1010,192.168.8.107:1008,192.168.8.107:1009",
+      "host": "47.89.49.58:1008,47.90.14.228:1008,47.89.50.253:1008",
       "dbName":"pictureAir",
-      "user": "",
-      "pass": ""
+      "user": "pw",
+      "pass": "pw#Mongo@3456"
     },
     "mysql": {
       "host": "localhost",
@@ -14,9 +14,9 @@
       "database": "photos"
     },
     "redis": {
-      "host": "192.168.8.107",
+      "host": "47.89.32.70",
       "port": "3008",
-      "requirepass": "pIctur3"
+      "requirepass": "pw#p@Ictur3"
     },
     "retryRedis": {
       "host": "127.0.0.1",
