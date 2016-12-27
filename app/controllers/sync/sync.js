@@ -170,7 +170,7 @@ function  syncFileData(req, users) {
                 return  photoModel.updateAsync({_id: obj.photo._id}, nphoto )
                     .then(function (onePhoto) {
                         console.log("upload old rawFileName :--->>>>>",obj.photo.rawFileName);
-                        return Promise.reject([200,'success',{}]);
+                        return Promise.reject(errInfo.success);
                     }).catch(function (nerr) {
                         console.log(nerr);
                         if(synctools.isArray(nerr)) return Promise.reject(nerr);
