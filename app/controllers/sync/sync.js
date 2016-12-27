@@ -83,16 +83,20 @@ function syncPhotos(req, res) {
                              }
                          })
                          .then(function () {
-                             return syncFileData(req, userIds);
+                             return syncFileData(req, userIds).catch(function (err) {
+                                 return Promise.reject(err);
+                             });
                          })
                  }
              });
          }else {
              //图片解绑
-             return syncFileData(req, []);
+             return syncFileData(req, []).catch(function (err) {
+                 return Promise.reject(err);
+             });
          }
     })
-         .then(function (photo) {
+         .then(function () {
              return  res.ext.json([200,'success',{}]);
          })
          .catch(function (err) {
