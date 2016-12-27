@@ -114,7 +114,6 @@ function getOptions(params) {
 //flag true---login
 function findPhotos(conditions, fields, options, flag, audience) {
     var photos = [];
-    var codes = [];
     return Promise.resolve()
         .then(function () {
             if(flag){
@@ -123,6 +122,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
         })
         .then(function (info) {
             if(flag){
+                var codes = [];
                 return Promise.resolve()
                     .then(function () {
                         if(info && info.redis){
@@ -139,25 +139,27 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                 codes.push(ctId.code);
                             }
                         });
-
                     })
-                
+                    .then(function () {
+                        return codes;
+                    })
             } else {
                 return conditions['customerIds.code'];
             }
         })
         .then(function (codeIds) {
             //console.log(customerIds)
-            if(codeIds && codeIds.length > 0){
-                conditions["customerIds.code"] = {$in: codes};
-                conditions["orderHistory.customerId"] = {$in: codes};
+            if(codeIds && codeIds.length > 0 && flag){
+                conditions["customerIds.code"] = {$in: codeIds};
+                conditions["orderHistory.customerId"] = {$in: codeIds};
                 //isPaid = true;
+                //console.log(conditions);
                 return photoModel.findAsync(conditions, fields, options)
                     .then(function (list) {
                         if(list && list.length > 0){
                             return Promise.each(list, function (pto) {
                                 var isPaid = true;
-                                var pushPhoto = new filterPhoto(pto, isPaid, codes);
+                                var pushPhoto = new filterPhoto(pto, isPaid, codeIds);
                                 return parkModel.findOneAsync({siteId: pto.siteId})
                                     .then(function (park) {
                                         //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
@@ -172,13 +174,13 @@ function findPhotos(conditions, fields, options, flag, audience) {
                     })
                     .then(function () {
                         //isPaid = false;
-                        conditions["orderHistory.customerId"] = {$nin: codes};
+                        conditions["orderHistory.customerId"] = {$nin: codeIds};
                         return photoModel.findAsync(conditions, fields, options)
                             .then(function (list) {
                                 if(list && list.length > 0){
                                     return Promise.each(list, function (pto) {
                                         var isPaid = false;
-                                        var pushPhoto = new filterPhoto(pto, isPaid, codes);
+                                        var pushPhoto = new filterPhoto(pto, isPaid, codeIds);
                                         return parkModel.findOneAsync({siteId: pto.siteId})
                                             .then(function (park) {
                                                 //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
@@ -197,6 +199,26 @@ function findPhotos(conditions, fields, options, flag, audience) {
                         console.log(err);
                         return Promise.reject(errInfo.findPhotos.promiseError);
                     });
+            }else if(!flag){
+                return photoModel.findAsync(conditions, fields, options)
+                    .then(function (list) {
+                        if(list && list.length > 0){
+                            return Promise.each(list, function (pto) {
+                                var isPaid = false;
+                                var pushPhoto = new filterPhoto(pto, isPaid, codeIds);
+                                return parkModel.findOneAsync({siteId: pto.siteId})
+                                    .then(function (park) {
+                                        //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
+                                        pushPhoto.coverHeaderImage = park.coverHeaderImage;
+                                        pushPhoto.logoUrl = park.logoUrl;
+                                        pushPhoto.pageUrl = park.pageUrl;
+                                        pushPhoto.parkName = park.name;
+                                        photos.push(pushPhoto);
+                                    })
+
+                            })
+                        }
+                    })
             }
         })
         .then(function () {

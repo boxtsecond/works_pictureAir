@@ -68,29 +68,45 @@ function updatePhotoObJ(photo) {
 
 function syncPhotos(req, res) {
      Promise.resolve(req.ext.params).then(function (obj) {
+         var photo, customerIds = [], allUserIds = [];
          if(obj.photo.customerIds && obj.photo.customerIds.length > 0){
-             return Promise.each(obj.photo.customerIds, function (csId) {
-                 if (csId.code) {
-                     var userIds = [];
-                     return Promise.resolve()
-                         .then(function () {
-                             return userModel.findAsync({'customerIds.code': csId.code});
-                         })
-                         .then(function (users) {
-                             if (users && users.length > 0) {
-                                 return Promise.each(users, function (ur) {
-                                     userIds.push(ur._id);
-                                 });
-                             }
-                         })
-                         .then(function () {
-                             return syncFileData(req, userIds);
-                         })
-                 }
-             });
+             return Promise.resolve()
+                 .then(function () {
+                     return Promise.each(obj.photo.customerIds, function (csId) {
+                         if (csId.code) {
+                             var userIds = [];
+                             return Promise.resolve()
+                                 .then(function () {
+                                     return userModel.findAsync({'customerIds.code': csId.code});
+                                 })
+                                 .then(function (users) {
+                                     if (users && users.length > 0) {
+                                         return Promise.each(users, function (ur) {
+                                             userIds.push(ur._id);
+                                             allUserIds.push(ur._id);
+                                         });
+                                     }
+                                 })
+                                 .then(function () {
+                                     var csObj = {code: csId.code, userIds: userIds};
+                                     customerIds.push(csObj);
+                                 })
+                         }
+                     });
+                 })
+                 .then(function () {
+                     obj.photo.userIds = allUserIds;
+                     obj.photo.customerIds = customerIds;
+                     photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
+                     return syncFileData(obj, photo);
+                 })
+
          }else {
              //图片解绑
-             return syncFileData(req, []);
+             obj.photo.userIds = allUserIds;
+             obj.photo.customerIds = customerIds;
+             photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
+             return syncFileData(obj, photo);
          }
     })
          .then(function () {
@@ -108,17 +124,15 @@ function syncPhotos(req, res) {
 }
 
 // console.log(photoModel)
-function  syncFileData(req, users) {
-    return Promise.resolve(req.ext.params).then(function (obj) {
-        obj.photo.userIds = users;
-        var photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
+function  syncFileData(photoObj, photo) {
+    return Promise.resolve().then(function () {
         return {
               photo:photo,
-              O:obj.O,//O
-              L:obj.L,//1024
-              M:obj.M,//512
-              S:obj.S,//128
-              W:obj.W,//w512
+              O:photoObj.O,//O
+              L:photoObj.L,//1024
+              M:photoObj.M,//512
+              S:photoObj.S,//128
+              W:photoObj.W,//w512
               exist:false,
               edit:false
           }
