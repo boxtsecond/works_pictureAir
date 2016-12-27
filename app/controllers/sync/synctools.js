@@ -162,6 +162,7 @@ function convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,
     this.downloadCount=photo.downloadCount;
     this.userIds=photo.userIds;
     this.customerIds=photo.customerIds;
+    this.customerIds.userIds=photo.customerIds.userIds;
     this.mobileEditActive=photo.mobileEditActive;
     this.presetName=photo.presetName;
     this.hasSynced=photo.hasSynced;
