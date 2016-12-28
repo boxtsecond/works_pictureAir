@@ -54,8 +54,10 @@ function  activeCard(pppCode, userId, ppCode) {
             var updateObj = {};
             updateObj.active = true;
             updateObj.expiredOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
-            updateObj.bindOn= new Date(new Date().getTime() + obj.expiredDay*86400000);
+            updateObj.bindOn= new Date();
             updateObj.modifiedOn = new Date();
+            //updateObj.ownOn = new Date();
+            updateObj.effectiveOn = new Date();
             updateObj.userId = userId;
             updateObj.PPCode = ppCode;
             return carCodeModel.updateAsync({PPPCode:pppCode}, updateObj);

@@ -8,6 +8,7 @@ var  websiteStoragePath="/data/website";
 var  websitePhotoStoragePath="/data/website/photos";
 var photoModel=require("../../mongodb/Model/photoModel");
 var userModel=require("../../mongodb/Model/userModel");
+var cardCodeModel=require("../../mongodb/Model/cardCodeModel");
 // /sync/syncToCloud
 //-1  服务器繁忙（CPU  内存）
 //503  no supper this dev input
@@ -68,10 +69,11 @@ function updatePhotoObJ(photo) {
 
 function syncPhotos(req, res) {
      Promise.resolve(req.ext.params).then(function (obj) {
-         var photo, customerIds = [], allUserIds = [];
+         var photo, customerIds = [], allUserIds = [], allOrderHistory = [];
          if(obj.photo.customerIds && obj.photo.customerIds.length > 0){
              return Promise.resolve()
                  .then(function () {
+                     var i = 0;
                      return Promise.each(obj.photo.customerIds, function (csId) {
                          if (csId.code) {
                              var userIds = [];
@@ -80,15 +82,17 @@ function syncPhotos(req, res) {
                                      return userModel.findAsync({'customerIds.code': csId.code});
                                  })
                                  .then(function (users) {
+                                     //userIds
                                      if (users && users.length > 0) {
                                          return Promise.each(users, function (ur) {
                                              userIds.push(ur._id);
-                                             if(allUserIds.length != 0){
-                                                 return Promise.each(allUserIds, function (aur) {
-                                                     if(aur != ur._id){
+                                             if(allUserIds.length > 0){
+                                                 for(var j = i; j < allUserIds.length; j++){
+                                                     if(ur._id !== allUserIds[j]){
                                                          allUserIds.push(ur._id);
+                                                         i = j;
                                                      }
-                                                 })
+                                                 }
                                              }else {
                                                  allUserIds.push(ur._id);
                                              }
@@ -96,8 +100,26 @@ function syncPhotos(req, res) {
                                      }
                                  })
                                  .then(function () {
+                                     //customerIds
                                      var csObj = {code: csId.code, userIds: userIds};
                                      customerIds.push(csObj);
+                                 })
+                                 .then(function () {
+                                     //orderHistory
+                                     return cardCodeModel.findAsync({PPCode:csId.code, active: true})
+                                         .then(function (card) {
+                                             if(card.expiredOn - new Date() > 0){
+                                                 var newOrderHistory = {
+                                                     createdOn: card.createdOn,
+                                                     userId: card.userId,
+                                                     customerId: csId.code,
+                                                     productId: 'photo',
+                                                     prepaidId: card.PPPCode,
+                                                     activeTime: card.bindOn
+                                                 }
+                                                 allOrderHistory.push(newOrderHistory);
+                                             }
+                                         })
                                  })
                          }
                      });
@@ -105,6 +127,13 @@ function syncPhotos(req, res) {
                  .then(function () {
                      obj.photo.userIds = allUserIds;
                      obj.photo.customerIds = customerIds;
+                     if(obj.photo.orderHistory && obj.photo.orderHistory.length > 0){
+                         var odh = obj.photo.orderHistory;
+                         for(var m = 0; m < odh.length; m++){
+                             allOrderHistory.push(odh[m]);
+                         }
+                     }
+                     obj.photo.orderHistory = allOrderHistory;
                      photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
                      return syncFileData(obj, photo, req);
                  })

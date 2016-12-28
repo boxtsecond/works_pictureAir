@@ -72,8 +72,8 @@ describe('/auth/getAccessToken', function() {
         console.log(md5('111111'))
         request.post('/g/user/login')
             .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODIxNDIzOTYsImV4cCI6MTQ4Mjc0NzE5NiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiZDUzYzA2ZTU0ODFiMjgwYmQ0YWNlZjE5MGE3OWIxNjAiLCJ0IjoxLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwibGciOiJ6aC1DTiJ9.Qo9dJiN0BJtPOlMtEICMx7BdVqfdm_8dvn_OcJf5b0ECy23gmMRHUxT6cfQYi5F2jWyhluCAFnRmJ5KGpVmWUbatuxEGFVOk2VdoHGMC_-mLIjlwr_2Ewv-7b1s9YRJGPjFBB0Jn0GkwQgw7DQaG-h-yhlr6F5vbNp6Z8exzKczGiSAeCs2_Zrk0JWUJ1mvc-a345Xxe8QzAAfpVxMge4GeqB5nuARrGqCsZLoJbYkysHEFlquBL2pvgokBbPEtVYEG1Fop1-RToRk0PGCOkOEXi4Ts8UmJBk0Eorko00a88XC1_0IJIv-XW6v9eMsInEgyb4M7l0nHCZjUd1NMdXA',
-                username: 'p02@111.com',
+                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODI4MzEyMjEsImV4cCI6MTQ4MzQzNjAyMSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiOGQ5OGJjMTBjYzE3MTFlNmJlY2QxZDVhNTU3ZWE1NGYiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.V8e2t404oUKX2Iw3rqB9taMb1m_dyxEw6R84xwkvk-Z_Iyuv0YNMw3am869z6y2lOJZFIrYNKtMN7rkHye8aIvhuWwid6jQN7ZEzSw4TtBnxnlYRhzC-B5rwUsOR8XGSresR3vEIBckbS5rLS63jKav1Ki13AdWu0kE9oEdGcGjPKGa_miWtj0zUYklK2dm21c9hDen0-XtraGI7IBOiIsiFRvLlsYWAyKLHpxV0t5vHa2JNskhtPXL_igwsezrVYtNQaqdCCJAYeWRXkOC6x1fiLLzl-An2HrOACGdqLILDHutxV3FSHf6WnZ3VJN5Gcee6LqCvplYCDnkhaVQQrQ',
+                username: 'p03@111.com',
                 password: md5("111111")
                 // username: '1@1.com',
                 // password: md5("000000")
