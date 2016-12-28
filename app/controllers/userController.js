@@ -648,7 +648,7 @@ exports.addCodeToUser = function (req, res, next) {
                 });
         })
         .then(function (card) {
-            if(cType === 'ppCard' && add){
+            if(cType === 'ppCard'){
                 //白卡绑定到用户
                 var flag = false;
                 return userModel.findByIdAsync(userId)
