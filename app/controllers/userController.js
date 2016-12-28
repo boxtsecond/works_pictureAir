@@ -617,7 +617,6 @@ exports.addCodeToUser = function (req, res, next) {
     var customerId = params.customerId;
     var userId = params.userId;
     var cType = 'ppCard';
-    var flag;
 
     //验证卡是否有效
     cardTools.validatePPType(customerId)
@@ -649,8 +648,9 @@ exports.addCodeToUser = function (req, res, next) {
                 });
         })
         .then(function (card) {
-            if(cType === 'ppCard'){
+            if(cType === 'ppCard' && add){
                 //白卡绑定到用户
+                var flag = false;
                 return userModel.findByIdAsync(userId)
                     .then(function (user) {
                         if(user){
@@ -744,16 +744,15 @@ exports.addCodeToUser = function (req, res, next) {
                                     .then(function () {
                                         if(!band){
                                             userIds.push(userId);
-                                            photo.customerIds = [
-                                                {
+                                            var newCustomerIds = {
                                                     code: customerId,
                                                     //cType: params.cType ? params.cType : 'photoPass',
                                                     userIds: userIds
-                                                }
-                                            ];
-                                            photo.userIds = userIds;
-                                            photo.modifiedOn = Date.now();
-                                            photo.save();
+                                                };
+                                            var updateObj = {$push: {customerIds:newCustomerIds}};
+                                            updateObj.userIds = userIds;
+                                            updateObj.modifiedOn = Date.now();
+                                            return photoModel.findByIdAndUpdateAsync(photo._id, updateObj);
                                         }
                                     })
                                     .catch(function (err) {
