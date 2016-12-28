@@ -76,7 +76,6 @@ function syncPhotos(req, res) {
                      return Promise.each(obj.photo.customerIds, function (csId) {
                          if (csId.code) {
                              var userIds = [];
-                             var i = 0;
                              return Promise.resolve()
                                  .then(function () {
                                      return userModel.findAsync({'customerIds.code': csId.code});
@@ -86,16 +85,7 @@ function syncPhotos(req, res) {
                                      if (users && users.length > 0) {
                                          return Promise.each(users, function (ur) {
                                              userIds.push(ur._id);
-                                             if(allUserIds.length > 0){
-                                                 for(var j = i; j < allUserIds.length; j++){
-                                                     if(ur._id !== allUserIds[j]){
-                                                         allUserIds.push(ur._id);
-                                                         i = j;
-                                                     }
-                                                 }
-                                             }else {
-                                                 allUserIds.push(ur._id);
-                                             }
+                                             allUserIds.push(ur._id);
                                          });
                                      }
                                  })
@@ -107,17 +97,21 @@ function syncPhotos(req, res) {
                                  .then(function () {
                                      //orderHistory
                                      return cardCodeModel.findAsync({PPCode:csId.code, active: true})
-                                         .then(function (card) {
-                                             if(card.expiredOn - new Date() > 0){
-                                                 var newOrderHistory = {
-                                                     createdOn: card.createdOn,
-                                                     userId: card.userId,
-                                                     customerId: csId.code,
-                                                     productId: 'photo',
-                                                     prepaidId: card.PPPCode,
-                                                     activeTime: card.bindOn
-                                                 }
-                                                 allOrderHistory.push(newOrderHistory);
+                                         .then(function (cards) {
+                                             if(cards && cards.length > 0){
+                                                 return Promise.each(cards, function (card) {
+                                                     if(card.expiredOn - new Date() > 0){
+                                                         var newOrderHistory = {
+                                                             createdOn: card.createdOn,
+                                                             userId: card.userId,
+                                                             customerId: csId.code,
+                                                             productId: 'photo',
+                                                             prepaidId: card.PPPCode,
+                                                             activeTime: card.bindOn
+                                                         }
+                                                         allOrderHistory.push(newOrderHistory);
+                                                     }
+                                                 })
                                              }
                                          })
                                  })
@@ -126,6 +120,7 @@ function syncPhotos(req, res) {
                  })
                  .then(function () {
                      obj.photo.userIds = allUserIds;
+                     console.log(allUserIds);
                      obj.photo.customerIds = customerIds;
                      if(obj.photo.orderHistory && obj.photo.orderHistory.length > 0){
                          var odh = obj.photo.orderHistory;
