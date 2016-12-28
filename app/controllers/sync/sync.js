@@ -73,10 +73,10 @@ function syncPhotos(req, res) {
          if(obj.photo.customerIds && obj.photo.customerIds.length > 0){
              return Promise.resolve()
                  .then(function () {
-                     var i = 0;
                      return Promise.each(obj.photo.customerIds, function (csId) {
                          if (csId.code) {
                              var userIds = [];
+                             var i = 0;
                              return Promise.resolve()
                                  .then(function () {
                                      return userModel.findAsync({'customerIds.code': csId.code});
