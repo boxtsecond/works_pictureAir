@@ -744,15 +744,16 @@ exports.addCodeToUser = function (req, res, next) {
                                     .then(function () {
                                         if(!band){
                                             userIds.push(userId);
-                                            var newCustomerIds = {
+                                            photo.customerIds = [
+                                                {
                                                     code: customerId,
                                                     //cType: params.cType ? params.cType : 'photoPass',
                                                     userIds: userIds
-                                                };
-                                            var updateObj = {$push: {customerIds:newCustomerIds}};
-                                            updateObj.userIds = userIds;
-                                            updateObj.modifiedOn = Date.now();
-                                            return photoModel.findByIdAndUpdateAsync(photo._id, updateObj);
+                                                }
+                                            ];
+                                            photo.userIds = userIds;
+                                            photo.modifiedOn = Date.now();
+                                            photo.save();
                                         }
                                     })
                                     .catch(function (err) {
