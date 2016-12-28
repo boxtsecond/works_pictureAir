@@ -54,7 +54,7 @@ exports.filterPhoto = function(photo, isPaid, customerIds) {
     }
     //this.customerIds=photo.customerIds;if(!this.customerIds)this.customerIds=[];
     this.customerIds = [];
-    if(customerIds){
+    if(customerIds && customerIds.length > 0){
         for(var n = 0; n < customerIds.length; ++n){
             for(var m = 0; m < photo.customerIds.length; ++m){
                 if(customerIds[n] == photo.customerIds[m].code){
