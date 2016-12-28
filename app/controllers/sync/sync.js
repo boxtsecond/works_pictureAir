@@ -308,6 +308,13 @@ function  syncFileData(photoObj, photo, req) {
                 });
             }
         })
+        .catch(function (err) {
+            if(err.status){
+                return Promise.reject(err);
+            }else {
+                return Promise.reject(errInfo.syncError);
+            }
+        })
 }
 function syncFile(req,res) {
     return res.ext.json([200,'success',{}]);
