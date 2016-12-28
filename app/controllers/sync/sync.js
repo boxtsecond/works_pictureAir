@@ -85,7 +85,18 @@ function syncPhotos(req, res) {
                                      if (users && users.length > 0) {
                                          return Promise.each(users, function (ur) {
                                              userIds.push(ur._id);
-                                             allUserIds.push(ur._id);
+                                             //allUserIds.push(ur._id);
+                                             var push = false;
+                                             if(allUserIds.length > 0){
+                                                 for(var j = 0; j < allUserIds.length; j++){
+                                                     if(ur._id.toString() == allUserIds[j].toString()){
+                                                         push = true;
+                                                     }
+                                                 }
+                                             }
+                                             if(!push){
+                                                 allUserIds.push(ur._id);
+                                             }
                                          });
                                      }
                                  })
@@ -120,7 +131,7 @@ function syncPhotos(req, res) {
                  })
                  .then(function () {
                      obj.photo.userIds = allUserIds;
-                     console.log(allUserIds);
+                     //console.log(allUserIds);
                      obj.photo.customerIds = customerIds;
                      if(obj.photo.orderHistory && obj.photo.orderHistory.length > 0){
                          var odh = obj.photo.orderHistory;
