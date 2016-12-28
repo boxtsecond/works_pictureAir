@@ -728,12 +728,11 @@ exports.addCodeToUser = function (req, res, next) {
                     .then(function (photoList) {
                         if(photoList && photoList.length > 0){
                             return Promise.mapSeries(photoList, function (photo) {
-                                var userIds = [];
+                                var userIds = photo.userIds;
                                 var band = false;
                                 return Promise.resolve()
                                     .then(function () {
                                         return Promise.each(photo.customerIds, function (pt) {
-                                            userIds = pt.userIds;
                                             return Promise.each(pt.userIds, function (ptid) {
                                                 if (ptid == userId) {
                                                     band = true;
@@ -744,16 +743,20 @@ exports.addCodeToUser = function (req, res, next) {
                                     .then(function () {
                                         if(!band){
                                             userIds.push(userId);
-                                            photo.customerIds = [
-                                                {
-                                                    code: customerId,
-                                                    //cType: params.cType ? params.cType : 'photoPass',
-                                                    userIds: userIds
+                                            var updatecustomerIds = {
+                                                code: customerId,
+                                                //cType: params.cType ? params.cType : 'photoPass',
+                                                userIds: userIds
+                                            };
+                                            var updateObj = {
+                                                userIds: userIds,
+                                                modifiedOn: Date.now(),
+                                                $set: {
+                                                    "customerIds.$":updatecustomerIds
                                                 }
-                                            ];
-                                            photo.userIds = userIds;
-                                            photo.modifiedOn = Date.now();
-                                            photo.save();
+                                            };
+
+                                            return photoModel.updateAsync({_id:photo._id, "customerIds.code":customerId, "$atomic" : "true" }, updateObj);
                                         }
                                     })
                                     .catch(function (err) {
