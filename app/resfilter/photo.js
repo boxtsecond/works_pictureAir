@@ -3,7 +3,7 @@
  */
 var resTools = require('./resTools');
 //customerIds --- 用户实际拥有的卡（数组）
-exports.filterPhoto = function(photo, isPaid, customerIds) {
+exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
     this._id=photo._id; if(!this._id)this._id="";
     this.siteId=photo.siteId;if(!this.siteId)this.siteId="";
     this.photoId=photo.photoId;if(!this.photoId)this.photoId="";
@@ -54,13 +54,17 @@ exports.filterPhoto = function(photo, isPaid, customerIds) {
     }
     //this.customerIds=photo.customerIds;if(!this.customerIds)this.customerIds=[];
     this.customerIds = [];
-    if(customerIds && customerIds.length > 0){
-        for(var n = 0; n < customerIds.length; ++n){
-            for(var m = 0; m < photo.customerIds.length; ++m){
-                if(customerIds[n] == photo.customerIds[m].code){
-                    this.customerIds.push(photo.customerIds[m]);
+    if(flag){
+        if(customerIds && customerIds.length > 0){
+            for(var n = 0; n < customerIds.length; ++n){
+                for(var m = 0; m < photo.customerIds.length; ++m){
+                    if(customerIds[n] == photo.customerIds[m].code){
+                        this.customerIds.push(photo.customerIds[m]);
+                    }
                 }
             }
         }
+    }else {
+        this.customerIds = photo.customerIds;
     }
 }
