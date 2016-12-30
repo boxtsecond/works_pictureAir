@@ -71,7 +71,7 @@ function updatePhotoObJ(photo) {
 function syncPhotos(req, res) {
      Promise.resolve(req.ext.params).then(function (obj) {
          var photo, customerIds = [], allUserIds = [], allOrderHistory = [];
-         if(obj.photo.customerIds && obj.photo.customerIds.length > 0){
+         if(obj.photo && obj.photo.customerIds && obj.photo.customerIds.length > 0){
              return Promise.resolve()
                  .then(function () {
                      return Promise.each(obj.photo.customerIds, function (csId) {
