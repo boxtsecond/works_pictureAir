@@ -167,7 +167,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                         })
                                     })
                                     .then(function () {
-                                        var pushPhoto = new filterPhoto(pto, isPaid, codeIds);
+                                        var pushPhoto = new filterPhoto(pto, isPaid, codeIds, flag);
                                         return parkModel.findOneAsync({siteId: pto.siteId})
                                             .then(function (park) {
                                                 //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
@@ -195,7 +195,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                         if(list && list.length > 0){
                             return Promise.each(list, function (pto) {
                                 var isPaid = false;
-                                var pushPhoto = new filterPhoto(pto, isPaid, codeIds);
+                                var pushPhoto = new filterPhoto(pto, isPaid, codeIds, flag);
                                 return parkModel.findOneAsync({siteId: pto.siteId})
                                     .then(function (park) {
                                         //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
@@ -536,4 +536,11 @@ exports.getPhotosForWeb = function (req, res, next) {
                 return res.ext.json(errInfo.getPhotosByConditions.promiseError);
             }
         });
+}
+
+exports.getPhotoByOldSys = function (req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, 'photoCode')){
+        return res.ext.json(errInfo.getPhotoByOldSys.paramsError);
+    }
 }
