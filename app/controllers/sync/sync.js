@@ -3,7 +3,7 @@
  */
 
 var synctools=require("./synctools");
-var rq = require('../rq.js');
+var rq = require('../../rq.js');
 var Promise=require('bluebird');
 var  websiteStoragePath="/data/website";
 var  websitePhotoStoragePath="/data/website/photos";
