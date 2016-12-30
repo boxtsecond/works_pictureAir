@@ -239,7 +239,7 @@ exports.activeCodeToUser = function (req, res, next) {
                     if (!flag.exist) {
                         var saveInfo = new filterCard.filterPPPCardToUserDB(obj);
                         saveInfo.active = true;
-                        var updateObj = {$push: {pppCodes: saveInfo}};
+                        var updateObj = {$addToSet: {pppCodes: saveInfo}};
                         updateObj.modifiedOn = Date.now();
                         return userModel.findByIdAndUpdateAsync(userId, updateObj)
                             .catch(function (err) {
@@ -672,7 +672,7 @@ exports.addCodeToUser = function (req, res, next) {
                             var newCustomerIds = {
                                 code: customerId
                             };
-                            var updateObj = {$push: {customerIds:newCustomerIds}};
+                            var updateObj = {$addToSet: {customerIds:newCustomerIds}};
                             updateObj.modifiedOn = Date.now();
                             return userModel.findByIdAndUpdateAsync(userId, updateObj);
                         }

@@ -3,6 +3,7 @@
  */
 
 var synctools=require("./synctools");
+var rq = require('../rq.js');
 var Promise=require('bluebird');
 var  websiteStoragePath="/data/website";
 var  websitePhotoStoragePath="/data/website/photos";
@@ -107,7 +108,9 @@ function syncPhotos(req, res) {
                                  })
                                  .then(function () {
                                      //orderHistory
-                                     return cardCodeModel.findAsync({PPCode:csId.code, active: true})
+                                     var nowDate = rq.util.convertDateToStrYYMMDD(new Date());
+                                     return cardCodeModel.findAsync({PPCode:csId.code, active: true, bindOn: {'$gte': new Date(nowDate),
+                                         '$lte': new Date()}})
                                          .then(function (cards) {
                                              if(cards && cards.length > 0){
                                                  return Promise.each(cards, function (card) {
@@ -118,7 +121,7 @@ function syncPhotos(req, res) {
                                                              customerId: csId.code,
                                                              productId: 'photo',
                                                              prepaidId: card.PPPCode,
-                                                             activeTime: card.bindOn
+                                                             activeTime: nowDate
                                                          }
                                                          allOrderHistory.push(newOrderHistory);
                                                      }
