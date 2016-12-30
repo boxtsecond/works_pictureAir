@@ -149,11 +149,13 @@ function syncPhotos(req, res) {
 
          }else {
              //图片解绑
-             obj.photo.userIds = allUserIds;
-             console.log(allUserIds);
-             obj.photo.customerIds = customerIds;
-             photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
-             return syncFileData(obj, photo, req);
+             if(obj.photo){
+                 obj.photo.userIds = allUserIds;
+                 console.log(allUserIds);
+                 obj.photo.customerIds = customerIds;
+                 photo=new synctools.convetphotoDataLineToOnLine(websiteStoragePath,websitePhotoStoragePath,obj.photo);
+                 return syncFileData(obj, photo, req);
+             }
          }
     })
          .then(function () {
