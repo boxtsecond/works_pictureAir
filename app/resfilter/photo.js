@@ -65,6 +65,8 @@ exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
             }
         }
     }else {
-        this.customerIds.push({code: customerIds.$in});
+        for(var l = 0; l < customerIds.$in.length; ++l){
+            this.customerIds.push({code: customerIds.$in[l]});
+        }
     }
 }
