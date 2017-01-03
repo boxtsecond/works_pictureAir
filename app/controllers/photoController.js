@@ -9,9 +9,10 @@ var cardCodeModel=require("../mongodb/Model/cardCodeModel");
 var common = require('../tools/common.js');
 var async = require('async');
 var config = require('../../config/config.js').config;
-var request = require('request');
+var request = Promise.promisify(require('request'));
+Promise.promisifyAll(request);
 var enums = require('../tools/enums.js');
-var filterPhoto = require('../resfilter/resfilter.js').photo.filterPhoto;
+var filterPhoto = require('../resfilter/resfilter.js').photo;
 var resTools = require('../resfilter/resTools');
 var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
@@ -167,7 +168,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                         })
                                     })
                                     .then(function () {
-                                        var pushPhoto = new filterPhoto(pto, isPaid, codeIds, flag);
+                                        var pushPhoto = new filterPhoto.filterPhoto(pto, isPaid, codeIds, flag);
                                         return parkModel.findOneAsync({siteId: pto.siteId})
                                             .then(function (park) {
                                                 //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
@@ -191,7 +192,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                         if(list && list.length > 0){
                             return Promise.each(list, function (pto) {
                                 var isPaid = false;
-                                var pushPhoto = new filterPhoto(pto, isPaid, codeIds, flag);
+                                var pushPhoto = new filterPhoto.filterPhoto(pto, isPaid, codeIds, flag);
                                 return parkModel.findOneAsync({siteId: pto.siteId})
                                     .then(function (park) {
                                         //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
@@ -534,11 +535,44 @@ exports.getPhotosForWeb = function (req, res, next) {
         });
 }
 
-exports.getPhotoByOldSys = function (req, res, next) {
+function getPhotoByOldSys(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, 'photoCode')){
         return res.ext.json(errInfo.getPhotoByOldSys.paramsError);
     }
-    var siteId = params.photoCode.toString().slice(0, 4).toUpperCase();
+    var options = {
+        url: 'http://www2.pictureair.com/api/importphoto.php',
+        method: 'GET',
+        body: {photocode: params.photoCode},
+        json: true
+    };
+    var photo;
+
+    request.getAsync({
+        url: 'http://www2.pictureair.com/api/importphoto.php?photocode=' + params.photoCode,
+        json: true
+    }).then(function (data) {
+        photo = new filterPhoto.filterPhotoFromOldSys(data.body.photos[0]);
+        var siteId = data.body.photos[0].site_id;
+        return parkModel.findOneAsync({siteId: siteId.toUpperCase()})
+            .then(function (park) {
+                photo.logoUrl = park.logoUrl;
+                photo.pageUrl = park.pageUrl;
+                photo.parkName = park.name;
+            })
+    })
+        .then(function () {
+            var resultObj = errInfo.success;
+            resultObj.result = {};
+            resultObj.result.photos = [];
+            resultObj.result.photos.push(photo);
+            return res.ext.json(resultObj);
+        })
+        .catch(function (error) {
+            console.log(error);
+            return res.ext.json(errInfo.getPhotoByOldSys.promiseError);
+        });
 }
+
+exports.getPhotoByOldSys = getPhotoByOldSys;
 

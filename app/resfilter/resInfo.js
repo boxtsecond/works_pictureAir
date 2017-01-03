@@ -223,6 +223,7 @@ var errInfo={
     },
     "getPhotoByOldSys":{
         paramsError: {status: 4047, msg: "params is incomplete", desc: "missing photoCode"},
+        promiseError: {status: 3055, msg: "system error", desc: "promise error"}
     }
     //-------------------system 5x 9x-------------------
 };
