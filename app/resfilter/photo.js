@@ -65,6 +65,6 @@ exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
             }
         }
     }else {
-        this.customerIds = photo.customerIds;
+        this.customerIds = customerIds;
     }
 }

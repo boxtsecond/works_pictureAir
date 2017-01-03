@@ -73,8 +73,8 @@ describe('/auth/getAccessToken', function() {
         request.post('/g/user/login')
             .send({
                 access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODI4MzEyMjEsImV4cCI6MTQ4MzQzNjAyMSwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiOGQ5OGJjMTBjYzE3MTFlNmJlY2QxZDVhNTU3ZWE1NGYiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.V8e2t404oUKX2Iw3rqB9taMb1m_dyxEw6R84xwkvk-Z_Iyuv0YNMw3am869z6y2lOJZFIrYNKtMN7rkHye8aIvhuWwid6jQN7ZEzSw4TtBnxnlYRhzC-B5rwUsOR8XGSresR3vEIBckbS5rLS63jKav1Ki13AdWu0kE9oEdGcGjPKGa_miWtj0zUYklK2dm21c9hDen0-XtraGI7IBOiIsiFRvLlsYWAyKLHpxV0t5vHa2JNskhtPXL_igwsezrVYtNQaqdCCJAYeWRXkOC6x1fiLLzl-An2HrOACGdqLILDHutxV3FSHf6WnZ3VJN5Gcee6LqCvplYCDnkhaVQQrQ',
-                username: 'p03@111.com',
-                password: md5("111111")
+                username: '123@123.com',
+                password: md5("123456")
                 // username: '1@1.com',
                 // password: md5("000000")
             })

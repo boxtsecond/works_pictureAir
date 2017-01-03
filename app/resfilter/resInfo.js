@@ -220,6 +220,9 @@ var errInfo={
     "getShareInfo":{
         paramsError: {status: 4046, msg: "params is incomplete", desc: "missing key"},
         notFind: {status: 3054, msg: "system error", desc: "not find share model in mongo"}
+    },
+    "getPhotoByOldSys":{
+        paramsError: {status: 4047, msg: "params is incomplete", desc: "missing photoCode"},
     }
     //-------------------system 5x 9x-------------------
 };

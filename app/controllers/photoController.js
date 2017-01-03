@@ -185,10 +185,6 @@ function findPhotos(conditions, fields, options, flag, audience) {
                         console.log(err);
                         return Promise.reject(errInfo.findPhotos.promiseError);
                     });
-
-                //isPaid = true;
-                //console.log(conditions);
-
             }else if(!flag){
                 return photoModel.findAsync(conditions, fields, options)
                     .then(function (list) {
@@ -543,4 +539,6 @@ exports.getPhotoByOldSys = function (req, res, next) {
     if(!req.ext.checkExistProperty(params, 'photoCode')){
         return res.ext.json(errInfo.getPhotoByOldSys.paramsError);
     }
+    var siteId = params.photoCode.toString().slice(0, 4).toUpperCase();
 }
+
