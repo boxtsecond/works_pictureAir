@@ -587,8 +587,6 @@ exports.addPhotoFromOldSys = function (req, res, next) {
                         return {customerId: info.redis.user.userPP, photos: data.body.photos[0]};
                     }else if(info && info.mongo){
                         return {customerId: info.mongo.userPP, photos: data.body.photos[0]};
-                    }else {
-                        return Promise.reject(errInfo.findPhotos.notFind);
                     }
                 })
         }
