@@ -397,9 +397,10 @@ exports.quickDownloadPhotos = function (req, res, next) {
             var nameStr = resTools.convertDateToStr(new Date()).replace(/\s+/g, '');
             var downloadName = photoObj.userName + '_' + nameStr + '.zip';
             var photoIds = photoObj.photoIds;
-            return photoModel.findAsync({$or: [{_id: {$in: photoIds}}, {'orderHistory.userId': photoObj.userId}, {isFree: true}]})
+            //return photoModel.findAsync({$or: [{_id: {$in: photoIds}}, {'orderHistory.userId': photoObj.userId}, {isFree: true}]})
+            return photoModel.findAsync({_id: {$in: photoIds}})
                 .then(function (photos) {
-                    return photoModel.updateAsync({$or: [{_id: {$in: photoIds}}, {'orderHistory.userId': photoObj.userId}, {isFree: true}]}, {$inc: {downloadCount: 1}}, {multi: true})
+                    return photoModel.updateAsync({_id: {$in: photoIds}}, {$inc: {downloadCount: 1}}, {multi: true})
                         .then(function () {
                             return Promise.each(photos, function (pt) {
                                 if(photoExists(pt.originalInfo.path)){
