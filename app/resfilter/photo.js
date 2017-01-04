@@ -123,3 +123,70 @@ exports.filterPhotoFromOldSys = function(photo) {
     this.customerIds = [];
 
 }
+
+exports.addPhotoFromOldSys = function(photo, userId, customerId) {
+    this.siteId=photo.site_id;if(!this.siteId)this.siteId="";
+    this.photoId=photo.photoId;if(!this.photoId)this.photoId="";
+    this.photoCode=photo.code;if(!this.photoCode)this.photoCode="";
+    this.name=photo.name; if(!this.name)this.name="";
+    this.locationId=photo.locationId; if(!this.locationId)this.locationId="";
+    this.shootOn=resTools.convertDateToStr(photo.shootOn); if(!this.shootOn)this.shootOn="";
+    this.shootDate=resTools.convertDateToStrYYMMDD(photo.shootOn);if(!this.shootDate)this.shootDate="";
+    this.isFree=photo.isFree;if(!this.isFree)this.isFree="";
+    this.parentId=photo.parentId;if(!this.parentId)this.parentId="";
+    this.createdOn=photo.createdOn;if(!this.createdOn)this.createdOn="";
+    this.extractOn=photo.extractOn;if(!this.extractOn)this.extractOn="";
+    this.userIds=[];this.userIds.push(userId);
+    this.presetId=photo.presetId;if(!this.presetId)this.presetId="";
+    this.targetPoint=photo.targetPoint;if(!this.targetPoint)this.targetPoint="";
+    this.downloadCount=photo.downloadCount;if(!this.downloadCount)this.downloadCount=0;
+    this.comments=photo.comments;if(!this.comments)this.comments=[];
+    this.visitedCount=photo.visitedCount;if(!this.visitedCount)this.visitedCount=0;
+    this.disabled=photo.disabled;if(!this.disabled)this.disabled=false;
+    this.likeCount=photo.likeCount;if(!this.likeCount)this.likeCount=0;
+    this.isFree=photo.isFree;if(!this.isFree)this.isFree=false;
+    this.likeCount=photo.likeCount;if(!this.likeCount)this.likeCount=0;
+    this.shareInfo=photo.shareInfo;if(!this.shareInfo)this.shareInfo=[];
+    this.createdBy=photo.createdBy;if(!this.createdBy)this.createdBy="";
+    this.mobileEditActive=photo.mobileEditActive;if(!this.mobileEditActive)this.mobileEditActive=true;
+    this.modifiedOn=photo.modified_on;if(!this.modifiedOn)this.modifiedOn="";
+    this.allowDownload=photo.allowDownload;if(!this.allowDownload)this.allowDownload=false;
+    this.editCount=photo.editCount;if(!this.editCount)this.editCount=0;
+    this.engineInfo = {
+        width:2400, //宽
+        height: 1800, //高
+        rawPath:'oldSys_'+photo.url,
+        rawUrl:'oldSys_'+photo.url,
+        imageJson:'oldSys_'+photo.url,
+        imageJsonUrl:'oldSys_'+photo.url,
+        originalPath:'oldSys_'+photo.url,
+        rawthumbnail: {},
+        originalthumbnail: {},
+        originalUrl: photo.url,
+    };
+    this.rawFileName = photo.rawFileName;if(!this.rawFileName)this.rawFileName='oldSys_'+photo.code;
+    this.originalFileName = photo.originalFileName;if(!this.originalFileName)this.originalFileName='oldSys_'+photo.code;
+    //this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail={};
+    this.thumbnail = {
+        x128: {
+            width: 240,
+            height: 180,
+            url: photo.thumbnail
+        },
+        x1024: {
+            width: 1024,
+            height: 768,
+            url: photo.preview
+        }
+    };
+
+    this.originalInfo ={
+        originalName: 'oldSys',
+        width: 2400,
+        height: 1800,
+        url: photo.url,
+        path: photo.url
+    };
+    this.customerIds = [{code: customerId, userIds: [userId]}];
+    this.orderHistory = [{customerId: customerId, userId: userId}];
+}

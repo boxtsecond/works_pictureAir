@@ -21,6 +21,7 @@ router.get('/version/android',ctr.version.geAndroidUp);
 router.get('/user/contactUs', ctr.userController.contactUs);
 
 router.post('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
+router.post('/photo/getPhotoByOldSys', ctr.photoController.getPhotoByOldSys);
 router.get('/user/getShareInfo', ctr.userController.getShareInfo);
 
 router.get('/park/getAllLocations', ctr.parkController.getAllLocations);

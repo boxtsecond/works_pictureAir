@@ -224,6 +224,11 @@ var errInfo={
     "getPhotoByOldSys":{
         paramsError: {status: 4047, msg: "params is incomplete", desc: "missing photoCode"},
         promiseError: {status: 3055, msg: "system error", desc: "promise error"}
+    },
+    "addPhotoFromOldSys":{
+        paramsError: {status: 4048, msg: "params is incomplete", desc: "missing photoCode"},
+        customerIdError: {status: 4049, msg: "can't find userPP in mongo", desc: "can't find userPP in mongo"},
+        promiseError: {status: 3056, msg: "system error", desc: "promise error"}
     }
     //-------------------system 5x 9x-------------------
 };

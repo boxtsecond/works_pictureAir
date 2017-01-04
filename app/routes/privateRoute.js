@@ -20,6 +20,7 @@ router.post('/user/modifyUserPwd', ctr.userController.modifyUserPwd);
 router.post('/photo/getPhotosByConditions', ctr.photoController.getPhotosByConditions);
 router.post('/photo/getPhotosForWeb', ctr.photoController.getPhotosForWeb);
 router.post('/photo/getPhotoByOldSys', ctr.photoController.getPhotoByOldSys);
+router.post('/photo/addPhotoFromOldSys', ctr.photoController.addPhotoFromOldSys);
 router.post('/photo/removePhotosFromPP', ctr.photoController.removePhotosFromPP);
 router.post('/photo/quickDownloadPhotosParam', ctr.photoController.quickDownloadPhotosParam);
 router.get('/photo/quickDownloadPhotos', ctr.photoController.quickDownloadPhotos);

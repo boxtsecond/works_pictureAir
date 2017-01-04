@@ -535,44 +535,77 @@ exports.getPhotosForWeb = function (req, res, next) {
         });
 }
 
-function getPhotoByOldSys(req, res, next) {
+exports.getPhotoByOldSys = function (req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, 'photoCode')){
         return res.ext.json(errInfo.getPhotoByOldSys.paramsError);
     }
-    var options = {
-        url: 'http://www2.pictureair.com/api/importphoto.php',
-        method: 'GET',
-        body: {photocode: params.photoCode},
-        json: true
-    };
-    var photo;
+    var photo= [];
 
     request.getAsync({
         url: 'http://www2.pictureair.com/api/importphoto.php?photocode=' + params.photoCode,
         json: true
     }).then(function (data) {
-        photo = new filterPhoto.filterPhotoFromOldSys(data.body.photos[0]);
-        var siteId = data.body.photos[0].site_id;
-        return parkModel.findOneAsync({siteId: siteId.toUpperCase()})
-            .then(function (park) {
-                photo.logoUrl = park.logoUrl;
-                photo.pageUrl = park.pageUrl;
-                photo.parkName = park.name;
-            })
+        if(data.body.photos && data.body.photos.length > 0){
+            var pushphoto = new filterPhoto.filterPhotoFromOldSys(data.body.photos[0]);
+            var siteId = data.body.photos[0].site_id;
+            return parkModel.findOneAsync({siteId: siteId.toUpperCase()})
+                .then(function (park) {
+                    pushphoto.logoUrl = park.logoUrl;
+                    pushphoto.pageUrl = park.pageUrl;
+                    pushphoto.parkName = park.name;
+                    photo.push(pushphoto);
+                })
+        }
     })
         .then(function () {
             var resultObj = errInfo.success;
             resultObj.result = {};
-            resultObj.result.photos = [];
-            resultObj.result.photos.push(photo);
+            resultObj.result.photos = photo;
             return res.ext.json(resultObj);
         })
         .catch(function (error) {
             console.log(error);
             return res.ext.json(errInfo.getPhotoByOldSys.promiseError);
         });
-}
+};
 
-exports.getPhotoByOldSys = getPhotoByOldSys;
+exports.addPhotoFromOldSys = function (req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, 'photoCode')){
+        return res.ext.json(errInfo.addPhotoFromOldSys.paramsError);
+    }
+
+    request.getAsync({
+        url: 'http://www2.pictureair.com/api/importphoto.php?photocode=' + params.photoCode,
+        json: true
+    }).then(function (data) {
+        if(data.body.photos && data.body.photos.length > 0){
+            return findInfo(params.token.audience, 'user', {_id: params.userId})
+                .then(function (info) {
+                    if(info && info.redis){
+                        return {customerId: info.redis.user.userPP, photos: data.body.photos[0]};
+                    }else if(info && info.mongo){
+                        return {customerId: info.mongo.userPP, photos: data.body.photos[0]};
+                    }else {
+                        return Promise.reject(errInfo.findPhotos.notFind);
+                    }
+                })
+        }
+    })
+        .then(function (info) {
+            if(info.customerId){
+                var pushphoto = new filterPhoto.addPhotoFromOldSys(info.photos, params.userId, info.customerId);
+                return photoModel.createAsync(pushphoto).then(function () {
+                    return res.ext.json();
+                })
+            }else {
+                return res.ext.json(errInfo.addPhotoFromOldSys.customerIdError);
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+            return res.ext.json(errInfo.addPhotoFromOldSys.promiseError);
+        });
+}
 
