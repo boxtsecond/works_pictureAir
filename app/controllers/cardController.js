@@ -320,7 +320,7 @@ exports.removePPFromUser = function (req, res, next) {
                     .then(function (photos) {
                         if(photos && photos.length > 0){
                             return Promise.each(photos, function (pt) {
-                                return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'userIds': userId}})
+                                return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'customerIds':{code:customerId}}})
                                     // .then(function () {
                                     //     return photoModel.findByIdAndUpdateAsync(pt._id, {$pull: {'customerIds': {userId: userId}}})
                                     //         // .then(function (data) {
