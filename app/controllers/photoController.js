@@ -580,6 +580,8 @@ exports.addPhotoFromOldSys = function (req, res, next) {
     }
     var createPhoto;
     var photosNum = 0;
+    var bindedNum = 0;
+    var bindedCode = [];
 
     request.getAsync({
         url: 'http://www2.pictureair.com/api/importphoto.php?photocode=' + params.photoCode,
@@ -600,12 +602,20 @@ exports.addPhotoFromOldSys = function (req, res, next) {
             if(info.customerId){
                 return Promise.each(info.photos, function (pto) {
                     createPhoto = false;
-                    var pushphoto = new filterPhoto.addPhotoFromOldSys(pto, params.userId, info.customerId);
-                    return photoModel.createAsync(pushphoto)
-                        .then(function () {
-                            createPhoto = true;
-                            photosNum ++;
-                        });
+                    return photoModel.findOneAsync({photoCode: pto.code, 'customerIds.code': info.customerId})
+                        .then(function (photo) {
+                            if(!photo){
+                                var pushphoto = new filterPhoto.addPhotoFromOldSys(pto, params.userId, info.customerId);
+                                return photoModel.createAsync(pushphoto)
+                                    .then(function () {
+                                        createPhoto = true;
+                                        photosNum ++;
+                                    });
+                            }else {
+                                bindedNum ++;
+                                bindedCode.push(pto.code);
+                            }
+                        })
                 })
             }else {
                 createPhoto = false;
@@ -615,7 +625,7 @@ exports.addPhotoFromOldSys = function (req, res, next) {
         .then(function () {
             if(createPhoto && photosNum){
                 var resultObj = errInfo.success;
-                resultObj.result = {addNum: photosNum};
+                resultObj.result = {addNum: photosNum, bindedNum: bindedNum, bindedCode: bindedCode};
                 return res.ext.json(resultObj);
             }
         })
