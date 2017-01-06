@@ -548,15 +548,17 @@ exports.getPhotoByOldSys = function (req, res, next) {
         json: true
     }).then(function (data) {
         if(data.body.photos && data.body.photos.length > 0){
-            var pushphoto = new filterPhoto.filterPhotoFromOldSys(data.body.photos[0]);
-            var siteId = data.body.photos[0].site_id;
-            return parkModel.findOneAsync({siteId: siteId.toUpperCase()})
-                .then(function (park) {
-                    pushphoto.logoUrl = park.logoUrl;
-                    pushphoto.pageUrl = park.pageUrl;
-                    pushphoto.parkName = park.name;
-                    photo.push(pushphoto);
-                })
+            return Promise.each(data.body.photos, function (pto) {
+                var pushphoto = new filterPhoto.filterPhotoFromOldSys(pto);
+                var siteId = pto.site_id;
+                return parkModel.findOneAsync({siteId: siteId.toUpperCase()})
+                    .then(function (park) {
+                        pushphoto.logoUrl = park.logoUrl;
+                        pushphoto.pageUrl = park.pageUrl;
+                        pushphoto.parkName = park.name;
+                        photo.push(pushphoto);
+                    })
+            })
         }
     })
         .then(function () {
@@ -576,6 +578,8 @@ exports.addPhotoFromOldSys = function (req, res, next) {
     if(!req.ext.checkExistProperty(params, 'photoCode')){
         return res.ext.json(errInfo.addPhotoFromOldSys.paramsError);
     }
+    var createPhoto;
+    var photosNum = 0;
 
     request.getAsync({
         url: 'http://www2.pictureair.com/api/importphoto.php?photocode=' + params.photoCode,
@@ -585,21 +589,34 @@ exports.addPhotoFromOldSys = function (req, res, next) {
             return findInfo(params.token.audience, 'user', {_id: params.userId})
                 .then(function (info) {
                     if(info && info.redis){
-                        return {customerId: info.redis.user.userPP, photos: data.body.photos[0]};
+                        return {customerId: info.redis.user.userPP, photos: data.body.photos};
                     }else if(info && info.mongo){
-                        return {customerId: info.mongo.userPP, photos: data.body.photos[0]};
+                        return {customerId: info.mongo.userPP, photos: data.body.photos};
                     }
                 })
         }
     })
         .then(function (info) {
             if(info.customerId){
-                var pushphoto = new filterPhoto.addPhotoFromOldSys(info.photos, params.userId, info.customerId);
-                return photoModel.createAsync(pushphoto).then(function () {
-                    return res.ext.json();
+                return Promise.each(info.photos, function (pto) {
+                    createPhoto = false;
+                    var pushphoto = new filterPhoto.addPhotoFromOldSys(pto, params.userId, info.customerId);
+                    return photoModel.createAsync(pushphoto)
+                        .then(function () {
+                            createPhoto = true;
+                            photosNum ++;
+                        });
                 })
             }else {
+                createPhoto = false;
                 return res.ext.json(errInfo.addPhotoFromOldSys.customerIdError);
+            }
+        })
+        .then(function () {
+            if(createPhoto && photosNum){
+                var resultObj = errInfo.success;
+                resultObj.result = {addNum: photosNum};
+                return res.ext.json(resultObj);
             }
         })
         .catch(function (error) {
