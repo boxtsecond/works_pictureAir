@@ -323,7 +323,7 @@ exports.activeCodeToUser = function (req, res, next) {
             //修改卡状态(激活)
             return Promise.resolve()
                 .then(function () {
-                    return cardTools.activeCard(params.cardId, userId, customerId);
+                    return cardTools.activeCard(params.cardId, params.siteId, userId, customerId);
                 })
                 .then(function () {
                     return res.ext.json();

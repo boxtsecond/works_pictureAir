@@ -41,8 +41,8 @@ function validatePP(pppCode) {
 }
 
 //激活（购买）卡
-function  activeCard(pppCode, userId, ppCode) {
-    return carCodeModel.findOneAsync({PPPCode: pppCode})
+function  activeCard(pppCode, siteId, userId, ppCode) {
+    return carCodeModel.findOneAsync({PPPCode: pppCode, siteIds: siteId})
         .then(function (obj) {
             if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);

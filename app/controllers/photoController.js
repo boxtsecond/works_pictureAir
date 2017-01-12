@@ -287,30 +287,45 @@ exports.getPhotosByConditions = function (req, res, next) {
             if(flag){
                 if(photos.status){
                     return photos;
-                }else if(photos.info && photos.info.siteId && photos.info.siteId.length > 0){
+                }else if(photos.code && photos.code.length > 0){
                     var allPhotos = photos.photos;
-                    return Promise.each(photos.info, function (cardInfo) {
-                        return Promise.resolve()
-                            .then(function () {
-                                return cardCodeModel.findOneAsync({PPCode: cardInfo.cardId, active: true, siteIds: cardInfo.siteId})
-                                    .then(function (cardCode) {
-                                        return cardCode.levels;
-                                    })
-                                    .then(function (levels) {
-                                        if(!levels) levels = 1;
-                                        return storePhotoModel.findAsync({siteId: cardInfo.siteId, levels:{$lte: levels}})
-                                            .then(function (storePhotos) {
-                                                if(storePhotos && storePhotos.length > 0){
-                                                    var newStorePhotos = new filterPhoto.filterStorePhoto(photos, photos.info.userPP);
-                                                    allPhotos.push(newStorePhotos);
+                    return Promise.resolve()
+                        .then(function () {
+                            return Promise.each(photos.code, function (code) {
+                                return Promise.resolve()
+                                    .then(function () {
+                                        return cardCodeModel.findOneAsync({PPCode: code, active: true})
+                                            .then(function (cardCode) {
+                                                var active = false;
+                                                var le = 1;
+                                                if(cardCode){
+                                                    active = true;
+                                                    if(cardCode.levels) le = cardCode.levels;
+                                                    return {levels: le, siteIds: cardCode.siteIds, active: active};
+                                                }else {
+                                                    return {active: false};
+                                                }
+                                            })
+                                            .then(function (info) {
+                                                if(info.active){
+                                                    return storePhotoModel.findAsync({siteId: {$in: info.siteIds}, belongslevels:{$lte: info.levels}})
+                                                        .then(function (storePhotos) {
+                                                            if(storePhotos && storePhotos.length > 0){
+                                                                return Promise.each(storePhotos, function (ph) {
+                                                                    var newStorePhotos = new filterPhoto.filterStorePhoto(ph, photos.userPP);
+                                                                    allPhotos.push(newStorePhotos);
+                                                                })
+                                                            }
+                                                        })
                                                 }
                                             })
                                     })
                             })
-                            .then(function () {
-                                return allPhotos;
-                            })
-                    })
+                        })
+                        .then(function () {
+                            return allPhotos;
+                        })
+
                 }else {
                     return photos.photos;
                 }
