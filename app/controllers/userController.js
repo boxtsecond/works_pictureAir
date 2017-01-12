@@ -195,7 +195,7 @@ exports.activeCodeToUser = function (req, res, next) {
             if(!card){
                 return Promise.reject(errInfo.activeCodeToUser.invalidCard);
             }else {
-                return cardCodeModel.findOneAsync({PPPCode: params.cardId})
+                return cardCodeModel.findOneAsync({PPPCode: params.cardId, siteIds: params.siteId})
                     .then(function (obj) {
                         if (!obj) return Promise.reject(errInfo.activeCodeToUser.invalidCard);
                         else if(obj.active) return Promise.reject(errInfo.activeCodeToUser.repeatBound);
