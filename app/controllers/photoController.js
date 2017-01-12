@@ -604,7 +604,7 @@ exports.getPhotoByOldSys = function (req, res, next) {
         url: 'http://www2.pictureair.com/api/importphoto.php?photocode=' + params.photoCode,
         json: true
     }).then(function (data) {
-        if(data.body.photos && data.body.photos.length > 0){
+        if(data.body && data.body.photos && data.body.photos.length > 0){
             return Promise.each(data.body.photos, function (pto) {
                 var pushphoto = new filterPhoto.filterPhotoFromOldSys(pto);
                 var siteId = pto.site_id;
