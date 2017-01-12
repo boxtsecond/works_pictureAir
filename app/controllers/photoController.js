@@ -3,6 +3,7 @@
  */
 var errInfo = require('../resfilter/resInfo.js').errInfo;
 var photoModel = require('../mongodb/Model/photoModel');
+var storePhotoModel = require('../mongodb/Model/storePhotoModel');
 var parkModel = require('../mongodb/Model/parkModel');
 var userModel = require('../mongodb/Model/userModel');
 var cardCodeModel=require("../mongodb/Model/cardCodeModel");
@@ -115,6 +116,8 @@ function getOptions(params) {
 //flag true---login
 function findPhotos(conditions, fields, options, flag, audience) {
     var photos = [];
+    var userPP;
+    var code = [];
     return Promise.resolve()
         .then(function () {
             if(flag){
@@ -127,8 +130,10 @@ function findPhotos(conditions, fields, options, flag, audience) {
                 return Promise.resolve()
                     .then(function () {
                         if(info && info.redis){
+                            userPP = info.redis.user.userPP;
                             return info.redis.user.customerIds;
                         }else if(info && info.mongo){
+                            userPP = info.mongo.userPP;
                             return info.mongo.customerIds;
                         }else {
                             return Promise.reject(errInfo.findPhotos.notFind);
@@ -150,6 +155,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
         })
         .then(function (codeIds) {
             if(codeIds && codeIds.length > 0 && flag){
+                code = codeIds;
                 conditions["customerIds.code"] = {$in:codeIds};
                 //conditions["orderHistory.customerId"] = code;
                 return photoModel.findAsync(conditions, fields, options)
@@ -209,7 +215,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
             }
         })
         .then(function () {
-            return photos;
+            return {photos: photos, userPP: userPP, code: code};
         })
         .catch(function (error) {
             if(error.status){
@@ -273,13 +279,45 @@ exports.getPhotosByConditions = function (req, res, next) {
 
     return Promise.resolve()
         .then(function () {
+            //用户个人的照片
             return findPhotos(conditions, fields, options, flag, audience);
         })
-        // .then(function (photos) {
-        //     if(photos.length == 0){
-        //
-        //     }
-        // })
+        .then(function (photos) {
+            //storePhotos
+            if(flag){
+                if(photos.status){
+                    return photos;
+                }else if(photos.info && photos.info.siteId && photos.info.siteId.length > 0){
+                    var allPhotos = photos.photos;
+                    return Promise.each(photos.info, function (cardInfo) {
+                        return Promise.resolve()
+                            .then(function () {
+                                return cardCodeModel.findOneAsync({PPCode: cardInfo.cardId, active: true, siteIds: cardInfo.siteId})
+                                    .then(function (cardCode) {
+                                        return cardCode.levels;
+                                    })
+                                    .then(function (levels) {
+                                        if(!levels) levels = 1;
+                                        return storePhotoModel.findAsync({siteId: cardInfo.siteId, levels:{$lte: levels}})
+                                            .then(function (storePhotos) {
+                                                if(storePhotos && storePhotos.length > 0){
+                                                    var newStorePhotos = new filterPhoto.filterStorePhoto(photos, photos.info.userPP);
+                                                    allPhotos.push(newStorePhotos);
+                                                }
+                                            })
+                                    })
+                            })
+                            .then(function () {
+                                return allPhotos;
+                            })
+                    })
+                }else {
+                    return photos.photos;
+                }
+            }else {
+                return photos.photos;
+            }
+        })
         .then(function (photos) {
             if(photos.status){
                 return res.ext.json(photos);
@@ -292,8 +330,12 @@ exports.getPhotosByConditions = function (req, res, next) {
             }
         })
         .catch(function (error) {
-            console.log(error);
-            return res.ext.json(errInfo.getPhotosByConditions.promiseError);
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.getPhotosByConditions.promiseError);
+            }
         });
 }
 
@@ -587,7 +629,7 @@ exports.addPhotoFromOldSys = function (req, res, next) {
         url: 'http://www2.pictureair.com/api/importphoto.php?photocode=' + params.photoCode,
         json: true
     }).then(function (data) {
-        if(data.body.photos && data.body.photos.length > 0){
+        if(data.body && data.body.photos && data.body.photos.length > 0){
             return findInfo(params.token.audience, 'user', {_id: params.userId})
                 .then(function (info) {
                     if(info && info.redis){
@@ -599,7 +641,7 @@ exports.addPhotoFromOldSys = function (req, res, next) {
         }
     })
         .then(function (info) {
-            if(info.customerId){
+            if(info && info.customerId){
                 return Promise.each(info.photos, function (pto) {
                     createPhoto = false;
                     return photoModel.findOneAsync({photoCode: pto.code, 'customerIds.code': info.customerId})

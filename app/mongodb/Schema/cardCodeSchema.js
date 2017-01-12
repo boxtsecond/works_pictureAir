@@ -39,6 +39,7 @@ var config= {
     isSold: {type:Boolean,default:false},//是否已卖出
     isVirtual:{type:Boolean,default:true},//是否是虚拟卡
     parentId:String,//
+    levels: {type: Number, default: 1},//卡的优先级，数字越大优先级越高（storePhotos）
     createdOn: {type:Date,default:Date.now()},//创建时间
     modifiedOn: {type:Date,default:Date.now()},//修改时间
     createdBy: String,//创建者ID
