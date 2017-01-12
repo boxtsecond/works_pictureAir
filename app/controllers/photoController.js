@@ -569,8 +569,8 @@ exports.getPhotosForWeb = function (req, res, next) {
         .then(function (photos) {
             if(photos.status) {
                 return Promise.reject(photos);
-            }else {
-                return Promise.each(photos, function (pt) {
+            }else if(photos.photos && photos.photos.length > 0){
+                return Promise.each(photos.photos, function (pt) {
                     if(pt.isPaid){
                         sendPhotos.push(pt);
                     }
