@@ -289,39 +289,33 @@ exports.getPhotosByConditions = function (req, res, next) {
                     return photos;
                 }else if(photos.code && photos.code.length > 0){
                     var allPhotos = photos.photos;
-                    var siteIds = [];
-                    return Promise.resolve()
+                    var siteInfo = config.configJSONData.siteIds;
+                    return cardCodeModel.findAsync({PPCode: {$in: photos.code}, active: true})
+                        .then(function (cardCode) {
+                            if(cardCode && cardCode.length > 0){
+                                return Promise.each(cardCode, function (card) {
+                                    return Promise.each(card.siteIds, function (site) {
+                                        var le = 1;
+                                        if(card.levels) le = card.levels;
+                                        siteInfo[le].push(site);
+                                    })
+                                })
+                            }
+                        })
                         .then(function () {
-                            return Promise.each(photos.code, function (code) {
-                                return Promise.resolve()
-                                    .then(function () {
-                                        return cardCodeModel.findOneAsync({PPCode: code, active: true})
-                                            .then(function (cardCode) {
-                                                if(cardCode){
-                                                    var le = 1;
-                                                    if(cardCode.levels) le = cardCode.levels;
-                                                    //return {levels: le, siteIds: cardCode.siteIds};
-                                                    siteIds.push({levels: le, siteId: cardCode.siteIds});
-                                                }
-                                            })
-
-                                    })
-                                    .then(function () {
-                                        if(siteIds.length > 0){
-                                            return Promise.each(siteIds, function (info) {
-                                                return storePhotoModel.findAsync({siteId: {$in: info.siteIds}, belongslevels:{$lte: info.levels}})
-                                                    .then(function (storePhotos) {
-                                                        if(storePhotos && storePhotos.length > 0){
-                                                            return Promise.each(storePhotos, function (ph) {
-                                                                var newStorePhotos = new filterPhoto.filterStorePhoto(ph, photos.userPP);
-                                                                allPhotos.push(newStorePhotos);
-                                                            })
-                                                        }
-                                                    })
-                                            })
-                                        }
-                                    })
-                            })
+                            if(siteInfo){
+                                for(var le in siteInfo){
+                                    return storePhotoModel.findAsync({siteId: {$in: siteInfo[le]}, belongslevels:{$lte: le}})
+                                        .then(function (storePhotos) {
+                                            if(storePhotos && storePhotos.length > 0){
+                                                return Promise.each(storePhotos, function (ph) {
+                                                    var newStorePhotos = new filterPhoto.filterStorePhoto(ph, photos.userPP);
+                                                    allPhotos.push(newStorePhotos);
+                                                })
+                                            }
+                                        })
+                                }
+                            }
                         })
                         .then(function () {
                             return allPhotos;

@@ -194,6 +194,7 @@ exports.addPhotoFromOldSys = function(photo, userId, customerId) {
 exports.filterStorePhoto = function(photo, userPP) {
     this._id=photo._id; if(!this._id)this._id="";
     this.siteId=photo.siteId;if(!this.siteId)this.siteId="";
+    this.parkName=photo.parkName;if(!this.parkName)this.parkName="";
     this.photoId=photo.photoId;if(!this.photoId)this.photoId="";
     this.photoCode=photo.photoCode;if(!this.photoCode)this.photoCode="";
     this.name=photo.name; if(!this.name)this.name="";
