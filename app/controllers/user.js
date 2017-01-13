@@ -514,7 +514,7 @@ function sendSMS(req,res){
            return  res.ext.json([200,'success',{validateCode:obj.msg.validateCode}]);
         }).catch(function(err){
             console.error(err);
-           return    res.ext.json(err);
+           return  res.ext.json(err);
       });
 
 
