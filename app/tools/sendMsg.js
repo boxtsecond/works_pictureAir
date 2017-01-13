@@ -133,7 +133,7 @@ elemsendSMSE.addListener("send",function(smsobj){
                     if(!rq.util.isArray(obj.phone)){
                         var configData = rq.configData;
                         return redisclient.del("validateCode:"+type+"-"+rq.util.md5(obj.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
-                            obj.msg.validateCode).then(function(err){
+                            obj.validateCode).then(function(err){
                                 return  Promise.resolve(obj);
                             }).catch(function(err){
                                 return Promise.reject(err);
