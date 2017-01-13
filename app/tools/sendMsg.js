@@ -131,6 +131,7 @@ elemsendSMSE.addListener("send",function(smsobj){
                     //else if(obj.type=="forgotPwdMsg_test"||obj.type=="forgotPwdMsg") type=1;
                     else if(obj.type=="forgotPwdMsg") type=1;
                     if(!rq.util.isArray(obj.phone)){
+                        var configData = rq.configData;
                         return redisclient.del("validateCode:"+type+"-"+rq.util.md5(obj.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
                             obj.msg.validateCode).then(function(err){
                                 return  Promise.resolve(obj);
