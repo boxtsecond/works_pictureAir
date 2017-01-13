@@ -307,7 +307,7 @@ exports.getPhotosByConditions = function (req, res, next) {
 
                                     })
                                     .then(function () {
-                                        if(siteIds.siteId && siteIds.siteId.length > 0){
+                                        if(siteIds.length > 0){
                                             return Promise.each(siteIds, function (info) {
                                                 return storePhotoModel.findAsync({siteId: {$in: info.siteIds}, belongslevels:{$lte: info.levels}})
                                                     .then(function (storePhotos) {
