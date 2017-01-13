@@ -141,17 +141,19 @@ elemsendSMSE.addListener("send",function(smsobj){
                 }
             });
         }).catch(function(err){
-                var type=-1;
-                if(obj.type=="validateCode") type=0;
-                else if(obj.type=="forgotPwdMsg_test"||obj.type=="forgotPwdMsg") type=1;
-                if(!rq.util.isArray(obj.phone)){
-                    return redisclient.del("validateCode:"+type+"-"+req.ext.md5(obj.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
-                        obj.msg.validateCode).then(function(err){
-                            return  Promise.resolve(obj);
-                        }).catch(function(err){
-                            return Promise.reject(err);
-                        });
-                }
+            console.log(err);
+                // var type=-1;
+                // if(obj.type=="validateCode") type=0;
+                // else if(obj.type=="forgotPwdMsg_test"||obj.type=="forgotPwdMsg") type=1;
+                // if(!rq.util.isArray(obj.phone)){
+                //     return redisclient.del("validateCode:"+type+"-"+req.ext.md5(obj.phone.toString().toLocaleLowerCase()),configData.expireTime.validateCodeExpireTime,
+                //         obj.msg.validateCode).then(function(err){
+                //             return  Promise.resolve(obj);
+                //         }).catch(function(err){
+                //             return Promise.reject(err);
+                //         });
+                // }
+        return Promise.reject(err);
         });
 });
 function sendMSMvalidateCode(lg,phone,sendTime){
