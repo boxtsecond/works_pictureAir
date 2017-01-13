@@ -289,6 +289,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                     return photos;
                 }else if(photos.code && photos.code.length > 0){
                     var allPhotos = photos.photos;
+                    var siteIds = [];
                     return Promise.resolve()
                         .then(function () {
                             return Promise.each(photos.code, function (code) {
@@ -296,29 +297,29 @@ exports.getPhotosByConditions = function (req, res, next) {
                                     .then(function () {
                                         return cardCodeModel.findOneAsync({PPCode: code, active: true})
                                             .then(function (cardCode) {
-                                                var active = false;
-                                                var le = 1;
                                                 if(cardCode){
-                                                    active = true;
+                                                    var le = 1;
                                                     if(cardCode.levels) le = cardCode.levels;
-                                                    return {levels: le, siteIds: cardCode.siteIds, active: active};
-                                                }else {
-                                                    return {active: false};
+                                                    //return {levels: le, siteIds: cardCode.siteIds};
+                                                    siteIds.push({levels: le, siteId: cardCode.siteIds});
                                                 }
                                             })
-                                            .then(function (info) {
-                                                if(info.active){
-                                                    return storePhotoModel.findAsync({siteId: {$in: info.siteIds}, belongslevels:{$lte: info.levels}})
-                                                        .then(function (storePhotos) {
-                                                            if(storePhotos && storePhotos.length > 0){
-                                                                return Promise.each(storePhotos, function (ph) {
-                                                                    var newStorePhotos = new filterPhoto.filterStorePhoto(ph, photos.userPP);
-                                                                    allPhotos.push(newStorePhotos);
-                                                                })
-                                                            }
-                                                        })
-                                                }
+
+                                    })
+                                    .then(function () {
+                                        if(siteIds.siteId && siteIds.siteId.length > 0){
+                                            return Promise.each(siteIds, function (info) {
+                                                return storePhotoModel.findAsync({siteId: {$in: info.siteIds}, belongslevels:{$lte: info.levels}})
+                                                    .then(function (storePhotos) {
+                                                        if(storePhotos && storePhotos.length > 0){
+                                                            return Promise.each(storePhotos, function (ph) {
+                                                                var newStorePhotos = new filterPhoto.filterStorePhoto(ph, photos.userPP);
+                                                                allPhotos.push(newStorePhotos);
+                                                            })
+                                                        }
+                                                    })
                                             })
+                                        }
                                     })
                             })
                         })

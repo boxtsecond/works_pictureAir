@@ -7,6 +7,7 @@ var ObjectId=mongoose.Schema.Types.ObjectId;
 var options={};
 var config={
     siteId:{type: String,  index: true},//服务器ID
+    parkName:{type: String, required: true, default: 'PictureAir'},
     photoId: {type: String, index: true}, //照片Id（siteIdyyyymmddxxxxx）
     photoCode: {type: String, index: true},   //照片code
     shootOn: {type: Date, index: true},  //拍摄时间
