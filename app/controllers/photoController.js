@@ -178,10 +178,10 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                         return parkModel.findOneAsync({siteId: pto.siteId})
                                             .then(function (park) {
                                                 //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                                park.coverHeaderImage ? pushPhoto.coverHeaderImage = park.coverHeaderImage : pushPhoto.coverHeaderImage = '';
-                                                park.logoUrl? pushPhoto.logoUrl = park.logoUrl : pushPhoto.logoUrl = '';
-                                                park.pageUrl ? pushPhoto.pageUrl = park.pageUrl : pushPhoto.pageUrl = '';
-                                                park.name ? pushPhoto.parkName = park.name : pushPhoto.parkName = '';
+                                                park ? pushPhoto.coverHeaderImage = park.coverHeaderImage : pushPhoto.coverHeaderImage = '';
+                                                park ? pushPhoto.logoUrl = park.logoUrl : pushPhoto.logoUrl = '';
+                                                park ? pushPhoto.pageUrl = park.pageUrl : pushPhoto.pageUrl = '';
+                                                park ? pushPhoto.parkName = park.name : pushPhoto.parkName = '';
                                                 photos.push(pushPhoto);
                                             })
                                     })
