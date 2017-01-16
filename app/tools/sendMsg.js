@@ -79,6 +79,16 @@ var cfgSMS={
 };
 //console.log(rq.util)
 function sendSMSFrom3tong(phones, sign,content, msgid,sendTime){
+    console.log({
+        "account":cfgSMS.account,
+        "password":rq.util.md5(cfgSMS.pwd),
+        "msgid":msgid,
+        "phones":phones,
+        "content":content,
+        "sign":sign,
+        "subcode":"",
+        "sendtime":sendTime//  yyyyMMddHHmm 为空或者早于当前时间
+    })
     return request.postAsync({url:'http://wt.3tong.net/json/sms/Submit',
         body:{
             "account":cfgSMS.account,
@@ -186,7 +196,7 @@ function phoneToString(dReplaceArray,index,str){
     if(!rq.util.isstring(str))str="";
     return new Promise(function (resolve, reject) {
         if(rq.util.isstring(dReplaceArray)){
-            if(dReplaceArray.indexOf('+')==-1) return resolve('+'+dReplaceArray);
+            if(dReplaceArray.indexOf('+')==-1) return resolve('+86'+dReplaceArray);
             else return resolve(dReplaceArray);
         }
         else if(index>=dReplaceArray.length-1) return resolve(str);

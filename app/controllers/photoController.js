@@ -287,7 +287,7 @@ exports.getPhotosByConditions = function (req, res, next) {
             if(flag){
                 if(photos.status){
                     return photos;
-                }else if(photos.code && photos.code.length > 0){
+                }else if(photos.code && photos.code.length > 1){
                     var allPhotos = photos.photos;
                     var siteInfo = config.configJSONData.siteIds;
                     return cardCodeModel.findAsync({PPCode: {$in: photos.code}, active: true})
