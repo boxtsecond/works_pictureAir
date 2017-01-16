@@ -14,7 +14,7 @@ var redisclient=require('./redis/redis').redis;
 var jwt = require('jsonwebtoken');
 var Promise=require('bluebird');
 Promise.promisifyAll(jwt);
-var request=require("request");
+var request = Promise.promisify(require('request'));
 Promise.promisifyAll(request);
 var uuid=require('uuid');
 var nodemailer=require("nodemailer");
