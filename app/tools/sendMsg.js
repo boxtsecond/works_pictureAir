@@ -124,6 +124,7 @@ elemsendSMSE.addListener("send",function(smsobj){
     return Promise.resolve(smsobj)
         .then(function(obj){
             return sendSMSFrom3tong(obj.phones,obj.data.sign,obj.data.content,obj.msgid,obj.sendTime).then(function(res){
+                console.log(res.body);
                 if(res.body.result==0)return res;
                 else{
                     var type=-1;
