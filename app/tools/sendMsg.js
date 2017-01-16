@@ -91,9 +91,6 @@ function sendSMSFrom3tong(phones, sign,content, msgid,sendTime){
             "sendtime":sendTime//  yyyyMMddHHmm 为空或者早于当前时间
         },
         json:true
-    }).then(function (data) {
-        console.log(data);
-        return data;
     });
 };
 
