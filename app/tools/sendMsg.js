@@ -89,7 +89,7 @@ function sendSMSFrom3tong(phones, sign,content, msgid,sendTime){
         "subcode":"",
         "sendtime":sendTime//  yyyyMMddHHmm 为空或者早于当前时间
     })
-    return request.postAsync({url:'http://wt.3tong.net/json/sms/Submit',
+    return request.postAsync({url:'http://www.dh3t.com/json/sms/Submit',
         body:{
             "account":cfgSMS.account,
             "password":rq.util.md5(cfgSMS.pwd),
