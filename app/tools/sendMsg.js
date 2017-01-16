@@ -79,16 +79,6 @@ var cfgSMS={
 };
 //console.log(rq.util)
 function sendSMSFrom3tong(phones, sign,content, msgid,sendTime){
-    console.log({
-        "account":cfgSMS.account,
-        "password":rq.util.md5(cfgSMS.pwd),
-        "msgid":msgid,
-        "phones":phones,
-        "content":content,
-        "sign":sign,
-        "subcode":"",
-        "sendtime":sendTime//  yyyyMMddHHmm 为空或者早于当前时间
-    })
     return request.postAsync({url:'http://www.dh3t.com/json/sms/Submit',
         body:{
             "account":cfgSMS.account,
@@ -101,6 +91,9 @@ function sendSMSFrom3tong(phones, sign,content, msgid,sendTime){
             "sendtime":sendTime//  yyyyMMddHHmm 为空或者早于当前时间
         },
         json:true
+    }).then(function (data) {
+        console.log(data);
+        return data;
     });
 };
 
