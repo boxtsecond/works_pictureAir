@@ -190,6 +190,7 @@ function phoneToString(dReplaceArray,index,str){
     if(!rq.util.isstring(str))str="";
     return new Promise(function (resolve, reject) {
         if(rq.util.isstring(dReplaceArray)){
+            dReplaceArray = dReplaceArray.trim();
             if(dReplaceArray.indexOf('+')==-1) return resolve('+'+dReplaceArray);
             else return resolve(dReplaceArray);
         }
