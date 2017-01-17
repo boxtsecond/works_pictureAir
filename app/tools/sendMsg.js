@@ -11,18 +11,26 @@ var Promise=rq.Promise;
 var uuid=rq.uuid;
 var email_txt=require('./lg/email_txt');
 var msm_txt=require('./lg/msm_txt');
-function getValidateCode(redsKsyStr){
-   return redisclient.incr(redsKsyStr).then(function(reply){
-       if(reply<999998) {
-           return  Promise.resolve(rq.util.Padstr(reply.toString(),6,'0',false));
-       }else {
-          return redisclient.set(redsKsyStr, 0).then(function(err){
-              return  Promise.resolve("999998");
-          });
-       }
-   }).catch(function(err){
-       return  Promise.resolve("999999");
-   });
+function getValidateCode(){
+    var redsKsyStr = (''+Math.random()).match(/\d{6}/)[0];
+    return redisclient.set(redsKsyStr, 0).then(function () {
+        return  Promise.resolve(rq.util.Padstr(redsKsyStr.toString(),6,'0',false));
+    })
+        .catch(function (err) {
+            console.log(err);
+            return Promise.resolve('999999');
+        });
+   // return redisclient.incr(redsKsyStr).then(function(reply){
+   //     if(reply<999998) {
+   //         return  Promise.resolve(rq.util.Padstr(reply.toString(),6,'0',false));
+   //     }else {
+   //        return redisclient.set(redsKsyStr, 0).then(function(err){
+   //            return  Promise.resolve("999998");
+   //        });
+   //     }
+   // }).catch(function(err){
+   //     return  Promise.resolve("999999");
+   // });
 }
 function getTxtFromCode(code,type,txtlist){
     return new Promise(function (resolve, reject) {
@@ -159,7 +167,8 @@ elemsendSMSE.addListener("send",function(smsobj){
         });
 });
 function sendMSMvalidateCode(lg,phone,sendTime){
-    return getValidateCode("MSM:msmLastIndexNum").then(function(validateCode){
+    //return getValidateCode("MSM:msmLastIndexNum").then(function(validateCode){
+    return getValidateCode().then(function(validateCode){
         var msgid=uuid.v1().replace(/-/g,'');
         return sendSMS(lg,"validateCode",phone
             ,[{name:"%validateCode%",value:validateCode}],msgid,sendTime).then(function(send){
