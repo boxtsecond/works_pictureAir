@@ -81,7 +81,6 @@ var cfgSMS={
 };
 //console.log(rq.util)
 function sendSMSFrom3tong(phones, sign,content, msgid,sendTime){
-    console.log(phones);
     return request.postAsync({url:'http://www.dh3t.com/json/sms/Submit',
         body:{
             "account":cfgSMS.account,
