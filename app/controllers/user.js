@@ -415,7 +415,6 @@ function sendSMS(req,res){
     filterParamsSendSMS(req).
         // 验证码是否已经发送
         then(function(smsobj){
-            console.log(smsobj.params.phone)
             return redisclient.exists("validateCode:"+smsobj.type+"-"+req.ext.md5(smsobj.params.phone.toString().toLocaleLowerCase())).then(function(access_token){
                 if(!access_token){
                     return Promise.resolve(smsobj);
@@ -427,7 +426,6 @@ function sendSMS(req,res){
         })
         .then(function(smsobj){
             var md5Useranme =req.ext.md5(smsobj.params.phone.toString().toLocaleLowerCase());
-            console.log(md5Useranme)
             return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
                 if(!access_token){
                      return Promise.resolve(smsobj);
@@ -475,7 +473,6 @@ function sendSMS(req,res){
 
            });
     }).then(function(smsobj){
-        console.log(smsobj.params.phone)
         return sendMsg.sendMSMvalidateCode(smsobj.params.token.lg,smsobj.params.phone,new Date())
             .then(function(msg){
                 return Promise.resolve({
