@@ -13,13 +13,7 @@ var email_txt=require('./lg/email_txt');
 var msm_txt=require('./lg/msm_txt');
 function getValidateCode(){
     var redsKsyStr = (''+Math.random()).match(/\d{6}/)[0];
-    return redisclient.set(redsKsyStr, 0).then(function () {
-        return  Promise.resolve(rq.util.Padstr(redsKsyStr.toString(),6,'0',false));
-    })
-        .catch(function (err) {
-            console.log(err);
-            return Promise.resolve('999999');
-        });
+    return Promise.resolve(rq.util.Padstr(redsKsyStr.toString(),6,'0',false));
    // return redisclient.incr(redsKsyStr).then(function(reply){
    //     if(reply<999998) {
    //         return  Promise.resolve(rq.util.Padstr(reply.toString(),6,'0',false));
