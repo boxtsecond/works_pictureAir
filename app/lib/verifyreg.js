@@ -11,8 +11,8 @@ function isMobile(str){
     //return /^1(3|4|5|7|8)\d{9}$/.test(str)
 }
 function verifyPassword(str){
-    return str.trim().length==32;
-    //return /^[\@A-Za-z0-9\!\#\$\%\^\&\*\.\~]{6,22}$/.test(str);
+    //return str.trim().length==32;
+    return /^[\@A-Za-z0-9\!\#\$\%\^\&\*\.\~]{6,22}$/.test(str);
     //可以全数字  可以全字母  可以全特殊字符(~!@#$%^&*.) 三种的组合  可以是任意两种的组合  长度6-22
 }
 // "yyyy-MM-dd hh:mm:ss"
