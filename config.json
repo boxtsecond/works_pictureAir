@@ -60,7 +60,7 @@
     "guestExpireTime":604800,
     "expireTime":604800,
     "userExpireTime":604800,
-    "validateCodeExpireTime":120,
+    "validateCodeExpireTime":60,
     "ForgotPwdMsgExpireTime":1800,
     "versionExpireTime":600000
   },
