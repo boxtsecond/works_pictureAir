@@ -413,17 +413,17 @@ function filterParamsSendSMS(req){
 };
 function sendSMS(req,res){
     filterParamsSendSMS(req)
-        // 验证码是否已经发送
-        // .then(function(smsobj){
-        //     return redisclient.exists("validateCode:"+smsobj.type+"-"+req.ext.md5(smsobj.params.phone.toString().toLocaleLowerCase())).then(function(access_token){
-        //         if(!access_token){
-        //             return Promise.resolve(smsobj);
-        //         }else   return  Promise.reject(null);
-        //     }).catch(function(err){
-        //         if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
-        //         else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
-        //     });
-        // })
+        //验证码是否已经发送
+        .then(function(smsobj){
+            return redisclient.exists("validateCode:"+smsobj.type+"-"+req.ext.md5(smsobj.params.phone.toString().toLocaleLowerCase())).then(function(access_token){
+                if(!access_token){
+                    return Promise.resolve(smsobj);
+                }else   return  Promise.reject(null);
+            }).catch(function(err){
+                if(err)  return  Promise.reject(errInfo.userSMSRedisGetValidateCodeError);
+                else return  Promise.reject(errInfo.userSendSMSValidateSendingCodeError);
+            });
+        })
         .then(function(smsobj){
             var md5Useranme =req.ext.md5(smsobj.params.phone.toString().toLocaleLowerCase());
             return redisclient.get("access_token:"+md5Useranme).then(function(access_token){
