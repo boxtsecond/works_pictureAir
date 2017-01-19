@@ -25,7 +25,7 @@ function  geIosUp(req,res) {
         });
 
     }).then(function (obj) {
-        return versionModel.findOneAsync({"versionOS":"ios"},{versionOS:1,_id:0,version:1,versionCode:1,appName:1,downloadChannel:1,content:1,mandatory:1})
+        return versionModel.findOneAsync({"versionOS":"ios"},{versionOS:1,_id:0,version:1,appName:1,downloadChannel:1,content:1,mandatory:1})
             .catch(function(err){
                 return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
             });
@@ -62,7 +62,7 @@ function  geAndroidUp(req,res) {
         });
 
     }).then(function (obj) {
-        return versionModel.findOneAsync({"versionOS":"android"},{versionOS:1,_id:0,version:1,appName:1,downloadChannel:1,content:1,mandatory:1})
+        return versionModel.findOneAsync({"versionOS":"android"},{versionOS:1,_id:0,version:1,versionCode:1,appName:1,downloadChannel:1,content:1,mandatory:1})
             .catch(function(err){
                 return  Promise.reject(errInfo.userRegisterRedisGetTokenError);
             });
