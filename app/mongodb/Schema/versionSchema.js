@@ -6,6 +6,7 @@ var options = {};
 var config = {
     appName:{type:String,index:true},//app名称
     version:{type:String,index:true},//版本号
+    versionCode: {type: Number},//android 特有的
     versionOS:{type:String,index:true},//android，ios
     mandatory:{type:Boolean,default:false},//是否强制更新
     content:
