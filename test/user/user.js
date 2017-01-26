@@ -14,20 +14,20 @@ var should=require('should');
 request = request('http://localhost:4001');
 
 describe('/auth/getAccessToken', function() {
-    // it('should getAccessToken', function(done) {
-    //     request.post('/auth/getAccessToken')
-    //         .send({
-    //             appid: '6c8c8dc48280ed2163136ad416e1dbfe',
-    //             password: "password",
-    //             t:1,
-    //             lg:"zh-CN"
-    //         })
-    //         .expect(200, function(err, res) {
-    //             console.log(res.body);
-    //             done();
-    //         });
-    //
-    // });
+    it('should getAccessToken', function(done) {
+        request.post('/auth/getAccessToken')
+            .send({
+                appid: '6c8c8dc48280ed2163136ad416e1dbfe',
+                password: "password",
+                t:1,
+                lg:"zh-CN"
+            })
+            .expect(200, function(err, res) {
+                console.log(res.body);
+                done();
+            });
+
+    });
 
     // it('should getAccessToken2', function(done) {
     //    request.post('/g/user/sendsms')
@@ -68,24 +68,24 @@ describe('/auth/getAccessToken', function() {
     //        });
     // });
 
-    it('should login', function(done) {
-        console.log(md5('111111'))
-        request.post('/g/user/login')
-            .send({
-                access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODQxMjA1NDIsImV4cCI6MTQ4NDcyNTM0MiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiN2QxNzNiMzBkN2QxMTFlNmFlMWQ1MTJiOWM2MTkzMDAiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.CvSId8K5hW5oWRu40vWFG_GAQ0NMYnnE2Rugubecel7C8zqSazuNQxqZAiCsA7zpjKURdbs68FlDBrn532fYaZBoT-U7mmDEyoUgxs5gTHjTIZ5TOceGrfkzUqetc2esRlyCsv7IPIcsyl-XAZJGUhyj5qHVRO6A5kVmdZRD5GKV7ZPzqVB_SPz65HIAwari3l64hctnVO0mZ7mL5SOIp-IJYU5FqF18E6TPFyR1psD9FAip9diuPTcp8u0LcJJSLxxdqAnAfTmp7bO9Gqax8V209XsugjCwcapHQP4y3YbIto7HlGhl92lu8TgC-tXq10VtLHBtK20EVgVH-s4C_A',
-                username: '123@321.com',
-                password: md5("111111")
-                // username: '1@1.com',
-                // password: md5("000000")
-            })
-            .expect(200, function(err1, res1) {
-                console.log(res1.body)
-                // console.log(res1.body.result.user.customerIds)
-                should.not.exist(err1);
-                done();
-                // res.text.should.containEql('用户名或密码不能为空');
-            });
-    });
+    // it('should login', function(done) {
+    //     console.log(md5('111111'))
+    //     request.post('/g/user/login')
+    //         .send({
+    //             access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODQxMjA1NDIsImV4cCI6MTQ4NDcyNTM0MiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiN2QxNzNiMzBkN2QxMTFlNmFlMWQ1MTJiOWM2MTkzMDAiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.CvSId8K5hW5oWRu40vWFG_GAQ0NMYnnE2Rugubecel7C8zqSazuNQxqZAiCsA7zpjKURdbs68FlDBrn532fYaZBoT-U7mmDEyoUgxs5gTHjTIZ5TOceGrfkzUqetc2esRlyCsv7IPIcsyl-XAZJGUhyj5qHVRO6A5kVmdZRD5GKV7ZPzqVB_SPz65HIAwari3l64hctnVO0mZ7mL5SOIp-IJYU5FqF18E6TPFyR1psD9FAip9diuPTcp8u0LcJJSLxxdqAnAfTmp7bO9Gqax8V209XsugjCwcapHQP4y3YbIto7HlGhl92lu8TgC-tXq10VtLHBtK20EVgVH-s4C_A',
+    //             username: '123@321.com',
+    //             password: md5("111111")
+    //             // username: '1@1.com',
+    //             // password: md5("000000")
+    //         })
+    //         .expect(200, function(err1, res1) {
+    //             console.log(res1.body)
+    //             // console.log(res1.body.result.user.customerIds)
+    //             should.not.exist(err1);
+    //             done();
+    //             // res.text.should.containEql('用户名或密码不能为空');
+    //         });
+    // });
 
     // it('should sendsms forgotpwd', function(done) {
     //    request.post('/g/user/sendsms')
