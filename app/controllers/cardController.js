@@ -258,7 +258,7 @@ exports.removePPFromUser = function (req, res, next) {
         return res.ext.json(errInfo.removePPFromUser.paramsError);
     }
     var userId = params.userId;
-    var customerId = params.customerId;
+    var customerId = (params.customerId).toString().trim().toUpperCase();
     var cType = 'ppCard';
     var findObj;
 
