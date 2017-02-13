@@ -614,7 +614,7 @@ exports.addCodeToUser = function (req, res, next) {
     if (!req.ext.checkExistProperty(params, ['customerId', 'userId'])) {
         return res.ext.json(errInfo.addCodeToUser.paramsError);
     }
-    var customerId = params.customerId;
+    var customerId = (params.customerId).toString().trim().toUpperCase();
     var userId = params.userId;
     var cType = 'ppCard';
 
