@@ -6,19 +6,37 @@ var fs_extra = require('fs-extra');
 var redisclient=require('../redis/redis').redis;
 
 //先从redis缓存中找，找不到再从mongo中找
-//audience --- redis's key, modelName --- mongo's model name, condition --- mongo's find condition
-function findInfo(audience, modelName, condition) {
+//keyValue --- redis's key and value, modelName --- mongo's model name, condition --- mongo's find condition
+function findInfo(type,keyValue, modelName, condition) {
     return Promise.resolve()
         .then(function () {
-            if(audience){
-                return redisclient.get('access_token:'+audience)
-                    .then(function (info) {
-                        if(info){
-                            return {redis:JSON.parse(info)};
-                        }else {
-                            return false;
-                        }
-                    })
+            if(keyValue){
+                switch (type){
+                    case 'hgetall':
+                        return redisclient.dump(keyValue)
+                            .then(function (d) {
+                                if(d){
+                                    return redisclient.hgetall(keyValue)
+                                        .then(function (info) {
+                                            return {redis: info};
+                                        })
+                                }else {
+                                    return false;
+                                }
+                            })
+                        break;
+                    case 'get':
+                        return redisclient.get(keyValue)
+                            .then(function (info) {
+                                if(info){
+                                    return {redis:JSON.parse(info)};
+                                }else {
+                                    return false;
+                                }
+                            })
+                        break;
+                }
+
             }else {
                 return false;
             }
@@ -46,7 +64,7 @@ function findInfo(audience, modelName, condition) {
 
 function requireModel(modelName) {
     var _dirname = process.cwd();
-    var modelDir = path.join(_dirname, '/mongodb/Model', modelName + 'Model.js');
+    var modelDir = path.join(_dirname, 'app/mongodb/Model', modelName + 'Model.js');
     var exists = fs_extra.existsSync(modelDir);
     return exists ? require(modelDir) : null;
 }

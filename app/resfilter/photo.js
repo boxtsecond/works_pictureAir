@@ -34,6 +34,10 @@ exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
     this.editCount=photo.editCount;if(!this.editCount)this.editCount=0;
     this.isPaid=isPaid;if(!this.isPaid)this.isPaid=false;
     //this.thumbnail=photo.thumbnail;if(!this.thumbnail)this.thumbnail={};
+    this.coverHeaderImage = '';
+    this.logoUrl = '';
+    this.pageUrl = '';
+    this.parkName = '';
     this.thumbnail = {};
     for(var i in photo.thumbnail){
         this.thumbnail[i] = {};

@@ -136,8 +136,7 @@ exports.getAllParks = function (req, res, next) {
         .then(function () {
             //redis里无缓存，从Mongo里获取
             console.log('Get parks from Mongo...');
-            var condition = {isDel: false, active: true};
-            return parkModel.findAsync(condition)
+            return parkModel.findAsync({isDel: false, active: true})
                 .then(function (parks) {
                     if(parks && parks.length > 0){
                         return parks;
@@ -377,3 +376,4 @@ exports.getParkBySiteId = function (req, res, next) {
         });
 
 }
+

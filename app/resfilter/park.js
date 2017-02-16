@@ -4,12 +4,16 @@
 
 exports.filterPark = function (park){
     this._id=park._id; if(!this._id)this._id="";
-    this.name=park.name; if(!this.name)this.name="";
+    this.parkName=park.name; if(!this.parkName)this.parkName="";
     this.siteId=park.siteId;if(!this.siteId)this.siteId="";
     this.version=park.version;if(!this.version)this.version="";
-    this.isDel=park.isDel; if(!this.isDel)this.isDel="";
+    this.isDel=park.isDel; if(!this.isDel)this.isDel=false;
+    this.active=park.active; if(!this.active)this.active=false;
     this.modifiedOn=park.modifiedOn;if(!this.modifiedOn)this.modifiedOn="";
     this.createdOn=park.createdOn;if(!this.createdOn)this.createdOn="";
+    this.coverHeaderImage=park.coverHeaderImage;if(!this.coverHeaderImage)this.coverHeaderImage="";
+    this.logoUrl=park.logoUrl;if(!this.logoUrl)this.logoUrl="";
+    this.pageUrl=park.pageUrl;if(!this.pageUrl)this.pageUrl="";
 
     var locations = [];
     if(park.locations && park.locations.length > 0){

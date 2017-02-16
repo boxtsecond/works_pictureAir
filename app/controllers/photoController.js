@@ -13,7 +13,7 @@ var config = require('../../config/config.js').config;
 var request = Promise.promisify(require('request'));
 Promise.promisifyAll(request);
 var enums = require('../tools/enums.js');
-var filterPhoto = require('../resfilter/resfilter.js').photo;
+var filters = require('../resfilter/resfilter.js');
 var resTools = require('../resfilter/resTools');
 var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
@@ -117,105 +117,112 @@ function getOptions(params) {
 function findPhotos(conditions, fields, options, flag, audience) {
     var photos = [];
     var userPP;
-    var code = [];
-    return Promise.resolve()
-        .then(function () {
-            if(flag){
-                return findInfo(audience, 'user', {_id: conditions.userIds});
+    var codeIds = [];
+    var parkInfo = {};
+
+    return findInfo('hgetall', config.configJSONData.redis.parkName, 'park', {isDel: false, active: true})
+        .then(function (info) {
+            if (info && info.redis) {
+                parkInfo = info.redis;
+            } else if (info && info.mongo) {
+                return Promise.each(info.mongo, function (parks) {
+                    var pushPark = new filters.park.filterPark(parks);
+                    parkInfo[parks.siteId] = pushPark;
+                    return redisclient.hset(config.configJSONData.redis.parkName, parks.siteId, JSON.stringify(pushPark))
+                        .then(function () {
+                            return redisclient.hset(config.configJSONData.redis.parkVersionName, parks.siteId, parks.modifiedOn);
+                        })
+                })
             }
         })
-        .then(function (info) {
-            if(flag){
-                var codes = [];
-                return Promise.resolve()
-                    .then(function () {
-                        if(info && info.redis){
+        .then(function () {
+            if(!flag){
+                return photoModel.findAsync(conditions, fields, options)
+                    .then(function (list) {
+                        if (list && list.length > 0) {
+                            codeIds.push(conditions['customerIds.code']);
+                            return Promise.each(list, function (pto) {
+                                var isPaid = false;
+                                var pushPhoto = new filters.photo.filterPhoto(pto, isPaid, conditions['customerIds.code'], flag);
+                                if(parkInfo[pto.siteId]){
+                                    pushPhoto.coverHeaderImage = parkInfo[pto.siteId].coverHeaderImage;
+                                    pushPhoto.logoUrl = parkInfo[pto.siteId].logoUrl;
+                                    pushPhoto.pageUrl = parkInfo[pto.siteId].pageUrl;
+                                    pushPhoto.parkName = parkInfo[pto.siteId].name;
+                                }
+                                photos.push(pushPhoto);
+                            })
+                        }
+                    })
+            }else {
+                return findInfo('get' ,'access_token:'+audience, 'user', {_id: conditions.userIds})
+                    .then(function (info) {
+                        if (info && info.redis) {
                             userPP = info.redis.user.userPP;
-                            return info.redis.user.customerIds;
-                        }else if(info && info.mongo){
+                            return Promise.each(info.redis.user.customerIds, function (ctId) {
+                                if(ctId.code){
+                                    codeIds.push(ctId.code);
+                                }
+                            });
+                        } else if (info && info.mongo) {
                             userPP = info.mongo.userPP;
-                            return info.mongo.customerIds;
-                        }else {
+                            return Promise.each(info.mongo.customerIds, function (ctId) {
+                                if(ctId.code){
+                                    codeIds.push(ctId.code);
+                                }
+                            });
+                        } else {
                             return Promise.reject(errInfo.findPhotos.notFind);
                         }
                     })
-                    .then(function (ctIds) {
-                        return Promise.each(ctIds, function (ctId) {
-                            if(ctId.code){
-                                codes.push(ctId.code);
-                            }
-                        });
-                    })
                     .then(function () {
-                        return codes;
-                    })
-            } else {
-                return conditions['customerIds.code'];
-            }
-        })
-        .then(function (codeIds) {
-            if(codeIds && codeIds.length > 0 && flag){
-                code = codeIds;
-                conditions["customerIds.code"] = {$in:codeIds};
-                //conditions["orderHistory.customerId"] = code;
-                return photoModel.findAsync(conditions, fields, options)
-                    .then(function (list) {
-                        if(list && list.length > 0){
-                            return Promise.each(list, function (pto) {
-                                var isPaid = false;
-                                return Promise.resolve()
-                                    .then(function () {
-                                        return Promise.each(pto.orderHistory, function (odh) {
-                                            return Promise.each(codeIds, function (code) {
-                                                if(odh.customerId == code){
-                                                    isPaid = true;
-                                                }
-                                            })
+                        if (codeIds && codeIds.length > 0) {
+                            conditions["customerIds.code"] = {$in: codeIds};
+                            //conditions["orderHistory.customerId"] = code;
+                            return photoModel.findAsync(conditions, fields, options)
+                                .then(function (list) {
+                                    if (list && list.length > 0) {
+                                        return Promise.each(list, function (pto) {
+                                            var isPaid = false;
+                                            return Promise.resolve()
+                                                .then(function () {
+                                                    // return photoModel.findOneAsync({_id: pto._id, 'orderHistory.customerId': {$in: codeIds}})
+                                                    //     .then(function (exist) {
+                                                    //         if(exist){
+                                                    //             isPaid = true;
+                                                    //         }
+                                                    //     })
+                                                    return Promise.each(pto.orderHistory, function (odh) {
+                                                        return Promise.each(codeIds, function (code) {
+                                                            if(odh.customerId == code){
+                                                                isPaid = true;
+                                                            }
+                                                        })
+                                                    })
+                                                })
+                                                .then(function () {
+                                                    var pushPhoto = new filters.photo.filterPhoto(pto, isPaid, conditions['customerIds.code'], flag);
+                                                    if(parkInfo[pto.siteId]){
+                                                        pushPhoto.coverHeaderImage = parkInfo[pto.siteId].coverHeaderImage;
+                                                        pushPhoto.logoUrl = parkInfo[pto.siteId].logoUrl;
+                                                        pushPhoto.pageUrl = parkInfo[pto.siteId].pageUrl;
+                                                        pushPhoto.parkName = parkInfo[pto.siteId].name;
+                                                    }
+                                                    photos.push(pushPhoto);
+                                                })
                                         })
-                                    })
-                                    .then(function () {
-                                        var pushPhoto = new filterPhoto.filterPhoto(pto, isPaid, codeIds, flag);
-                                        return parkModel.findOneAsync({siteId: pto.siteId})
-                                            .then(function (park) {
-                                                //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                                park ? pushPhoto.coverHeaderImage = park.coverHeaderImage : pushPhoto.coverHeaderImage = '';
-                                                park ? pushPhoto.logoUrl = park.logoUrl : pushPhoto.logoUrl = '';
-                                                park ? pushPhoto.pageUrl = park.pageUrl : pushPhoto.pageUrl = '';
-                                                park ? pushPhoto.parkName = park.name : pushPhoto.parkName = '';
-                                                photos.push(pushPhoto);
-                                            })
-                                    })
-                            })
-                        }
-                    })
-                    .catch(function (err) {
-                        console.log(err);
-                        return Promise.reject(errInfo.findPhotos.promiseError);
-                    });
-            }else if(!flag){
-                return photoModel.findAsync(conditions, fields, options)
-                    .then(function (list) {
-                        if(list && list.length > 0){
-                            return Promise.each(list, function (pto) {
-                                var isPaid = false;
-                                var pushPhoto = new filterPhoto.filterPhoto(pto, isPaid, codeIds, flag);
-                                return parkModel.findOneAsync({siteId: pto.siteId})
-                                    .then(function (park) {
-                                        //从park表中获取其他字段(coverHeaderImage, avatarUrl, pageUrl)
-                                        pushPhoto.coverHeaderImage = park.coverHeaderImage;
-                                        pushPhoto.logoUrl = park.logoUrl;
-                                        pushPhoto.pageUrl = park.pageUrl;
-                                        pushPhoto.parkName = park.name;
-                                        photos.push(pushPhoto);
-                                    })
-
-                            })
+                                    }
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                    return Promise.reject(errInfo.findPhotos.promiseError);
+                                });
                         }
                     })
             }
         })
         .then(function () {
-            return {photos: photos, userPP: userPP, code: code};
+            return {photos: photos, userPP: userPP, code: codeIds};
         })
         .catch(function (error) {
             if(error.status){
@@ -286,7 +293,7 @@ exports.getPhotosByConditions = function (req, res, next) {
             //storePhotos
             if(flag){
                 if(photos.status){
-                    return photos;
+                    return Promise.reject(photos);
                 }else if(photos.code && photos.code.length > 1){
                     var allPhotos = photos.photos;
                     var siteInfo = config.configJSONData.siteIds;
@@ -309,7 +316,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                                         .then(function (storePhotos) {
                                             if(storePhotos && storePhotos.length > 0){
                                                 return Promise.each(storePhotos, function (ph) {
-                                                    var newStorePhotos = new filterPhoto.filterStorePhoto(ph, photos.userPP);
+                                                    var newStorePhotos = new filters.photo.filterStorePhoto(ph, photos.userPP);
                                                     allPhotos.push(newStorePhotos);
                                                 })
                                             }
@@ -329,15 +336,11 @@ exports.getPhotosByConditions = function (req, res, next) {
             }
         })
         .then(function (photos) {
-            if(photos.status){
-                return res.ext.json(photos);
-            }else {
-                var resultObj = errInfo.success;
-                resultObj.result = {};
-                resultObj.result.photos = photos;
-                //console.log(photos);
-                return res.ext.json(resultObj);
-            }
+            var resultObj = errInfo.success;
+            resultObj.result = {};
+            resultObj.result.photos = photos;
+            //console.log(photos);
+            return res.ext.json(resultObj);
         })
         .catch(function (error) {
             if(error.status){
@@ -601,7 +604,7 @@ exports.getPhotoByOldSys = function (req, res, next) {
     }).then(function (data) {
         if(data.body && data.body.photos && data.body.photos.length > 0){
             return Promise.each(data.body.photos, function (pto) {
-                var pushphoto = new filterPhoto.filterPhotoFromOldSys(pto);
+                var pushphoto = new filters.photo.filterPhotoFromOldSys(pto);
                 var siteId = pto.site_id;
                 return parkModel.findOneAsync({siteId: siteId.toUpperCase()})
                     .then(function (park) {
@@ -640,7 +643,7 @@ exports.addPhotoFromOldSys = function (req, res, next) {
         json: true
     }).then(function (data) {
         if(data.body && data.body.photos && data.body.photos.length > 0){
-            return findInfo(params.token.audience, 'user', {_id: params.userId})
+            return findInfo('get', 'access_token:'+params.token.audience, 'user', {_id: params.userId})
                 .then(function (info) {
                     if(info && info.redis){
                         return {customerId: info.redis.user.userPP, photos: data.body.photos};
@@ -657,7 +660,7 @@ exports.addPhotoFromOldSys = function (req, res, next) {
                     return photoModel.findOneAsync({photoCode: pto.code, 'customerIds.code': info.customerId})
                         .then(function (photo) {
                             if(!photo){
-                                var pushphoto = new filterPhoto.addPhotoFromOldSys(pto, params.userId, info.customerId);
+                                var pushphoto = new filters.photo.addPhotoFromOldSys(pto, params.userId, info.customerId);
                                 return photoModel.createAsync(pushphoto)
                                     .then(function () {
                                         createPhoto = true;
@@ -686,4 +689,3 @@ exports.addPhotoFromOldSys = function (req, res, next) {
             return res.ext.json(errInfo.addPhotoFromOldSys.promiseError);
         });
 }
-
