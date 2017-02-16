@@ -60,9 +60,9 @@ exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
     this.customerIds = [];
     if(flag){
         if(customerIds && customerIds.$in.length > 0){
-            for(var n = 0; n < customerIds.length; ++n){
+            for(var n = 0; n < customerIds.$in.length; ++n){
                 for(var m = 0; m < photo.customerIds.length; ++m){
-                    if(customerIds[n] == photo.customerIds[m].code){
+                    if(customerIds.$in[n] == photo.customerIds[m].code){
                         this.customerIds.push(photo.customerIds[m]);
                     }
                 }
@@ -70,7 +70,7 @@ exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
         }
     }else {
         for(var l = 0; l < customerIds.length; ++l){
-            this.customerIds.push({code: customerIds.$in[l]});
+            this.customerIds.push({code: customerIds[l]});
         }
     }
 }
