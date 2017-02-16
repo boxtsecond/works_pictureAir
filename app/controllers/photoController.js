@@ -123,7 +123,9 @@ function findPhotos(conditions, fields, options, flag, audience) {
     return findInfo('hgetall', config.configJSONData.redis.parkName, 'park', {isDel: false, active: true})
         .then(function (info) {
             if (info && info.redis) {
-                parkInfo = info.redis;
+                for(var i in info.redis){
+                    parkInfo[i] = JSON.parse(info.redis[i]);
+                }
             } else if (info && info.mongo) {
                 return Promise.each(info.mongo, function (parks) {
                     var pushPark = new filters.park.filterPark(parks);
