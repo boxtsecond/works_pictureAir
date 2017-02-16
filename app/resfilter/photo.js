@@ -58,8 +58,8 @@ exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
     }
     //this.customerIds=photo.customerIds;if(!this.customerIds)this.customerIds=[];
     this.customerIds = [];
-    if(!flag){
-        if(customerIds && customerIds.length > 0){
+    if(flag){
+        if(customerIds && customerIds.$in.length > 0){
             for(var n = 0; n < customerIds.length; ++n){
                 for(var m = 0; m < photo.customerIds.length; ++m){
                     if(customerIds[n] == photo.customerIds[m].code){
@@ -69,7 +69,7 @@ exports.filterPhoto = function(photo, isPaid, customerIds, flag) {
             }
         }
     }else {
-        for(var l = 0; l < customerIds.$in.length; ++l){
+        for(var l = 0; l < customerIds.length; ++l){
             this.customerIds.push({code: customerIds.$in[l]});
         }
     }
