@@ -229,7 +229,14 @@ var errInfo={
         paramsError: {status: 4048, msg: "params is incomplete", desc: "missing photoCode"},
         customerIdError: {status: 4049, msg: "can't find userPP in mongo", desc: "can't find userPP in mongo"},
         promiseError: {status: 3056, msg: "system error", desc: "promise error"}
+    },
+    "createCardCode":{
+        paramsError: {status: 4050, msg: "params is incomplete", desc: "missing siteId"},
+        fileError: {status: 4051, msg: "file data error", desc: "file data error"},
+        promiseError: {status: 3058, msg: "system error", desc: "promise error"}
     }
+
+
     //-------------------system 5x 9x-------------------
 };
 module.exports={

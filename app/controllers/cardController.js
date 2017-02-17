@@ -12,6 +12,7 @@ var cardTools = require('../tools/cardTools.js');
 var cardCodeModel = require('../mongodb/Model/cardCodeModel.js');
 var redisclient=require('../redis/redis').redis;
 var filterUserToredis=require('../rq.js').resfilter_user.filterUserToredis;
+var filters = require('../resfilter/resfilter');
 
 // function getListByUserIdAndOType(oType, userId) {
 //     var result = [];
@@ -367,3 +368,66 @@ exports.removePPFromUser = function (req, res, next) {
             }
         });
 }
+
+//生成激活卡（付费）
+exports.createCardCode = function(req, res, next){
+    var params = req.ext.params;
+    if (!req.ext.checkExistProperty(params, ['key', 'user', 'siteIds', 'PPPType', 'expiredDay'])) {
+        return res.ext.json(errInfo.createCardCode.paramsError);
+    }
+    var fs = Promise.promisifyAll(require('fs'));
+    var createCardNum = 0;
+    return Promise.resolve()
+        //验证key
+        // .then(function () {
+        //
+        // })
+        .then(function () {
+            return fs.readFileAsync('/data/website/cardCodes/codes', 'utf-8')
+        })
+        .then(function (data) {
+            var lines = data.split(/\r?\n/);
+            return Promise.each(lines, function (oneLine) {
+                return Promise.resolve()
+                    .then(function () {
+                        var newCard = {
+                            PPPCode: (oneLine.split(' ')[0]).replace(/-/g, ''),
+                            SN: oneLine.split(' ')[1],
+                            expiredOn: new Date(oneLine.split(' ')[2]),
+                            siteIds: params.siteIds,
+                            user: params.user,
+                            PPPType: params.PPPType,
+                            expiredDay: params.expiredDay
+                        };
+                        if(newCard.PPPCode && newCard.SN && newCard.expiredDay){
+                            return newCard;
+                        }else {
+                            return Promise.reject(errInfo.createCardCode.fileError);
+                        }
+                    })
+                    .then(function (newCard) {
+                        var card = new filters.card.createCardCodeToDB(newCard);
+                        return cardCodeModel.createAsync(card)
+                            .then(function () {
+                                console.log(card.PPPCode+' create success!');
+                                createCardNum++;
+                            })
+                    })
+            })
+        })
+        .then(function () {
+            var resultObj = errInfo.success;
+            resultObj.result = {createCardNum: createCardNum};
+            return res.ext.json(resultObj);
+        })
+        .catch(function (err) {
+            if(err.status){
+                return res.ext.json(err);
+            }else {
+                console.log(err);
+                return res.ext.json(errInfo.createCardCode.promiseError);
+            }
+        })
+
+}
+

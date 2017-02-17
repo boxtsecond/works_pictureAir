@@ -59,7 +59,7 @@ function authUser(req,res,next){
             });
         }).then(function(obj){
              req.ext.params.token=obj.toke;
-              req.ext.params.userId=obj.userid;
+             req.ext.params.userId=obj.userid;
              req.ext.params.token.expire_in=Math.floor(obj.toke.exp-Math.floor(Date.now() / 1000));
              next();
              return obj;
@@ -69,7 +69,14 @@ function authUser(req,res,next){
     }
     else  return res.ext.json({ status: 420, msg: 'unauthorized'});
 }
+
+//公司内部使用
+function authSystem(req, res, next) {
+    next();
+}
+
 module.exports={
     authGuest:authGuest,
-    authUser:authUser
+    authUser:authUser,
+    authSystem:authSystem
 };

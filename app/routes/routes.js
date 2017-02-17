@@ -12,7 +12,10 @@ module.exports=function(app){
     app.use('/f',require('./publicRoute'));
     //Guest
     app.use('/g',auth.authGuest,require('./guestRoute'));
+    //Private
     app.use('/p',auth.authUser,require('./privateRoute'));
+    //secret
+    app.use('/s',auth.authSystem,require('./secretRoute'));
     app.use('*',auth.authGuest);
     return app;
 };
