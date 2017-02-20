@@ -110,6 +110,10 @@ function getOptions(params) {
     if(params.limit){
         options.limit = parseInt(params.limit);
     }
+    if(params.page){
+        if(!params.limit) options.limit = 50;
+        options.skip = parseInt((params.page - 1)*options.limit)
+    }
     return options;
 }
 
@@ -690,4 +694,8 @@ exports.addPhotoFromOldSys = function (req, res, next) {
             console.log(error);
             return res.ext.json(errInfo.addPhotoFromOldSys.promiseError);
         });
+}
+
+exports.removeRealPhotos = function (req, res, next) {
+
 }
