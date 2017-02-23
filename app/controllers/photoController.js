@@ -192,12 +192,6 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                             var isPaid = false;
                                             return Promise.resolve()
                                                 .then(function () {
-                                                    // return photoModel.findOneAsync({_id: pto._id, 'orderHistory.customerId': {$in: codeIds}})
-                                                    //     .then(function (exist) {
-                                                    //         if(exist){
-                                                    //             isPaid = true;
-                                                    //         }
-                                                    //     })
                                                     return Promise.each(pto.orderHistory, function (odh) {
                                                         return Promise.each(codeIds, function (code) {
                                                             if(odh.customerId == code){
@@ -205,6 +199,14 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                                             }
                                                         })
                                                     })
+                                                    // pto.orderHistory.map(function (orderItem) {
+                                                    //     codeIds.map(function (idItem) {
+                                                    //         if(orderItem.customerId == idItem){
+                                                    //             isPaid = true;
+                                                    //         }
+                                                    //     })
+                                                    // });
+
                                                 })
                                                 .then(function () {
                                                     var pushPhoto = new filters.photo.filterPhoto(pto, isPaid, conditions['customerIds.code'], flag);

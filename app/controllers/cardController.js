@@ -383,7 +383,7 @@ exports.createCardCode = function(req, res, next){
         //
         // })
         .then(function () {
-            return fs.readFileAsync('/data/website/cardCodes/codes', 'utf-8')
+            return fs.readFileAsync('/Users/xueting-bo/WORKS/test', 'utf-8')
         })
         .then(function (data) {
             var lines = data.split(/\r?\n/);
