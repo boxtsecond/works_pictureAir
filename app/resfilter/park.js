@@ -14,6 +14,7 @@ exports.filterPark = function (park){
     this.coverHeaderImage=park.coverHeaderImage;if(!this.coverHeaderImage)this.coverHeaderImage="";
     this.logoUrl=park.logoUrl;if(!this.logoUrl)this.logoUrl="";
     this.pageUrl=park.pageUrl;if(!this.pageUrl)this.pageUrl="";
+    this.lawUrl=park.lawUrl;if(!this.lawUrl)this.lawUrl="";
 
     var locations = [];
     if(park.locations && park.locations.length > 0){

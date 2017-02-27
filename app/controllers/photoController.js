@@ -154,6 +154,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
                                     pushPhoto.coverHeaderImage = parkInfo[pto.siteId].coverHeaderImage;
                                     pushPhoto.logoUrl = parkInfo[pto.siteId].logoUrl;
                                     pushPhoto.pageUrl = parkInfo[pto.siteId].pageUrl;
+                                    pushPhoto.lawUrl = parkInfo[pto.siteId].lawUrl;
                                     pushPhoto.parkName = parkInfo[pto.siteId].parkName;
                                 }
                                 photos.push(pushPhoto);

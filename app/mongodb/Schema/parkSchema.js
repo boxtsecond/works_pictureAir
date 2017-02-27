@@ -119,6 +119,7 @@ var config=
     }, //乐园头部背景图url
     logoUrl: {type: String}, //乐园头像url
     avatarUrl: {type: String}, //乐园头像url
+    lawUrl: {type: String}, //法律条文url
     contact: { //
         telephone: String, //联系电话
         email: String, //email
