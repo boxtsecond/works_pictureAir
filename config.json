@@ -90,6 +90,6 @@
     "websiteStoragePath":"/data/website",
     "websitePhotoStoragePath":"/data/website/photos"
   },
-  "serverIP":"http://192.168.8.107",
+  "serverIP":"http://192.168.8.107"
 }
 
