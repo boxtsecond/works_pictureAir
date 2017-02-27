@@ -319,7 +319,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                             }
                         })
                         .then(function () {
-                            if(siteInfo.toString() !== '{}'){
+                            if(siteInfo && siteInfo.toString() !== '{}'){
                                 for(var le in siteInfo){
                                     return storePhotoModel.findAsync({siteId: {$in: siteInfo[le]}, belongslevels:{$lte: le}})
                                         .then(function (storePhotos) {
