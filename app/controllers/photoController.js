@@ -305,21 +305,21 @@ exports.getPhotosByConditions = function (req, res, next) {
                     return Promise.reject(photos);
                 }else if(photos.code && photos.code.length > 1){
                     var allPhotos = photos.photos;
-                    var siteInfo = config.configJSONData.siteIds;
+                    //var siteInfo = config.configJSONData.siteIds;
+                    var siteInfo = {};
                     return cardCodeModel.findAsync({PPCode: {$in: photos.code}, active: true})
                         .then(function (cardCode) {
                             if(cardCode && cardCode.length > 0){
                                 return Promise.each(cardCode, function (card) {
                                     return Promise.each(card.siteIds, function (site) {
-                                        var le = 1;
-                                        if(card.levels) le = card.levels;
+                                        var le = filters.card.getLevelsByCardType(card.PPPType);
                                         siteInfo[le].push(site);
                                     })
                                 })
                             }
                         })
                         .then(function () {
-                            if(siteInfo){
+                            if(siteInfo.toString() !== '{}'){
                                 for(var le in siteInfo){
                                     return storePhotoModel.findAsync({siteId: {$in: siteInfo[le]}, belongslevels:{$lte: le}})
                                         .then(function (storePhotos) {

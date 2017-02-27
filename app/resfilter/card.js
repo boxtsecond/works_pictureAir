@@ -37,3 +37,12 @@ exports.createCardCodeToDB = function (card) {
     this.soldOn = new Date('1970-01-01');
     this.expiredOn = card.expiredOn;
 }
+
+exports.getLevelsByCardType = function (cardType) {
+    switch (cardType){
+        case 'OneDayPass':
+            return 1;
+        default :
+            return 1;
+    }
+}

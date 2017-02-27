@@ -91,8 +91,5 @@
     "websitePhotoStoragePath":"/data/website/photos"
   },
   "serverIP":"http://192.168.8.107",
-  "siteIds":{
-    "1": []
-  }
 }
 
