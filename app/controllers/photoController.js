@@ -17,9 +17,11 @@ var filters = require('../resfilter/resfilter.js');
 var resTools = require('../resfilter/resTools');
 var redisclient=require('../redis/redis').redis;
 var fs = require('fs');
+var path = require('path');
 var util=require('../../config/util.js');
 var uuid = require('../rq').uuid;
 var findInfo = require('../resfilter/cacheTools.js').findInfo;
+var rq = require('../rq.js');
 
 function getCondition(req, params) {
     var condition = {};
@@ -703,7 +705,54 @@ exports.addPhotoFromOldSys = function (req, res, next) {
 
 exports.removeRealPhotos = function (req, res, next) {
     var params = req.ext.params;
-    if(!req.ext.checkExistProperty(params, ['interval', 'delDB', 'delPhotos'])){
-        return res.ext.json(errInfo.removeRealPhotos.paramsError);
-    }
+    Promise.resolve()
+        .then(function () {
+            return res.ext.json();
+        })
+        .then(function () {
+            //定时循环清理
+            var interval;
+            if(params.cycle){
+                interval = params.interval || 300000;//5 mins
+                return setInterval(cycleRemovePhotos, interval);
+            }else {
+                return cycleRemovePhotos();
+            }
+        })
+}
+
+exports.stopCycleRemoveRealPhotos = function (req, res, next) {
+    clearInterval(cycleRemovePhotos);
+    return res.ext.json();
+}
+
+function cycleRemovePhotos() {
+    var delCondition = {$or:[{orderHistory:{$size: 0},shootOn:{$lte:new Date(new Date() - config.configJSONData.delNotBuyPhotos)}},
+        {'orderHistory.0':{$exists:true},modifiedOn:{$lte:new Date(new Date() - config.configJSONData.delBuyPhotos)}}]};
+    var fields = {_id: 1,thumbnail: 1,originalInfo: 1};
+    photoModel.findAsync(delCondition, fields, {limit:1000})
+        .then(function (photos) {
+            if(photos.length > 0){
+                return Promise.each(photos, function (onePhoto) {
+                    return Promise.resolve()
+                        .then(function () {
+                            if(fs.existsSync(onePhoto.originalInfo.path) && fs.statSync(onePhoto.originalInfo.path).isFile()){
+                                fs.unlinkSync(onePhoto.originalInfo.path);
+                                console.log(onePhoto.originalInfo.path + ' delete!');
+                            }
+                            for(var i in onePhoto.thumbnail){
+                                if(fs.existsSync(onePhoto.thumbnail[i].path) && fs.statSync(onePhoto.thumbnail[i].path)){
+                                    fs.unlinkSync(onePhoto.thumbnail[i].path);
+                                    console.log(onePhoto.thumbnail[i].path + ' file delete!');
+                                }
+                            }
+                        })
+                        .then(function () {
+                            console.log(onePhoto._id + ' delete in mongo!');
+                            return photoModel.removeAsync({_id: onePhoto._id});
+                        })
+                })
+
+            }
+        });
 }

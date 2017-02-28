@@ -90,6 +90,8 @@
     "websiteStoragePath":"/data/website",
     "websitePhotoStoragePath":"/data/website/photos"
   },
-  "serverIP":"http://192.168.8.107"
+  "serverIP":"http://192.168.8.107",
+  "delNotBuyPhotos": 2592000000,
+  "delBuyPhotos": 15552000000
 }
 

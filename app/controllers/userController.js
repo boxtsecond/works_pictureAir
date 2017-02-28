@@ -293,7 +293,7 @@ exports.activeCodeToUser = function (req, res, next) {
                                         activeTime: time,   //所激活照片的日期
                                         createdOn: Date.now()  //创建时间
                                     };
-                                    return photoModel.findByIdAndUpdateAsync(photoId, {$push:{orderHistory:newOrderHistory}});
+                                    return photoModel.findByIdAndUpdateAsync(photoId, {$push:{orderHistory:newOrderHistory}, modifiedOn: new Date()});
                                 })
                         });
                     }
@@ -709,8 +709,7 @@ exports.addCodeToUser = function (req, res, next) {
                             var updateObj = {$push:{pppCodes: cardInfo}};
                             updateObj.modifiedOn = Date.now();
                             return userModel.findByIdAndUpdateAsync(userId, updateObj);
-                        }
-                    })
+                        }})
                     .catch(function (err) {
                         if(err.status){
                             return Promise.reject(err);

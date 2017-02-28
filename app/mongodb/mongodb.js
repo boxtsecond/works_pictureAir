@@ -18,10 +18,11 @@ var opts = {
     user: configData.user, pass: configData.pass
 };
 var connectStr="mongodb://"+configData.host+"/"+configData.dbName;
-
+//var connectStr="mongodb://localhost:27017/pictureAir";
 
 console.log(connectStr)
 var db = mongoose.createConnection(connectStr,opts,function(err){
+//var db = mongoose.createConnection(connectStr,function(err){
     if (err) {
         console.warn('can not connect',err);
         console.warn(err);

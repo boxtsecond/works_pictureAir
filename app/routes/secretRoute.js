@@ -9,4 +9,6 @@ var ctr=require("./ctr");
 
 router.post('/card/createCardCode', ctr.cardController.createCardCode);
 
+router.post('/photos/removeRealPhotos', ctr.photoController.removeRealPhotos);
+
 module.exports = router;

@@ -16,7 +16,6 @@ function getAccessToken(req){
         token=req.ext.params['auth'];
     }else if(req.ext.haveOwnproperty(req.headers,"access_token")){
         token=req.headers['access_token'];
-        console.log(req.headers['access_token']);
     }else if(req.ext.haveOwnproperty(req.headers,"token")){
         token=req.headers['token'];
     }else if(req.ext.haveOwnproperty(req.headers,"authorization")){
