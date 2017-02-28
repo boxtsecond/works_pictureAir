@@ -313,6 +313,7 @@ exports.getPhotosByConditions = function (req, res, next) {
                                 return Promise.each(cardCode, function (card) {
                                     return Promise.each(card.siteIds, function (site) {
                                         var le = filters.card.getLevelsByCardType(card.PPPType);
+                                        siteInfo[le] = [];
                                         siteInfo[le].push(site);
                                     })
                                 })
@@ -700,5 +701,8 @@ exports.addPhotoFromOldSys = function (req, res, next) {
 }
 
 exports.removeRealPhotos = function (req, res, next) {
-
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, ['interval', 'delDB', 'delPhotos'])){
+        return res.ext.json(errInfo.removeRealPhotos.paramsError);
+    }
 }

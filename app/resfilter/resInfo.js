@@ -234,6 +234,9 @@ var errInfo={
         paramsError: {status: 4050, msg: "params is incomplete", desc: "missing siteId"},
         fileError: {status: 4051, msg: "file data error", desc: "file data error"},
         promiseError: {status: 3058, msg: "system error", desc: "promise error"}
+    },
+    "removeRealPhotos":{
+        paramsError: {status: 4052, msg: "params is incomplete", desc: "missing interval or delDB or delPhotos"},
     }
 
 
