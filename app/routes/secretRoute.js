@@ -10,5 +10,6 @@ var ctr=require("./ctr");
 router.post('/card/createCardCode', ctr.cardController.createCardCode);
 
 router.post('/photos/removeRealPhotos', ctr.photoController.removeRealPhotos);
+router.post('/photos/stopCycleRemove', ctr.photoController.stopCycleRemoveRealPhotos);
 
 module.exports = router;
