@@ -16,6 +16,7 @@ function getAccessToken(req){
         token=req.ext.params['auth'];
     }else if(req.ext.haveOwnproperty(req.headers,"access_token")){
         token=req.headers['access_token'];
+        console.log(req.headers['access_token']);
     }else if(req.ext.haveOwnproperty(req.headers,"token")){
         token=req.headers['token'];
     }else if(req.ext.haveOwnproperty(req.headers,"authorization")){
@@ -23,8 +24,6 @@ function getAccessToken(req){
     }else if(req.ext.haveOwnproperty(req.headers,"auth")){
         token=req.headers['auth'];
     }else token=null;
-    console.log(req.header);
-    console.log(token);
      return token;
 }
 function authGuest(req,res,next){
