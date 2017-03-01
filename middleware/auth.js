@@ -24,12 +24,11 @@ function getAccessToken(req){
         token=req.headers['auth'];
     }else token=null;
     console.log('-----------------');
-    console.dir(req.headers['access_token']);
+    console.dir(req);
      return token;
 }
 function authGuest(req,res,next){
     var token=getAccessToken(req);
-    console.log('##############',token);
     if(token) {
         return  access_token.verifyGuestAccess_token(token.toString().trim()).then(function(toke){
           req.ext.params.token=toke;
