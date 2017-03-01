@@ -23,6 +23,8 @@ function getAccessToken(req){
     }else if(req.ext.haveOwnproperty(req.headers,"auth")){
         token=req.headers['auth'];
     }else token=null;
+    console.log('-----------------',token);
+    console.dir('!!!!!!!!!!!!!!!!!',req.headers);
      return token;
 }
 function authGuest(req,res,next){
