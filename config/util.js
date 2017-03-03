@@ -32,6 +32,12 @@ function md5(str){
     str=md5sum.digest('hex');
     return str;
 }
+function sh1(str){
+    var sh1sum=crypto.createHash('sha1')
+    sh1sum.update('PictureAir'+str);
+    str=sh1sum.digest('hex');
+    return str;
+}
 function replaceAll(str,s1,s2){
     return str.replace(new RegExp(s1,"gm"),s2);
 }
@@ -274,6 +280,7 @@ module.exports.isDate=isDate;
 module.exports.haveOwnproperty=haveOwnproperty;
 module.exports.formatDate=formatDate;
 module.exports.md5=md5;
+module.exports.sh1=sh1;
 module.exports.replaceAll=replaceAll;
 module.exports.txtStrReplace=txtStrReplace;
 module.exports.txtStrReplacePromise=txtStrReplacePromise;

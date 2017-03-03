@@ -719,6 +719,9 @@ exports.removeRealPhotos = function (req, res, next) {
                 return cycleRemovePhotos();
             }
         })
+        .catch(function (error) {
+            console.log(error);
+        })
 }
 
 exports.stopCycleRemoveRealPhotos = function (req, res, next) {
@@ -727,8 +730,8 @@ exports.stopCycleRemoveRealPhotos = function (req, res, next) {
 }
 
 function cycleRemovePhotos() {
-    var delCondition = {$or:[{orderHistory:{$size: 0},shootOn:{$lte:new Date(new Date() - config.configJSONData.delNotBuyPhotos)}},
-        {'orderHistory.0':{$exists:true},modifiedOn:{$lte:new Date(new Date() - config.configJSONData.delBuyPhotos)}}]};
+    var delCondition = {$or:[{orderHistory:{$size: 0},shootOn:{$lte:new Date(new Date() - config.configJSONData.delTime.delNotBuyPhotos)}},
+        {'orderHistory.0':{$exists:true},modifiedOn:{$lte:new Date(new Date() - config.configJSONData.delTime.delBuyPhotos)}}]};
     var fields = {_id: 1,thumbnail: 1,originalInfo: 1};
     photoModel.findAsync(delCondition, fields, {limit:1000})
         .then(function (photos) {

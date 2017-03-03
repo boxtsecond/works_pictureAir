@@ -235,11 +235,18 @@ var errInfo={
         fileError: {status: 4051, msg: "file data error", desc: "file data error"},
         promiseError: {status: 3058, msg: "system error", desc: "promise error"}
     },
-    "removeRealPhotos":{
-        paramsError: {status: 4052, msg: "params is incomplete", desc: "missing interval or delDB or delPhotos"},
+    "addProduct":{
+        paramsError: {status: 4052, msg: "params is incomplete", desc: "missing name or code or user or priceList"},
+        priceError: {status: 4053, msg: "priceList is incomplete", desc: "missing siteId or currency or amount"},
+        promiseError: {status: 3059, msg: "system error", desc: "promise error"}
+    },
+    "getAllProduct":{
+        promiseError: {status: 3060, msg: "system error", desc: "promise error"}
+    },
+    "getProductByCondition":{
+        paramsError: {status: 4054, msg: "params is incomplete", desc: "missing condition"},
+        promiseError: {status: 3061, msg: "system error", desc: "promise error"}
     }
-
-
     //-------------------system 5x 9x-------------------
 };
 module.exports={

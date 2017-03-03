@@ -7,7 +7,7 @@ var redisclient=require('../redis/redis').redis;
 
 //先从redis缓存中找，找不到再从mongo中找
 //keyValue --- redis's key and value, modelName --- mongo's model name, condition --- mongo's find condition
-function findInfo(type,keyValue, modelName, condition) {
+function findInfo(type, keyValue, modelName, condition) {
     return Promise.resolve()
         .then(function () {
             if(keyValue){

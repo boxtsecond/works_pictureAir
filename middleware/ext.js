@@ -149,6 +149,7 @@ module.exports.req=function(req,res){
     this.haveOwnproperty=util.haveOwnproperty;
     this.formatDate=util.formatDate;
     this.md5=util.md5;
+    this.sh1=util.sh1;
     this.replaceAll=util.replaceAll;
     this.res=res;
     this.json=apiSend;

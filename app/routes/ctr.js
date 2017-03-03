@@ -6,6 +6,7 @@ var photoController = require('../controllers/photoController.js');
 var version = require('../controllers/version.js');
 var users=require("../controllers/user.js");
 var userController = require('../controllers/userController.js');
+var productController = require('../controllers/productController.js');
 module.exports={
     users:users,
     version:version,
@@ -13,5 +14,6 @@ module.exports={
     cacheController:cacheController,
     cardController:cardController,
     parkController:parkController,
-    photoController:photoController
+    photoController:photoController,
+    productController:productController
 }
