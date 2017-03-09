@@ -13,6 +13,5 @@ router.post('/photos/removeRealPhotos', ctr.photoController.removeRealPhotos);
 router.post('/photos/stopCycleRemove', ctr.photoController.stopCycleRemoveRealPhotos);
 
 router.post('/products/addProduct', ctr.productController.addProduct);
-router.post('/products/getAllProduct', ctr.productController.getAllProduct);
-router.post('/products/getProductByCondition', ctr.productController.getProductByCondition);
+router.post('/products/delProduct', ctr.productController.delProduct);
 module.exports = router;

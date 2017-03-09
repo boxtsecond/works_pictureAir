@@ -3,7 +3,7 @@
  */
 var errInfo = require('../resfilter/resInfo.js').errInfo;
 
-exports.carousel = function (req, res, next) {
+function carousel(req, res, next) {
     if (!req) {
         return res.ext.json(errInfo.carousel.paramsError);
     }
@@ -41,4 +41,8 @@ exports.carousel = function (req, res, next) {
     // var resultObj = errInfo.success;
     // resultObj.result = str;
     return res.ext.json([200,"success",str]);
+}
+
+module.exports = {
+    carousel: carousel
 }

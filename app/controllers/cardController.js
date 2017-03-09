@@ -181,7 +181,7 @@ var filters = require('../resfilter/resfilter');
 // }
 
 //查询用户所拥有的卡
-exports.getPPsByUserId = function (req, res, next) {
+function getPPsByUserId(req, res, next) {
     var params = req.ext.params;
     var userId = params.userId;
     var PPList = [];    //白卡
@@ -253,7 +253,7 @@ exports.getPPsByUserId = function (req, res, next) {
 }
 
 //解绑卡
-exports.removePPFromUser = function (req, res, next) {
+function removePPFromUser(req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, 'customerId')) {
         return res.ext.json(errInfo.removePPFromUser.paramsError);
@@ -261,7 +261,7 @@ exports.removePPFromUser = function (req, res, next) {
     var userId = params.userId;
     var customerId = (params.customerId).toString().trim().toUpperCase();
     var cType = 'ppCard';
-    var findObj;
+    var urInfo;
 
     cardTools.validatePPType(customerId)
         .then(function (code) {
@@ -275,11 +275,9 @@ exports.removePPFromUser = function (req, res, next) {
                     //付费卡
                     if(card){
                         cType = card.PPPType;
-                        findObj = {_id: userId, 'pppCodes.code': customerId};
-                        return card;
+                        return {_id: userId, 'pppCodes.code': customerId};
                     }else {
-                        findObj = {_id: userId, 'customerIds.code': customerId};
-                        return card;
+                        return {_id: userId, 'customerIds.code': customerId};
                     }
                 })
                 .catch(function (err) {
@@ -287,7 +285,7 @@ exports.removePPFromUser = function (req, res, next) {
                     return Promise.reject(errInfo.removePPFromUser.invalidCode);
                 });
         })
-        .then(function () {
+        .then(function (findObj) {
             return userModel.findOneAsync(findObj)
                 .then(function (user) {
                     if(user){
@@ -295,9 +293,11 @@ exports.removePPFromUser = function (req, res, next) {
                             if(user.userPP == customerId){
                                 return Promise.reject(errInfo.removePPFromUser.notRemove);
                             }else {
+                                urInfo = new filterUserToredis(user);
                                 return userModel.findByIdAndUpdateAsync(userId, {$pull: {'customerIds': {code:customerId}}});
                             }
                         }else if(cType == 'OneDayPass'){
+                            urInfo = new filterUserToredis(user);
                             return userModel.findByIdAndUpdateAsync(userId, {$pull: {'pppCodes': {PPPCode:customerId}}});
                         }
                     }else {
@@ -346,11 +346,7 @@ exports.removePPFromUser = function (req, res, next) {
         // })
         .then(function () {
             //更改缓存
-            return userModel.findByIdAsync(userId)
-                .then(function (user) {
-                    var urInfo = new filterUserToredis(user);
-                    return redisclient.set('access_token:'+ params.token.audience, JSON.stringify(urInfo));
-                })
+            return redisclient.set('access_token:'+ params.token.audience, JSON.stringify(urInfo))
                 .then(function () {
                     return res.ext.json();
                 })
@@ -370,7 +366,7 @@ exports.removePPFromUser = function (req, res, next) {
 }
 
 //生成激活卡（付费）
-exports.createCardCode = function(req, res, next){
+function createCardCode(req, res, next){
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, ['key', 'user', 'siteIds', 'PPPType', 'expiredDay'])) {
         return res.ext.json(errInfo.createCardCode.paramsError);
@@ -431,3 +427,8 @@ exports.createCardCode = function(req, res, next){
 
 }
 
+module.exports = {
+    getPPsByUserId: getPPsByUserId,
+    removePPFromUser: removePPFromUser,
+    createCardCode: createCardCode
+}

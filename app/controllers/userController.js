@@ -23,7 +23,7 @@ var filterCard = require('../resfilter/card.js');
 var filterShare = require('../resfilter/share.js').filterShare;
 
 //创建分享链接
-exports.getShareUrl = function (req, res, next) {
+function getShareUrl(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, ['shareContent'])){
         return res.ext.json(errInfo.getShareUrl.paramsError);
@@ -145,7 +145,7 @@ exports.getShareUrl = function (req, res, next) {
 }
 
 //分享
-exports.getShareInfo = function (req, res, next) {
+function getShareInfo(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, 'key')){
         return res.ext.json(errInfo.getShareInfo.paramsError);
@@ -178,7 +178,7 @@ exports.getShareInfo = function (req, res, next) {
 
 //激活（购买）卡
 //SN 验证码        customerId 被激活卡的卡号      cardId 激活卡的卡号
-exports.activeCodeToUser = function (req, res, next) {
+function activeCodeToUser(req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, ['customerId', 'userId', 'cardId', 'siteId', 'shootOn'])) {
         return res.ext.json(errInfo.activeCodeToUser.paramsError);
@@ -347,7 +347,7 @@ exports.activeCodeToUser = function (req, res, next) {
 }
 
 //修改用户信息
-exports.updateUser = function (req, res, next) {
+function updateUser(req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, ['userName', 'userId'])) {
         return res.ext.json(errInfo.updateUser.paramsError);
@@ -489,7 +489,7 @@ function getUpdateUserInfo(params) {
 
 
 //联系我们
-exports.contactUs = function (req, res, next) {
+function contactUs(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, ['name', 'EmailAddress', 'parkName', 'feedback'])){
         return res.ext.json(errInfo.contactUs.paramsError);
@@ -547,7 +547,7 @@ exports.contactUs = function (req, res, next) {
 }
 
 //修改用户密码
-exports.modifyUserPwd = function (req, res, next) {
+function modifyUserPwd(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, ['oldPwd', 'newPwd'])){
         return res.ext.json(errInfo.modifyUserPwd.paramsError);
@@ -609,7 +609,7 @@ exports.modifyUserPwd = function (req, res, next) {
 }
 
 //绑定卡
-exports.addCodeToUser = function (req, res, next) {
+function addCodeToUser(req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, ['customerId', 'userId'])) {
         return res.ext.json(errInfo.addCodeToUser.paramsError);
@@ -794,4 +794,14 @@ exports.addCodeToUser = function (req, res, next) {
                 return res.ext.json(errInfo.addCodeToUser.promiseError);
             }
         })
+}
+
+module.exports = {
+    getShareUrl: getShareUrl,
+    getShareInfo: getShareInfo,
+    activeCodeToUser: activeCodeToUser,
+    updateUser: updateUser,
+    contactUs: contactUs,
+    modifyUserPwd: modifyUserPwd,
+    addCodeToUser: addCodeToUser
 }

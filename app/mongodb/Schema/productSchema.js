@@ -7,7 +7,7 @@ var config = {
     name: {type: String, require: true, unique: true, index: true}, //产品名称
     nameAlias: {type: String},//产品别名
     code: {type: String, require: true, unique: true, index: true},//条形码等唯一产品编码，不可为空
-    sequence: {type: String, require: true, unique: true, index: true},//sh1加密后的标识
+    sequence: {type: String, require: true, unique: true, index: true},//sh1加密后的标识（name+code+PictureAir）
     description: {type: String, default: ''},//产品描述
     brand: {type: String, default: 'PictureAir'},//商品品牌
     pictures: [

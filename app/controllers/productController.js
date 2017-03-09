@@ -9,7 +9,7 @@ var redisclient=require('../rq').redisclient;
 var config = require('../../config/config.js').config.configJSONData;
 var findInfo = require('../resfilter/cacheTools.js').findInfo;
 
-exports.addProduct = function (req, res, next) {
+function addProduct(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, ['name', 'code', 'user', 'priceList'])){
         return res.ext.json(errInfo.addProduct.paramsError);
@@ -21,6 +21,15 @@ exports.addProduct = function (req, res, next) {
                     return Promise.reject(errInfo.addProduct.priceError);
                 }
             })
+        })
+        //检查是否已经有相同的产品
+        .then(function () {
+            return productModel.findAsync({$or:[{code: params.code}, {name: params.name}]})
+                .then(function (product) {
+                    if(product.length !== 0){
+                        return Promise.reject(errInfo.addProduct.existsError);
+                    }
+                })
         })
         .then(function () {
             var mongoProduct = new filters.product.filterProductToDB(req, params);
@@ -40,7 +49,7 @@ exports.addProduct = function (req, res, next) {
         })
 }
 
-exports.getAllProduct = function (req, res, next) {
+function getAllProduct(req, res, next) {
     var productInfo = {};
     Promise.resolve()
         .then(function () {
@@ -124,7 +133,7 @@ function getCondition(req, params) {
     return condition;
 }
 
-exports.getProductByCondition = function (req, res, next) {
+function getProductByCondition(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, params.condition)){
         return res.ext.json(errInfo.getProductByCondition.paramsError);
@@ -144,4 +153,46 @@ exports.getProductByCondition = function (req, res, next) {
             console.log(error);
             return res.ext.json(errInfo.getProductByCondition.promiseError);
         })
+}
+
+//彻底从数据库中删除
+function delProduct(req, res, next) {
+    var params = req.ext.params;
+    if(!req.ext.checkExistProperty(params, ['name', 'code', 'user'])){
+        return res.ext.json(errInfo.delProduct.paramsError);
+    }
+    
+    Promise.resolve()
+        .then(function () {
+            return productModel.findOneAsync({name: params.name, code: params.code, active: true, deleted: false});
+        })
+        .then(function (product) {
+            if(product){
+                return productModel.removeAsync(product._id)
+                    .then(function () {
+                        var redisProduct = new filters.product.filterProductToDB(req, product);
+                        return redisclient.hset(config.redis.productList, product.sequence,JSON.stringify(redisProduct));
+                    })
+            }else {
+                return Promise.reject(errInfo.delProduct.notFind);
+            }
+        })
+        .then(function () {
+            return res.ext.json();
+        })
+        .catch(function (error) {
+            if(error.status){
+                return res.ext.json(error);
+            }else {
+                console.log(error);
+                return res.ext.json(errInfo.delProduct.promiseError);
+            }
+        })
+}
+
+module.exports = {
+    addProduct: addProduct,
+    getAllProduct: getAllProduct,
+    getProductByCondition: getProductByCondition,
+    delProduct: delProduct
 }

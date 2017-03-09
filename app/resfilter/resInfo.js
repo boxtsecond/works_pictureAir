@@ -238,14 +238,20 @@ var errInfo={
     "addProduct":{
         paramsError: {status: 4052, msg: "params is incomplete", desc: "missing name or code or user or priceList"},
         priceError: {status: 4053, msg: "priceList is incomplete", desc: "missing siteId or currency or amount"},
+        existsError: {status: 4054, msg: "product is exists", desc: "product is exists, name or code same"},
         promiseError: {status: 3059, msg: "system error", desc: "promise error"}
     },
     "getAllProduct":{
         promiseError: {status: 3060, msg: "system error", desc: "promise error"}
     },
     "getProductByCondition":{
-        paramsError: {status: 4054, msg: "params is incomplete", desc: "missing condition"},
+        paramsError: {status: 4055, msg: "params is incomplete", desc: "missing condition"},
         promiseError: {status: 3061, msg: "system error", desc: "promise error"}
+    },
+    "delProduct": {
+        paramsError: {status: 4056, msg: "params is incomplete", desc: "missing name or code or user"},
+        notFind: {status: 4057, msg: "not find product", desc: "not find product in mongo"},
+        promiseError: {status: 3062, msg: "system error", desc: "promise error"}
     }
     //-------------------system 5x 9x-------------------
 };

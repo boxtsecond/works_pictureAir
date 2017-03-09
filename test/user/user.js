@@ -69,11 +69,11 @@ describe('/auth/getAccessToken', function() {
     // });
 
     it('should login', function(done) {
-        console.log(md5('111111'))
+        console.log(md5('ye3@163.com'))
         request.post('/g/user/login')
             .send({
                 access_token: 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODY5Njk1MTYsImV4cCI6MTQ4NzU3NDMxNiwiaXNzIjoicGljdHVyZUFpciIsImF1ZGllbmNlIjoiYzVkZTRjNzBmMWJhMTFlNmE2OGZiZGU4NWEwNGQyNjgiLCJhcHBpZCI6IjZjOGM4ZGM0ODI4MGVkMjE2MzEzNmFkNDE2ZTFkYmZlIiwidCI6MSwibGciOiJ6aC1DTiJ9.gtpSsFqzza3UnonL4efdcCFr36N-snJg-jCi_Yx9O_gLeaWmOAUpdHVL_gUD5FkDMlJhV9gRl7GcL0JPtSPJMod11DqwvnuYItLzxQetZpKizi1SnTokOT5udozte2qYGIzeARBFYuyWZTe1clXZM1OQdpN3cytp0Bup_oYPF2tmGUBcaj-k9m-Ec7-yj-5uV_aOyoNqrGT3kEcNuiUlmIvbVMcGut-_z70rVn4gQ6U5UhJ5AEQRK_PQmSChmUWf_qh2VOfwW5PXO-exKVZvLn2MyHpE4HLVGq-CzG7PNykVen334EIxvYqR3FK6Ddpvg3pKfucKS2FhqntQm64iZA',
-                username: '123@321.com',
+                username: 'ye3@163.com',
                 password: md5("111111")
                 // username: '1@1.com',
                 // password: md5("000000")

@@ -29,4 +29,7 @@ router.get('/card/getPPsByUserId', ctr.cardController.getPPsByUserId);
 //router.get('/card/getCouponsByUserId', ctr.cardController.getCouponsByUserId);
 router.post('/card/removePPFromUser', ctr.cardController.removePPFromUser);
 
+router.post('/products/getAllProduct', ctr.productController.getAllProduct);
+router.post('/products/getProductByCondition', ctr.productController.getProductByCondition);
+
 module.exports = router;

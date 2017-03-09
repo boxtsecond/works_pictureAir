@@ -10,7 +10,7 @@ var util=require('../../config/util.js');
 var request = require('request');
 var parkFilter = require('../resfilter/park.js').filterPark;
 
-exports.getAllLocations = function (req, res, next) {
+function getAllLocations(req, res, next) {
     var condition = {isDel: false, active: true};
     Promise.resolve()
         .then(function () {
@@ -43,8 +43,6 @@ exports.getAllLocations = function (req, res, next) {
             }
         })
 }
-
-exports.getLocationsByConditions = getLocationsByCondition;
 
 function getLocationsByCondition(condition) {
     var locations=[];
@@ -100,7 +98,7 @@ function getChildren(parentId,data,results){
     return results.locations;
 }
 
-exports.getAllParks = function (req, res, next) {
+function getAllParks(req, res, next) {
     var result = [];
     Promise.resolve()
         .then(function () {
@@ -183,7 +181,7 @@ exports.getAllParks = function (req, res, next) {
         });
 }
 
-exports.getAllParksVersion = function (req, res, next) {
+function getAllParksVersion(req, res, next) {
     var park = {};
     Promise.resolve()
         .then(function () {
@@ -227,7 +225,7 @@ exports.getAllParksVersion = function (req, res, next) {
         })
 }
 
-exports.getParksVersionBySiteId = function(req, res, next){
+function getParksVersionBySiteId(req, res, next){
     var params = req.ext.params;
     var siteIdArr = [];
     var parksInfo = {};
@@ -288,7 +286,7 @@ exports.getParksVersionBySiteId = function(req, res, next){
         });
 }
 
-exports.getParkBySiteId = function (req, res, next) {
+function getParkBySiteId(req, res, next) {
     var params = req.ext.params;
     var parksInfo = [];
     var siteIdArr = [];
@@ -377,3 +375,11 @@ exports.getParkBySiteId = function (req, res, next) {
 
 }
 
+module.exports = {
+    getAllLocations: getAllLocations,
+    getLocationsByConditions: getLocationsByCondition,
+    getAllParks: getAllParks,
+    getAllParksVersion: getAllParksVersion,
+    getParksVersionBySiteId: getParksVersionBySiteId,
+    getParkBySiteId: getParkBySiteId
+}

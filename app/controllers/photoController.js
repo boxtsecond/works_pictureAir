@@ -250,7 +250,7 @@ function findPhotos(conditions, fields, options, flag, audience) {
  * @param {condition type: Array} 查询条件
  * must have [locationId, userId]
  * */
-exports.getPhotosByConditions = function (req, res, next) {
+function getPhotosByConditions(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
@@ -365,7 +365,7 @@ exports.getPhotosByConditions = function (req, res, next) {
         });
 }
 
-exports.removePhotosFromPP = function (req, res, next) {
+function removePhotosFromPP(req, res, next) {
     var params = req.ext.params;
     if (!req.ext.checkExistProperty(params, ['pp', 'userId'])) {
         res.ext.json(errInfo.removePhotosFromPP.paramsError);
@@ -403,7 +403,7 @@ exports.removePhotosFromPP = function (req, res, next) {
         });
 }
 
-exports.quickDownloadPhotosParam = function (req, res, next) {
+function quickDownloadPhotosParam(req, res, next) {
     var params = req.ext.params;
     var photoIds = params.photoIds;
     if(util.isstring(photoIds)){
@@ -433,7 +433,7 @@ exports.quickDownloadPhotosParam = function (req, res, next) {
     });
 }
 
-exports.quickDownloadPhotos = function (req, res, next) {
+function quickDownloadPhotos(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, 'key')){
         return res.ext.json(errInfo.quickDownloadPhotos.paramsError);
@@ -526,7 +526,7 @@ function photoExists(path) {
     }
 }
 
-exports.getPhotosForWeb = function (req, res, next) {
+function getPhotosForWeb(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, params.condition)){
         return res.ext.json(errInfo.getPhotosByConditions.paramsError);
@@ -604,7 +604,7 @@ exports.getPhotosForWeb = function (req, res, next) {
         });
 }
 
-exports.getPhotoByOldSys = function (req, res, next) {
+function getPhotoByOldSys(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, 'photoCode')){
         return res.ext.json(errInfo.getPhotoByOldSys.paramsError);
@@ -641,7 +641,7 @@ exports.getPhotoByOldSys = function (req, res, next) {
         });
 };
 
-exports.addPhotoFromOldSys = function (req, res, next) {
+function addPhotoFromOldSys(req, res, next) {
     var params = req.ext.params;
     if(!req.ext.checkExistProperty(params, 'photoCode')){
         return res.ext.json(errInfo.addPhotoFromOldSys.paramsError);
@@ -703,7 +703,7 @@ exports.addPhotoFromOldSys = function (req, res, next) {
         });
 }
 
-exports.removeRealPhotos = function (req, res, next) {
+function removeRealPhotos(req, res, next) {
     var params = req.ext.params;
     Promise.resolve()
         .then(function () {
@@ -724,7 +724,7 @@ exports.removeRealPhotos = function (req, res, next) {
         })
 }
 
-exports.stopCycleRemoveRealPhotos = function (req, res, next) {
+function stopCycleRemoveRealPhotos(req, res, next) {
     clearInterval(cycleRemovePhotos);
     return res.ext.json();
 }
@@ -758,4 +758,16 @@ function cycleRemovePhotos() {
 
             }
         });
+}
+
+module.exports = {
+    getPhotosByConditions: getPhotosByConditions,
+    removePhotosFromPP: removePhotosFromPP,
+    quickDownloadPhotosParam: quickDownloadPhotosParam,
+    quickDownloadPhotos: quickDownloadPhotos,
+    getPhotosForWeb: getPhotosForWeb,
+    getPhotoByOldSys: getPhotoByOldSys,
+    addPhotoFromOldSys: addPhotoFromOldSys,
+    removeRealPhotos: removeRealPhotos,
+    stopCycleRemoveRealPhotos: stopCycleRemoveRealPhotos
 }
